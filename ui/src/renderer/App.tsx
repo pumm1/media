@@ -5,7 +5,7 @@ import MediaBrowser from './MediaBrowser';
 const App: React.FC = () => {
   return (
   <div>
-      Hello, Electron with React!
+      <h2>Media browser</h2>
       <MediaBrowser />
   </div>
   )
