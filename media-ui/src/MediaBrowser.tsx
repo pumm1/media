@@ -1,11 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { QueryReq, QueryResult, createSearchParams, searchMedia } from './MediaClient';
+import React, { useEffect, useState } from 'react'
+import { QueryReq, QueryResult, createSearchParams, searchMedia } from './MediaClient'
+import ReactPlayer from 'react-player'
+
+interface VideoProps {
+    path: string
+}
+
+const VideoPlayer = ({ path } : VideoProps) => {
+    return (
+      <ReactPlayer 
+        url={path}
+        controls 
+        width='100%' 
+        height='100%'
+      />
+    );
+  }
 
 const Doc = (d: QueryResult) => 
     <div>
         <h2>{d.title}</h2>
         <span>{d.tags.map(t => t.toUpperCase()).join(', ')}</span>
-        <button onClick={() => console.log('CLICK')}>Watch</button>
+        <VideoPlayer path={d.path}/>
     </div>
 
 const MediaBrowser = () =>  {
