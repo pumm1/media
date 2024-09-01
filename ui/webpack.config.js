@@ -1,13 +1,16 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   mode: 'development',
   entry: './src/renderer/index.tsx',
+  target: 'node',
   output: {
-    filename: 'bundle.js',
+    filename: 'main.js',
     path: path.resolve(__dirname, 'dist'),
   },
+  externals: [nodeExternals()], // Exclude Node.js core modules and node_modules
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
   },
