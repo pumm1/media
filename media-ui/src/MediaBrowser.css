@@ -13,8 +13,30 @@
     margin: 0px 8px;
 }
 
+.docContainer {
+    display: grid;
+    overflow-y: auto;
+    height: 400px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+}
+
+.document {
+    border-radius: 12px;
+    padding: 8px;
+    max-height: 200px;
+}
+
+.document:hover {
+    background: red;
+}
+
+.docButtons {
+    display: flex;
+}
+
 .searchParamContainer {
-    margin: 4px 0px;
+    margin: 8px 0px;
 }
 
 .searchField {
@@ -25,16 +47,19 @@
     width: 100%;
     border-radius: 12px;
     padding: 6px 12px;
+    border: solid 3px black;
 }
 
 .tagContainer {
     display: flex;
+    margin-bottom: 8px;
 }
 
 .tag {
     font-size: 12px;
     border-radius: 12px;
+    border: solid 2px black;
     padding: 4px 8px;
     margin-right: 4px;
-    background-color: red;
+    background-color: rgb(184, 0, 0);
 } 

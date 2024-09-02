@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { MediaType, QueryReq, QueryResult, createSearchParams, searchMedia } from './MediaClient'
-import './MediaBrowser.css'
 import MetaInfoByUrl from './MetaHandler'
+
+import './MediaBrowser.css'
+import PlayButton from './PlayButton'
 
 const openVideo = (path: string) => {
     console.log(`Opening video in ${path}`)
@@ -12,10 +14,14 @@ const testImdb: string = 'https://www.imdb.com/title/tt0078915/'
 const parseTitlesFromStr = (s: String) => 
     s.split(' ')
 
-const Doc = (d: QueryResult) => 
-    <div>
+interface DocProps {
+  d: QueryResult
+  setUrl: (s: string) => void
+}
+
+const DocRow = ({d, setUrl}: DocProps) => 
+    <div className='document'>
         <h2>{d.title}</h2>
-        <div>{d.imdb}</div>
         <div className='tagContainer'>
             {
             d.tags.map(t => 
@@ -24,7 +30,10 @@ const Doc = (d: QueryResult) =>
                 </span>)
             }
         </div>
-        <button onClick={() => openVideo(d.path)}>Watch</button>
+        <div className='docButtons'>
+          <PlayButton onClick={() => openVideo(d.path)} />
+          <button onClick={() => setUrl(d.imdb)}>Info</button>
+        </div>
     </div>
 
 const tagOptions = [
@@ -41,6 +50,8 @@ const MediaBrowser = () =>  {
 
     const [docs, setDocs] = useState<QueryResult[]>([])
 
+    const [url, setUrl] = useState<string | undefined>(undefined)
+
     const q: QueryReq = {
         titles: titles,
         tags: tags,
@@ -48,7 +59,7 @@ const MediaBrowser = () =>  {
     }
 
     useEffect(() => {
-        const delayedFunction = () => searchMedia(q).then(setDocs);
+        const delayedFunction = () => searchMedia(q).then(setDocs); //TODO: don't duplicate, but use this now just to see how it looks with more data!
 
         const delay = 150; 
 
@@ -62,7 +73,6 @@ const MediaBrowser = () =>  {
     return (
         <div className='main'>
           <div className='mediaBrowserContainer'>
-          <h1>PatsuWareFlix</h1>
               <div className='searchField'>
                   <input
                       placeholder='Search'
@@ -96,14 +106,14 @@ const MediaBrowser = () =>  {
                       }
                   }}>Toggle all</button>
               </div>
-              <div>
+              <div className='docContainer'>
                 {docs.map(doc => (
-                    <Doc key={doc.title} {...doc} />
+                    <DocRow key={doc.title} setUrl={setUrl} d={doc}/>
                 ))}
               </div>
             </div>
             <div className='detailedMediaContainer'>
-                <MetaInfoByUrl url={'https://www.imdb.com/title/tt0100589/'}/>
+                <MetaInfoByUrl url={url}/>
             </div>
         </div>
     )

@@ -3,6 +3,7 @@ import {load} from 'cheerio'
 import { useEffect, useState } from "react";
 import { createUrl, preview } from "./MediaClient";
 import { JsxElement } from "typescript";
+import LoadingIndicator from "./LoadingIndicator";
 
 
 export interface MetaInfo {
@@ -47,16 +48,26 @@ const MetaInfo = ({title, description, info, image}: MetaInfo) =>
         </div>
 
 export interface MetaInfoByUrlProps {
-    url: string
+    url?: string
 }
 const MetaInfoByUrl = ({url}: MetaInfoByUrlProps) => {
     const [metaInfo, setMetaInfo] = useState<MetaInfo | undefined>(undefined)
+    const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
-        resolveLinkMeta(url).then(setMetaInfo)
+        if (url) {
+            setIsLoading(true)
+            resolveLinkMeta(url).then(info => {
+                setIsLoading(false)
+                setMetaInfo(info)
+            })
+        }
     }, [url])
 
-    return metaInfo ? <MetaInfo title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+    return (
+        isLoading ? <LoadingIndicator /> :
+        metaInfo ? <MetaInfo title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+    )
 }
 
 // Example usage

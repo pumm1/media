@@ -9,7 +9,7 @@ body {
   background: linear-gradient(180deg, rgba(2,0,36,1) 0%, rgba(187,0,0,1) 0%, rgba(1,0,27,1) 100%); 
   background-repeat: no-repeat;
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 code {
@@ -19,4 +19,21 @@ code {
 
 html {
   min-height:100%;
+}
+
+button {
+  text-transform: uppercase;
+  margin-right: 4px;
+  background-color: white; /* Button background color */
+  color: black; /* Text color */
+  padding: 2px 4px;
+  border-radius: 4px; /* Rounded corners */
+  border: solid black; /* Remove the default border */
+  font-size: 14px; /* Font size */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s ease; /* Smooth transition on hover */
+}
+
+button:hover {
+  background-color: rgb(75, 75, 75); /* Darken background color on hover */
 }
