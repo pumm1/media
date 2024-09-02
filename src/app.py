@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from queryReq import QueryReq
 from mediaHandler import search_collections
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -27,3 +28,26 @@ def search():
     query = QueryReq(titles, tags, types)
 
     return jsonify(search_collections(query))
+
+@app.route('/preview', methods=[post])
+def preview():
+    if request.method == post:
+        data = request.get_json()
+        url = data['url']
+        if not url:
+            return jsonify({'error': 'URL parameter is missing'}), 400
+
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:127.0) Gecko/20100101 Firefox/127.0'
+            }
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+
+            # Optionally, you can parse the HTML here and extract only the relevant parts (e.g., Open Graph metadata)
+            return response.text, response.status_code, {'Content-Type': response.headers['Content-Type']}
+
+        except requests.exceptions.RequestException as e:
+            return jsonify({'error': str(e)}), 500
+    else:
+        invalid_req()

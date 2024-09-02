@@ -1,0 +1,40 @@
+.main {
+    display: flex;
+    color: white;
+}
+
+.mediaBrowserContainer {
+    flex: 1;
+    margin: 16px;
+}
+
+.detailedMediaContainer {
+    flex: 1;
+    margin: 0px 8px;
+}
+
+.searchParamContainer {
+    margin: 4px 0px;
+}
+
+.searchField {
+    display: flex;
+}
+
+.search {
+    width: 100%;
+    border-radius: 12px;
+    padding: 6px 12px;
+}
+
+.tagContainer {
+    display: flex;
+}
+
+.tag {
+    font-size: 12px;
+    border-radius: 12px;
+    padding: 4px 8px;
+    margin-right: 4px;
+    background-color: red;
+} 
