@@ -1,0 +1,38 @@
+/* PillCheckboxes.css */
+.pill-container {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .pill {
+    font-weight: bold;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 8px 10px;
+    border-radius: 4px;
+    background-color: var(--secondary-white);
+    color: #333;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    margin-right: 4px;
+  }
+  
+  .pill input[type="checkbox"] {
+    display: none; /* hide the default checkbox */
+  }
+
+  .pill:hover {
+    background-color: var(--main-white);
+  }
+  
+  .pill.selected {
+    background-color: rgb(184, 0, 0);
+    color: white;
+  }
+  
+  .pill.selected:hover {
+    background-color:  rgb(188, 52, 52);
+    color: white;
+  }
+  

@@ -1,3 +1,5 @@
+import { JsxElement } from "typescript";
+
 const pathBase = "http://127.0.0.1:5000"
 
 export const createUrl = (path: string): string => 
@@ -19,7 +21,7 @@ const postData = (path: string, data: any) => {
         body: JSON.stringify(data)
     }
 
-    return fetch(path, requestOptions)
+    return fetch(createUrl(path), requestOptions)
 }
 
 const putData = (path: string, data: any) => {
@@ -104,3 +106,6 @@ export const searchMedia = (r: QueryReq) => {
 
     return fetchDataAs<QueryResult[]>(`/search-media${params}`)
 }
+
+export const preview = (url: string) =>
+    postData(`/preview`, {url})

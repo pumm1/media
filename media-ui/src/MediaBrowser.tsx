@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { MediaType, QueryReq, QueryResult, createSearchParams, searchMedia } from './MediaClient'
+import Selection from './Selection'
 import MetaInfoByUrl from './MetaHandler'
 
 import './MediaBrowser.css'
@@ -16,11 +17,11 @@ const parseTitlesFromStr = (s: String) =>
 
 interface DocProps {
   d: QueryResult
-  setUrl: (s: string) => void
+  setDoc: (d: QueryResult) => void
 }
 
-const DocRow = ({d, setUrl}: DocProps) => 
-    <div className='document'>
+const DocRow = ({d, setDoc}: DocProps) => 
+    <div className='document' onClick={() => setDoc(d)}>
         <h2>{d.title}</h2>
         <div className='tagContainer'>
             {
@@ -32,7 +33,6 @@ const DocRow = ({d, setUrl}: DocProps) =>
         </div>
         <div className='docButtons'>
           <PlayButton onClick={() => openVideo(d.path)} />
-          <button onClick={() => setUrl(d.imdb)}>Info</button>
         </div>
     </div>
 
@@ -50,7 +50,7 @@ const MediaBrowser = () =>  {
 
     const [docs, setDocs] = useState<QueryResult[]>([])
 
-    const [url, setUrl] = useState<string | undefined>(undefined)
+    const [selectedDoc, setDoc] = useState<QueryResult | undefined>(undefined)
 
     const q: QueryReq = {
         titles: titles,
@@ -82,20 +82,16 @@ const MediaBrowser = () =>  {
                   />
               </div>
               <div className='searchParamContainer'>
+                
                   {tagOptions.map(t => (
                       <span key={t}>
-                          {t.toUpperCase()}
-                          <input 
-                              type='checkbox' 
-                              checked={tags.includes(t)} 
-                              onChange={() => {
+                          <Selection isChecked={tags.includes(t)} option={t} onClick={() => {
                                   if (tags.includes(t)) {
                                       setTags(tags.filter(tag => tag !== t))
                                   } else {
                                       setTags([t, ...tags])
                                   }
-                              }}
-                          />
+                              }} />
                       </span>
                   ))}
                   <button onClick={() => {
@@ -104,16 +100,16 @@ const MediaBrowser = () =>  {
                       } else {
                           setTags(tagOptions)
                       }
-                  }}>Toggle all</button>
+                  }}>Toggle tags</button>
               </div>
               <div className='docContainer'>
                 {docs.map(doc => (
-                    <DocRow key={doc.title} setUrl={setUrl} d={doc}/>
+                    <DocRow key={doc.title} setDoc={setDoc} d={doc}/>
                 ))}
               </div>
             </div>
             <div className='detailedMediaContainer'>
-                <MetaInfoByUrl url={url}/>
+                {selectedDoc && <MetaInfoByUrl doc={selectedDoc} onPlay={() => openVideo(selectedDoc.path)}/>}
             </div>
         </div>
     )

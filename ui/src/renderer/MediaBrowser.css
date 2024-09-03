@@ -1,21 +1,66 @@
+.main {
+    display: flex;
+    color: white;
+}
+
+.mediaBrowserContainer {
+    flex: 1;
+    margin: 16px;
+}
+
+.detailedMediaContainer {
+    flex: 1;
+    margin: 0px 8px;
+}
+
+.docContainer {
+    display: grid;
+    max-height: 80%;
+    overflow-y: auto;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+}
+
+.document {
+    cursor: pointer;
+    border-radius: 12px;
+    padding: 8px;
+    max-height: 200px;
+    width: 96%;
+}
+
+.document:hover {
+    background: #424242;
+}
+
+.docButtons {
+    display: flex;
+}
+
+.searchParamContainer {
+    margin: 8px 0px;
+}
+
 .searchField {
-    width: 600px;
     display: flex;
 }
 
 .search {
+    width: 100%;
     border-radius: 12px;
     padding: 6px 12px;
+    border: solid 3px black;
 }
 
 .tagContainer {
     display: flex;
+    margin-bottom: 8px;
 }
 
 .tag {
     font-size: 12px;
-    border-radius: 12px;
+    border-radius: px;
     padding: 4px 8px;
     margin-right: 4px;
-    background-color: red;
+    background-color: var(--main-red);
 } 

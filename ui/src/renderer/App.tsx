@@ -2,13 +2,6 @@
 import React from 'react';
 import MediaBrowser from './MediaBrowser';
 
-const App: React.FC = () => {
-  return (
-  <div>
-      <h2>Media browser</h2>
-      <MediaBrowser />
-  </div>
-  )
-};
+const App: React.FC = () => <MediaBrowser />
 
 export default App;
