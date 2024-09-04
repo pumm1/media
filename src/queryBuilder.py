@@ -47,6 +47,11 @@ def m_json_from_req(req: QueryReq):
 
     print(f'generated query: {combined_query}')
 
-    # Combine the individual regex queries into one using $and or $or
-
     return combined_query
+
+def medias_to_remove_json(files: list[str]):
+    return {
+        path_f: {
+            in_f: files
+        }
+    }

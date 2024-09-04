@@ -1,5 +1,5 @@
-import { app, BrowserWindow } from 'electron';
-import path from 'path';
+import { app, BrowserWindow } from 'electron'
+import path from 'path'
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -17,11 +17,11 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  createWindow();
+  createWindow()
   
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+      createWindow()
     }
   });
 });

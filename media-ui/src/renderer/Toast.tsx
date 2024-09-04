@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import './Toast.css'
 
 interface ToastProps {
-    message: string
+    message: string | JSX.Element
     durationMs: number
     onClose:() => void
 

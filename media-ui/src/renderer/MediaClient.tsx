@@ -107,8 +107,13 @@ export const searchMedia = (r: QueryReq) => {
     return fetchDataAs<QueryResult[]>(`/search-media${params}`)
 }
 
+export interface UpdateRes {
+    added: number
+    removed: number
+}
+
 export const updateMedias = () => 
-    postDataAs<number>(`/update-medias`, {})
+    postDataAs<UpdateRes>(`/update-medias`, {})
 
 export const preview = (url: string) =>
     postData(`/preview`, {url})

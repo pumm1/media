@@ -1,11 +1,10 @@
 import json
-from mediaDAO import add_media_to_collection, query_collections
+from mediaDAO import add_media_to_collection, query_collections, existing_files, remove_media_by_files
 import os
 from bson.json_util import dumps, loads
-from bson import ObjectId
 
 from queryReq import QueryReq
-from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f
+from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f, path_f, medias_to_remove_json
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 medias_dir = os.path.join(current_dir, 'medias')
@@ -60,13 +59,14 @@ def temp_test_query_making():
 
 
 def search_collections(q: QueryReq):
-    #QueryReq(["er", "ter"], ['action'], ["foo", "movie"])
     m_json = m_json_from_req(q)
 
     res = query_collections(m_json)
+    """
     print(f'Amount of docs found: {len(res)}')
     for doc in res:
         print(f'Doc in results: {doc}')
+    """
 
     json_str = dumps(res)
     json_res = loads(json_str)
@@ -74,8 +74,9 @@ def search_collections(q: QueryReq):
     return json_res
 
 
-
 valid_media_file_suffixes = ['.mp4', '.mkv', 'mov']
+
+
 def is_media_file(file: str) -> bool:
     is_valid = False
     for suffix in valid_media_file_suffixes:
@@ -85,9 +86,29 @@ def is_media_file(file: str) -> bool:
     return is_valid
 
 
+def get_existing_titles():
+    files = existing_files()
+    existing = []
+    for file in files:
+        print(file)
+        existing.append(file[path_f])
+
+    return existing
+
+def remove_medias_by_files(files: list[str]):
+    q_json = medias_to_remove_json(files)
+    removed = remove_media_by_files(q_json)
+    print(f'Removed {removed} titles')
+    return removed
+
+
+#TODO: how to handle shows
 def go_through_medias():
     added = 0
+    removed = 0
     medias = os.listdir(medias_dir)
+    existing = get_existing_titles()
+    found_files = []
     for media in medias:
         media_dir = os.path.join(medias_dir, media)
         files = os.listdir(media_dir)
@@ -95,6 +116,7 @@ def go_through_medias():
         meta_data = None
         media_file_path = None
         has_been_added = False
+        media_has_been_removed = False
         for file in files:
             print(f'[{media}] File: {file}')
             media_path = os.path.join(media_dir)
@@ -104,13 +126,25 @@ def go_through_medias():
                 (has_been_added, meta_data) = file_has_been_added(meta_file_path)
             #TODO: make sure it's media file (mkv, mp4, mov)
             elif is_media_file(file):
-                media_file_path = os.path.join(media_path, file)
+                if media_file_path is None:
+                    media_file_path = os.path.join(media_path, file)
+                    found_files.append(media_file_path)
+                else:
+                    print(f'Extra media file found in {media}!')
         if (not has_been_added) and media_file_path is not None:
             save_media_info(meta_data, media_file_path)
             update_meta(meta_data, meta_file_path)
             added = added + 1
 
-    return added
+    existing_set = set(existing)
+    found_set = set(found_files)
+
+    files_to_be_removed = list(existing_set - found_set)
+
+    print(f'Should be removed: {files_to_be_removed}')
+    removed = remove_medias_by_files(files_to_be_removed)
+
+    return { 'added': added, 'removed': removed }
 
 
 #go_through_medias()
@@ -119,8 +153,4 @@ def go_through_medias():
 
 #temp_test_query_making()
 
-test_files = ['foo.mp4', 'test.jpg', 'bar.mkv', 'invalid.png', 'baz.mov']
-
-for file in test_files:
-    print(f'{file} is valid media: {is_media_file(file)}')
-
+get_existing_titles()

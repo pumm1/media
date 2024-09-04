@@ -1,5 +1,7 @@
 from pymongo import MongoClient
 
+from queryBuilder import title_f, in_f
+
 client = MongoClient('localhost', 27017)
 
 db_name = 'testDb'
@@ -104,12 +106,39 @@ def query_collections(m_json):
                         'type': 1,
                         'path': 1
                     }
+                ).sort('title', 1)
+            )
+        else:
+            print(f'.... collection not found')
+            return []
+
+def existing_files():
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return list(
+                collection.find({},
+                    {
+                        '_id': 0,
+                        'path': 1
+                    }
                 )
             )
         else:
             print(f'.... collection not found')
             return []
 
+
+def remove_media_by_files(medias_to_delete_json):
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return collection.delete_many(medias_to_delete_json).deleted_count
+        else:
+            print(f'.... collection not found')
+            return 0
 
 # Select a collection (it will create one if it doesn't exist)
 #collection = db.get_collection(collection_name)

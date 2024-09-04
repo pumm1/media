@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { MediaType, QueryReq, QueryResult, createSearchParams, searchMedia, updateMedias } from './MediaClient'
+import { MediaType, QueryReq, QueryResult, UpdateRes, createSearchParams, searchMedia, updateMedias } from './MediaClient'
 import Selection from './Selection'
 import MetaInfoByUrl from './MetaHandler'
 
@@ -44,8 +44,15 @@ const tagOptions = [
     'comedy'
 ]
 
-const mediaUpdateInfoStr = (i: number) =>
-  i > 0 ? `New titles: ${i}` : 'No new titles'
+const mediaUpdateInfoStr = (i: number, prefix: string) =>
+  i > 0 ? `${prefix} titles: ${i}. ` : `No ${prefix} titles`
+
+const updateInfo = (res: UpdateRes) => 
+    <>
+        <div>{mediaUpdateInfoStr(res.added, 'new')}</div>
+        <div>{mediaUpdateInfoStr(res.removed, 'removed')}</div>
+    </>
+
 
 const MediaBrowser = () =>  {
     const [titles, setTitles] = useState<string[]>([])
@@ -60,7 +67,7 @@ const MediaBrowser = () =>  {
     
     const [updateLoading, setUpdateLoading] = useState(false)
 
-    const [mediaUpdateInfo, setMediaUpdateInfo] = useState(0)
+    const [mediaUpdateInfo, setMediaUpdateInfo] = useState<UpdateRes | undefined>()
 
     const q: QueryReq = {
         titles: titles,
@@ -75,7 +82,7 @@ const MediaBrowser = () =>  {
       setTimeout(() => {
         setShowToast(false);
         setUpdateLoading(false)
-        setMediaUpdateInfo(0)
+        setMediaUpdateInfo(undefined)
         updateMediafn()
       }, 3000)
     }
@@ -94,7 +101,7 @@ const MediaBrowser = () =>  {
 
     return (
         <div className='main'>
-          {showToast && <Toast message={mediaUpdateInfoStr(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)}/>}
+          {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)}/>}
           <div className='mediaBrowserContainer'>
               <div className='searchField'>
                   <input
