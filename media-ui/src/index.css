@@ -3,7 +3,7 @@ body {
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #1b1b1b;
+  background-color: var(--main-dark);
   background-repeat: no-repeat;
   height: 100%;
   overflow: hidden;

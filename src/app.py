@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from queryReq import QueryReq
-from mediaHandler import search_collections
+from mediaHandler import search_collections, go_through_medias
 import requests
 
 app = Flask(__name__)
@@ -21,13 +21,16 @@ def hello():
 
 @app.route('/search-media', methods = [get])
 def search():
-    titles = request.args.getlist('title')
-    tags = request.args.getlist('tag')
-    types = request.args.getlist('type')
+    if request.method == get:
+        titles = request.args.getlist('title')
+        tags = request.args.getlist('tag')
+        types = request.args.getlist('type')
 
-    query = QueryReq(titles, tags, types)
+        query = QueryReq(titles, tags, types)
 
-    return jsonify(search_collections(query))
+        return jsonify(search_collections(query))
+    else:
+        return invalid_req()
 
 @app.route('/preview', methods=[post])
 def preview():
@@ -50,4 +53,12 @@ def preview():
         except requests.exceptions.RequestException as e:
             return jsonify({'error': str(e)}), 500
     else:
-        invalid_req()
+        return invalid_req()
+
+
+@app.route('/update-medias', methods = [post])
+def update_media():
+    if request.method == post:
+        return(jsonify(go_through_medias()))
+    else:
+        return invalid_req()

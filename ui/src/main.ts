@@ -3,8 +3,9 @@ import path from 'path';
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 1600,
-    height: 900,
+    width: 2000,
+    height: 1800,
+    fullscreen: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
@@ -27,6 +28,6 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit();
+    app.quit()
   }
 });

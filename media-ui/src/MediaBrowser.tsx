@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { MediaType, QueryReq, QueryResult, createSearchParams, searchMedia } from './MediaClient'
+import { MediaType, QueryReq, QueryResult, createSearchParams, searchMedia, updateMedias } from './MediaClient'
 import Selection from './Selection'
 import MetaInfoByUrl from './MetaHandler'
 
 import './MediaBrowser.css'
 import PlayButton from './PlayButton'
+import Toast from './Toast'
 
 const openVideo = (path: string) => {
     console.log(`Opening video in ${path}`)
@@ -43,6 +44,9 @@ const tagOptions = [
     'comedy'
 ]
 
+const mediaUpdateInfoStr = (i: number) =>
+  i > 0 ? `New titles: ${i}` : 'No new titles'
+
 const MediaBrowser = () =>  {
     const [titles, setTitles] = useState<string[]>([])
     const [tags, setTags] = useState<string[]>(tagOptions)
@@ -52,26 +56,45 @@ const MediaBrowser = () =>  {
 
     const [selectedDoc, setDoc] = useState<QueryResult | undefined>(undefined)
 
+    const [showToast, setShowToast] = useState(false)
+    
+    const [updateLoading, setUpdateLoading] = useState(false)
+
+    const [mediaUpdateInfo, setMediaUpdateInfo] = useState(0)
+
     const q: QueryReq = {
         titles: titles,
         tags: tags,
         types: types
     }
 
-    useEffect(() => {
-        const delayedFunction = () => searchMedia(q).then(setDocs); //TODO: don't duplicate, but use this now just to see how it looks with more data!
+    const updateMediafn = () => searchMedia(q).then(setDocs)
 
+    const triggerToast = () => {
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        setUpdateLoading(false)
+        setMediaUpdateInfo(0)
+        updateMediafn()
+      }, 3000)
+    }
+
+    console.log(JSON.stringify(q))
+
+    useEffect(() => {
         const delay = 150; 
 
         const timeoutId = setTimeout(() => {
-            delayedFunction();
-        }, delay);
+            updateMediafn()
+        }, delay)
 
-        return () => clearTimeout(timeoutId);
+        return () => clearTimeout(timeoutId)
     }, [JSON.stringify(q)])
 
     return (
         <div className='main'>
+          {showToast && <Toast message={mediaUpdateInfoStr(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)}/>}
           <div className='mediaBrowserContainer'>
               <div className='searchField'>
                   <input
@@ -106,6 +129,13 @@ const MediaBrowser = () =>  {
                 {docs.map(doc => (
                     <DocRow key={doc.title} setDoc={setDoc} d={doc}/>
                 ))}
+              </div>
+              <div>
+                <button disabled={updateLoading} onClick={() => 
+                    Promise.resolve(setUpdateLoading(true)).then(() => updateMedias().then(setMediaUpdateInfo).finally(() => triggerToast()))
+                }>
+                  Scan for updates
+                </button>
               </div>
             </div>
             <div className='detailedMediaContainer'>

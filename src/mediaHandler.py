@@ -75,7 +75,18 @@ def search_collections(q: QueryReq):
 
 
 
+valid_media_file_suffixes = ['.mp4', '.mkv', 'mov']
+def is_media_file(file: str) -> bool:
+    is_valid = False
+    for suffix in valid_media_file_suffixes:
+        if file.endswith(suffix):
+            is_valid = True
+            break
+    return is_valid
+
+
 def go_through_medias():
+    added = 0
     medias = os.listdir(medias_dir)
     for media in medias:
         media_dir = os.path.join(medias_dir, media)
@@ -92,11 +103,14 @@ def go_through_medias():
                 print(f'meta_path: {meta_file_path}')
                 (has_been_added, meta_data) = file_has_been_added(meta_file_path)
             #TODO: make sure it's media file (mkv, mp4, mov)
-            else:
+            elif is_media_file(file):
                 media_file_path = os.path.join(media_path, file)
-        if not has_been_added:
+        if (not has_been_added) and media_file_path is not None:
             save_media_info(meta_data, media_file_path)
             update_meta(meta_data, meta_file_path)
+            added = added + 1
+
+    return added
 
 
 #go_through_medias()
@@ -104,4 +118,9 @@ def go_through_medias():
 #search_collections()
 
 #temp_test_query_making()
+
+test_files = ['foo.mp4', 'test.jpg', 'bar.mkv', 'invalid.png', 'baz.mov']
+
+for file in test_files:
+    print(f'{file} is valid media: {is_media_file(file)}')
 

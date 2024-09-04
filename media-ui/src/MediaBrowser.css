@@ -22,6 +22,7 @@
 }
 
 .document {
+    margin: 4px 8px;
     cursor: pointer;
     border-radius: 12px;
     padding: 8px;
@@ -31,6 +32,7 @@
 
 .document:hover {
     background: #424242;
+    background-color: var(--secondary-dark);
 }
 
 .docButtons {
