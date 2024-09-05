@@ -3,13 +3,22 @@ import { MediaType, QueryReq, QueryResult, UpdateRes, getTags, searchMedia, upda
 import Selection from './Selection'
 import MetaInfoByUrl from './MetaHandler'
 import _ from 'lodash'
-import PlayButton from './PlayButton'
+import { PlayButton, FolderButton } from './CommonButtons'
+import errorGif1 from './angry-panda.gif';
+import errorGif2 from './monke-pc.gif'
+import errorGif3 from './throw-pc.gif'
+import errorGif4 from './pc-trash.gif'
 import Toast from './Toast'
 import HideableComponent from './Hideable'
 
 import './MediaBrowser.css'
+
 const openVideo = (path: string) => {
     console.log(`Opening video in ${path}`)
+}
+
+const openFolder = (path: string) => {
+    console.log(`Opening folder in ${path}`)
 }
 
 const parseTitlesFromStr = (s: String) => 
@@ -26,15 +35,62 @@ const DocRow = ({d, setDoc}: DocProps) =>
         <div className='tagContainer'>
             {
             d.tags.map(t => 
-                <span className='tag'>
+                <span key={d.title + t} className='tag'>
                     {t.toUpperCase()}
                 </span>)
             }
         </div>
         <div className='docButtons'>
-          <PlayButton onClick={() => openVideo(d.path)} />
+            <PlayButton onClick={() => openVideo(d.path)} />
+            <FolderButton onClick={() => openFolder(d.path)}/>
         </div>
     </div>
+
+interface DocsProps {
+    docs: QueryResult[]
+    setDoc: (d: QueryResult) => void
+}
+
+const NoResultsTips = [
+    'Check your search terms',
+    'Check your selected tags',
+    "Try scanning for updates",
+    "Bitch about shitty software"
+]
+
+const ErrorGifs = [
+    errorGif1,
+    errorGif2,
+    errorGif3,
+    errorGif4
+]
+
+const randomGif = () =>
+    Math.floor(Math.random() * ErrorGifs.length)
+
+const Docs = ({docs, setDoc}:DocsProps) => {
+    const [randGif, setRandomGif] = useState(randomGif())
+
+    useEffect(() => {
+        setRandomGif(randomGif())
+    }, [docs.length])
+    
+    return(
+        <>
+            { docs.length > 0 ? docs.map(doc => (
+                <DocRow key={doc.title + doc.path} setDoc={setDoc} d={doc}/>
+            )) : 
+            <div className='noDocs'>
+                <h3>No results found {'(>_<)'}</h3>
+                You may try the following:
+                <ul>
+                    {NoResultsTips.map((tip, idx) => <li key={tip + idx}>{tip}</li>)}
+                </ul>
+                <img src={ErrorGifs[randGif]}/>
+            </div>}
+        </>
+    )
+}
 
 const mediaUpdateInfoStr = (i: number, prefix: string) =>
   i > 0 ? `${prefix} titles: ${i}. ` : `No ${prefix} titles`
@@ -148,9 +204,7 @@ const MediaBrowser = () =>  {
               </HideableComponent>
               
               <div className='docContainer'>
-                {docs.map(doc => (
-                    <DocRow key={doc.title} setDoc={setDoc} d={doc}/>
-                ))}
+                <Docs docs={docs} setDoc={setDoc}/>
               </div>
               <div>
                 <button disabled={updateLoading} onClick={() => 
@@ -161,7 +215,7 @@ const MediaBrowser = () =>  {
               </div>
             </div>
             <div className='detailedMediaContainer'>
-                {selectedDoc && <MetaInfoByUrl doc={selectedDoc} onPlay={() => openVideo(selectedDoc.path)}/>}
+                {selectedDoc && <MetaInfoByUrl doc={selectedDoc} onPlay={() => openVideo(selectedDoc.path)} onOpenFolder={() => openFolder(selectedDoc.path)}/>}
             </div>
         </div>
     )

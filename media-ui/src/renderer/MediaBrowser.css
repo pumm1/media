@@ -15,10 +15,13 @@
 
 .docContainer {
     display: grid;
+    min-height: 100px;
     max-height: 700px;
     overflow-y: auto;
     margin-bottom: 8px;
     padding-bottom: 8px;
+    border-bottom: var(--main-white) 2px solid;
+    border-top: var(--main-white) 2px solid;
 }
 
 .document {
@@ -39,6 +42,10 @@
     display: flex;
 }
 
+.noDocs {
+    font-size: 24px;
+}
+
 .searchParamContainer {
     margin: 8px 0px;
 }
@@ -48,10 +55,14 @@
 }
 
 .search {
+    line-height: 2em;
+    font-weight: bold;
+    font-size: 18px;
     width: 100%;
     border-radius: var(--big-radius);
     padding: 6px 12px;
     border: solid 3px black;
+    outline: none;
 }
 
 .tagContainer {
@@ -68,5 +79,5 @@
 } 
 
 .toggleTags {
-    margin: 4px;
+    margin: 8px 0px 0px 0px;
 }

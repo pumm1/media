@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { QueryResult, createUrl, preview } from "./MediaClient";
 import LoadingIndicator from "./LoadingIndicator";
 import './MetaHandler.css'
-import PlayButton from "./PlayButton";
+import {PlayButton, FolderButton} from "./CommonButtons";
 
 
 export interface MetaInfo {
@@ -40,15 +40,15 @@ const resolveLinkMeta = async (url: string): Promise<MetaInfo| undefined> => {
 
 interface MetaInfoProps extends MetaInfo {
     onPlay: () => void
+    onOpenFolder: () => void
     imdb: string
 }
 
-const MetaInfo = ({title, description, info, image, onPlay, imdb}: MetaInfoProps) => 
+const MetaInfo = ({title, description, info, image, onPlay, imdb, onOpenFolder}: MetaInfoProps) => 
         <div className="metaContainer">
             <a href={imdb}><h2>{title}</h2></a>
-            <div>
-                <p>{info}</p><PlayButton onClick={onPlay}/>
-            </div>
+            <p>{info}</p>
+            <div className="buttons"><PlayButton onClick={onPlay}/> <FolderButton onClick={onOpenFolder}/></div>
             <p>{description ?? ''}</p>
             <img src={image} width={9*40} height={16*40}></img>
         </div>
@@ -56,8 +56,9 @@ const MetaInfo = ({title, description, info, image, onPlay, imdb}: MetaInfoProps
 export interface MetaInfoByUrlProps {
     doc: QueryResult
     onPlay: () => void
+    onOpenFolder: () => void
 }
-const MetaInfoByUrl = ({doc, onPlay}: MetaInfoByUrlProps) => {
+const MetaInfoByUrl = ({doc, onPlay, onOpenFolder}: MetaInfoByUrlProps) => {
     const [metaInfo, setMetaInfo] = useState<MetaInfo | undefined>(undefined)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -73,7 +74,7 @@ const MetaInfoByUrl = ({doc, onPlay}: MetaInfoByUrlProps) => {
 
     return (
         isLoading ? <LoadingIndicator /> :
-        metaInfo ? <MetaInfo imdb={doc.imdb} onPlay={onPlay} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+        metaInfo ? <MetaInfo imdb={doc.imdb} onOpenFolder={onOpenFolder} onPlay={onPlay} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
     )
 }
 
