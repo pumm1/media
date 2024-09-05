@@ -62,22 +62,15 @@ def collection_exists() -> bool:
 #should be used only once
 #creation isn't working now, has to be done manually with the schema directly to mongoDb
 def create_media_collection():
-    if not collection_exists:
+    if not collection_exists():
         print(f'Creating collection {collection_name}')
         db.create_collection(collection_name, codec_options=schema, check_exists=True)
         print(f'Collection created')
     else:
         print(f'Collection {collection_name} already exists')
 
-
-def add_media_to_collection_fn(m_json):
-    collection = db.get_collection(collection_name)
-    # Insert a document into the collection
-    if collection is not None:
-        collection.insert_one(m_json)
-    else:
-        print(f'.... collection not found')
-
+def collection_not_found_warn():
+    print(f'Collection {collection_name} not found')
 
 def add_media_to_collection(m_json):
     with MongoClient('localhost', 27017) as client:
@@ -87,7 +80,7 @@ def add_media_to_collection(m_json):
             print(f'Inserting data: {m_json}')
             collection.insert_one(m_json)
         else:
-            print(f'.... collection not found')
+            collection_not_found_warn()
 
 
 def query_collections(m_json):
@@ -109,7 +102,7 @@ def query_collections(m_json):
                 ).sort('title', 1)
             )
         else:
-            print(f'.... collection not found')
+            collection_not_found_warn()
             return []
 
 def existing_files():
@@ -126,7 +119,25 @@ def existing_files():
                 )
             )
         else:
-            print(f'.... collection not found')
+            collection_not_found_warn()
+            return []
+
+
+def existing_tags():
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return list(
+                collection.find({},
+                    {
+                        '_id': 0,
+                        'tags': 1
+                    }
+                )
+            )
+        else:
+            collection_not_found_warn()
             return []
 
 
@@ -137,7 +148,7 @@ def remove_media_by_files(medias_to_delete_json):
         if collection is not None:
             return collection.delete_many(medias_to_delete_json).deleted_count
         else:
-            print(f'.... collection not found')
+            collection_not_found_warn()
             return 0
 
 # Select a collection (it will create one if it doesn't exist)

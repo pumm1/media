@@ -1,7 +1,8 @@
 import json
-from mediaDAO import add_media_to_collection, query_collections, existing_files, remove_media_by_files
+from mediaDAO import add_media_to_collection, query_collections, existing_files, remove_media_by_files, existing_tags
 import os
 from bson.json_util import dumps, loads
+from pandas.core.common import flatten
 
 from queryReq import QueryReq
 from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f, path_f, medias_to_remove_json
@@ -54,10 +55,6 @@ def file_has_been_added(file_name: str):
     }
 """
 
-def temp_test_query_making():
-    m_json_from_req(QueryReq(["er", "ter"], ['foo'], ["movie"]))
-
-
 def search_collections(q: QueryReq):
     m_json = m_json_from_req(q)
 
@@ -94,6 +91,14 @@ def get_existing_titles():
         existing.append(file[path_f])
 
     return existing
+
+def get_existing_tags():
+    all_tags = existing_tags()
+    existing = []
+    for tags in all_tags:
+        existing.append(tags[tags_f])
+
+    return sorted(set(flatten(existing)))
 
 def remove_medias_by_files(files: list[str]):
     q_json = medias_to_remove_json(files)
@@ -152,5 +157,3 @@ def go_through_medias():
 #search_collections()
 
 #temp_test_query_making()
-
-get_existing_titles()

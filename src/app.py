@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from queryReq import QueryReq
-from mediaHandler import search_collections, go_through_medias
+from mediaHandler import search_collections, go_through_medias, get_existing_tags
 import requests
 
 app = Flask(__name__)
@@ -18,6 +18,13 @@ def invalid_req():
 @app.route('/test')
 def hello():
     return 'Ready to watch some videos!'
+
+@app.route('/tags', methods = [get])
+def tags():
+    if request.method == get:
+        return jsonify(get_existing_tags())
+    else:
+        return invalid_req()
 
 @app.route('/search-media', methods = [get])
 def search():

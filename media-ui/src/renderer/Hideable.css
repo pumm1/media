@@ -1,0 +1,29 @@
+.hideableContainer {
+    margin: 4px 0px;
+}
+.slide-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+  }
+  
+  .content {
+    padding: 4px 0px;
+  }
+
+  /*....hmm*/
+  .toggle-button {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 15px solid black;
+    background: white;
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .toggle-button.open {
+    transform: rotate(90deg); /* Rotate to vertical when content is visible */
+  }
+  

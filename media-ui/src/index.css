@@ -14,6 +14,11 @@ code {
     monospace;
 }
 
+img {
+  border-radius: var(--main-radius);
+}
+
+
 h2 {
   padding: 0px 0px;
 }
@@ -28,7 +33,7 @@ a {
 }
 
 a:hover {
-  color: rgb(184, 0, 0)
+  color: var(--main-red);
 }
 
 button {
@@ -38,7 +43,7 @@ button {
   background-color: white; /* Button background color */
   color: black; /* Text color */
   padding: 2px 4px;
-  border-radius: 4px; /* Rounded corners */
+  border-radius: var(--small-radius); /* Rounded corners */
   border: 0; /* Remove the default border */
   font-size: 14px; /* Font size */
   cursor: pointer; /* Pointer cursor on hover */

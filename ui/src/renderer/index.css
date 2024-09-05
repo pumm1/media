@@ -13,6 +13,10 @@ body {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
       monospace;
   }
+
+  img {
+    border-radius: 8px;
+  }
   
   h2 {
     padding: 0px 0px;
