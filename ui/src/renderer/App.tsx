@@ -1,7 +1,9 @@
-// src/App.tsx
-import React from 'react';
-import MediaBrowser from './MediaBrowser';
+import MediaBrowser from './MediaBrowser'
+import './App.css'
 
-const App: React.FC = () => <MediaBrowser />
+const App = () => 
+<div className='App'>
+  <MediaBrowser />
+</div>
 
-export default App;
+export default App

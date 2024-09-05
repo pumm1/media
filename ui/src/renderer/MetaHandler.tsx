@@ -1,20 +1,12 @@
-import axios from "axios";
+import axios from "axios"
 import {load} from 'cheerio'
-import { useEffect, useState } from "react";
-import { QueryResult, createUrl } from "./MediaClient"
+import { useEffect, useState } from "react"
+import { QueryResult, createUrl, preview } from "./MediaClient"
 import LoadingIndicator from "./LoadingIndicator"
-import PlayButton from "./PlayButton"
 import './MetaHandler.css'
+import PlayButton from "./PlayButton"
 
 
-/*
-for later:
-  416  yarn add lodash
-  421  yarn add react-player
-  427  yarn add electron --dev
-  428  yarn add --dev typescript @types/node @types/electron ts-node
-  452  yarn add axios cheerio
-*/
 export interface MetaInfo {
     title?: string
     info?: string
@@ -48,11 +40,12 @@ const resolveLinkMeta = async (url: string): Promise<MetaInfo| undefined> => {
 
 interface MetaInfoProps extends MetaInfo {
     onPlay: () => void
+    imdb: string
 }
 
-const MetaInfo = ({title, description, info, image, onPlay}: MetaInfoProps) => 
+const MetaInfo = ({title, description, info, image, onPlay, imdb}: MetaInfoProps) => 
         <div className="metaContainer">
-            <h2>{title}</h2>
+            <a href={imdb}><h2>{title}</h2></a>
             <div>
                 <p>{info}</p><PlayButton onClick={onPlay}/>
             </div>
@@ -80,7 +73,7 @@ const MetaInfoByUrl = ({doc, onPlay}: MetaInfoByUrlProps) => {
 
     return (
         isLoading ? <LoadingIndicator /> :
-        metaInfo ? <MetaInfo onPlay={onPlay} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+        metaInfo ? <MetaInfo imdb={doc.imdb} onPlay={onPlay} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
     )
 }
 

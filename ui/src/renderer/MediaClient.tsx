@@ -1,5 +1,3 @@
-import { JsxElement } from "typescript";
-
 const pathBase = "http://127.0.0.1:5000"
 
 export const createUrl = (path: string): string => 
@@ -24,6 +22,12 @@ const postData = (path: string, data: any) => {
     return fetch(createUrl(path), requestOptions)
 }
 
+const postDataAs = <T, >(path: string, data: any): Promise<T> => 
+    postData(path, data).then(res => {
+       return res.json() as T
+    })
+
+/*
 const putData = (path: string, data: any) => {
     const requestOptions = {
         method: 'PUT',
@@ -44,11 +48,6 @@ const deleteData = (path: string, data: any) => {
     return fetch(path, requestOptions)
 }
 
-const postDataAs = <T, >(path: string, data: any): Promise<T> => 
-    postData(path, data).then(res => {
-       return res.json() as T
-    })
-
 const putDataAs = <T, >(path: string, data: any): Promise<T> => 
     putData(path, data).then(res => {
         return res.json() as T
@@ -65,6 +64,7 @@ const toQueryParams = (params: Record<string, string>) => {
         .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key] as string)}`)
         .join('&');
 }
+*/
 
 export type MediaType = 'movie' | 'series'
 
@@ -82,11 +82,6 @@ export interface QueryResult {
     path: string
 }
 
-const asRecord = (arr: string[], field: string): Record<string, string> => arr.reduce((acc, value) => {
-    acc[field] = value
-    return acc;
-}, {} as Record<string, string>);
-
 const termsAsParam = (values: string[], field: string) => 
     values.map(v => `${field}=${v}`).join('&')
   
@@ -101,14 +96,22 @@ export const createSearchParams = (r: QueryReq): string => {
     return params.length > 0 ? `?${params.join('&')}` : ''
 }
 
+export const getTags = () => 
+    fetchDataAs<string[]>(`/tags`)
+    
 export const searchMedia = (r: QueryReq) => {
     const params = createSearchParams(r)
 
     return fetchDataAs<QueryResult[]>(`/search-media${params}`)
 }
 
+export interface UpdateRes {
+    added: number
+    removed: number
+}
+
 export const updateMedias = () => 
-    postDataAs<number>(`/update-medias`, {})
+    postDataAs<UpdateRes>(`/update-medias`, {})
 
 export const preview = (url: string) =>
     postData(`/preview`, {url})

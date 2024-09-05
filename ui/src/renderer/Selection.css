@@ -1,36 +1,37 @@
 .pill-container {
-  display: flex;
-  gap: 10px;
-}
+    display: flex;
+    gap: 10px;
+  }
+  
+  .pill {
+    font-weight: bold;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 8px 10px;
+    border-radius: 4px;
+    background-color: var(--secondary-white);
+    color: #333;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    margin: 4px;
+  }
+  
+  .pill input[type="checkbox"] {
+    display: none; /* hide the default checkbox */
+  }
 
-.pill {
-  font-weight: bold;
-  text-transform: uppercase;
-  display: inline-block;
-  padding: 8px 10px;
-  border-radius: 4px;
-  background-color: var(--secondary-white);
-  color: #333;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
-  margin-right: 4px;
-}
-
-.pill input[type="checkbox"] {
-  display: none; /* hide the default checkbox */
-}
-
-.pill:hover {
-  background-color: var(--main-white);
-}
-
-.pill.selected {
-  background-color: var(--main-red);
-  color: white;
-}
-
-.pill.selected:hover {
-  background-color: var(--secondary-red);
-  color: white;
-}
+  .pill:hover {
+    background-color: var(--main-white);
+  }
+  
+  .pill.selected {
+    background-color: var(--main-red);
+    color: white;
+  }
+  
+  .pill.selected:hover {
+    background-color: var(--secondary-red);
+    color: white;
+  }
+  
