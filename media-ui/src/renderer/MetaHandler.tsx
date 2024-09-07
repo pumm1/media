@@ -1,7 +1,7 @@
 import axios from "axios";
 import {load} from 'cheerio'
 import { useEffect, useState } from "react";
-import { QueryResult, createUrl, preview } from "./MediaClient";
+import { QueryResult, Season, Episode, createUrl, preview } from "./MediaClient";
 import LoadingIndicator from "./LoadingIndicator";
 import './MetaHandler.css'
 import {PlayButton, FolderButton} from "./CommonButtons";
@@ -41,15 +41,39 @@ const resolveLinkMeta = async (url: string): Promise<MetaInfo| undefined> => {
 interface MetaInfoProps extends MetaInfo {
     onPlay: () => void
     onOpenFolder: () => void
-    imdb: string
+    doc: QueryResult
 }
 
-const MetaInfo = ({title, description, info, image, onPlay, imdb, onOpenFolder}: MetaInfoProps) => 
+interface SeasonInfoProps {
+    seasons: Season[]
+    onPlay: () => void
+}
+
+
+interface EpisodeInfoProps {
+    episodes: Episode[]
+    onPlay: () => void
+}
+const EpisodeInfo = ({episodes, onPlay}: EpisodeInfoProps) => 
+    <ul>
+        {episodes.map(e => <li>{e.name} <PlayButton onClick={onPlay}/></li>)}
+    </ul>
+
+const SeasonInfo = ({seasons, onPlay}: SeasonInfoProps) => 
+    <div>
+        {seasons.map(s => <div>{s.name}<EpisodeInfo onPlay={onPlay} episodes={s.episodes}/></div>)}
+    </div>
+
+const MetaInfo = ({title, description, info, image, onPlay, doc, onOpenFolder}: MetaInfoProps) => 
         <div className="metaContainer">
-            <a href={imdb}><h2>{title}</h2></a>
+            <a href={doc.imdb}><h2>{title}</h2></a>
             <p>{info}</p>
-            <div className="buttons"><PlayButton onClick={onPlay}/> <FolderButton onClick={onOpenFolder}/></div>
+            <div className="buttons">
+                {doc.path && <PlayButton onClick={onPlay}/> }
+                <FolderButton onClick={onOpenFolder}/>
+            </div>
             <p>{description ?? ''}</p>
+            {doc.seasons && <SeasonInfo onPlay={onPlay} seasons={doc.seasons}/>}
             <img src={image} width={9*40} height={16*40}></img>
         </div>
 
@@ -74,7 +98,7 @@ const MetaInfoByUrl = ({doc, onPlay, onOpenFolder}: MetaInfoByUrlProps) => {
 
     return (
         isLoading ? <LoadingIndicator /> :
-        metaInfo ? <MetaInfo imdb={doc.imdb} onOpenFolder={onOpenFolder} onPlay={onPlay} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+        metaInfo ? <MetaInfo doc={doc} onOpenFolder={onOpenFolder} onPlay={onPlay} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
     )
 }
 

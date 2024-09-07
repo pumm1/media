@@ -10,6 +10,77 @@ db = client.get_database(db_name)
 
 print(db.name)
 
+#TODO: test how saving series with seasons works with the new schema
+"""
+create collection
+ db.createCollection("media", { validator: { $jsonSchema: { bsonType: "object", required: ["title", "imdb", "type", "tags", "folderPath"], properties: { title: { bsonType: "string", description: "must be a string and is required" }, imdb: { bsonType: "string", description: "must be a string and is required" }, type: { bsonType: "string", description: "must be a string and is required" }, folderPath: { bsonType: "string", description: "must be a string and is required" }, path: { bsonType: "string", description: "must be a string" }, tags: { bsonType: "array", items: { bsonType: "string" }, description: "must be an array of strings" } } } } })
+ 
+ //new version to test with seasons
+  
+ db.createCollection("media", { validator: { $jsonSchema: { bsonType: "object", required: ["title", "imdb", "type", "tags", "folderPath"], properties: { title: { bsonType: "string", description: "must be a string and is required" }, imdb: { bsonType: "string", description: "must be a string and is required" }, type: { bsonType: "string", description: "must be a string and is required" }, folderPath: { bsonType: "string", description: "must be a string and is required" }, path: { bsonType: "string", description: "must be a string" }, tags: { bsonType: "array", items: { bsonType: "string" }, description: "must be an array of strings" }, season: { bsonType: "object", properties: { name: { bsonType: "string" }, episodes: { bsonType: "array", items: {bsonType: "string"}, description: "must be an array of strings for paths"}}} } } } })
+"""
+"""
+{ validator: 
+    { $jsonSchema:
+        { bsonType: "object", 
+          required: ["title", "imdb", "type", "tags", "folderPath"], 
+          properties: { 
+              title: { 
+                  bsonType: "string", description: "must be a string and is required" 
+              }, 
+              imdb: { 
+                  bsonType: "string", description: "must be a string and is required" 
+              }, 
+              type: { 
+                bsonType: "string", description: "must be a string and is required" 
+              }, 
+              folderPath: { 
+                bsonType: "string", description: "must be a string and is required" 
+              }, 
+              path: { 
+                bsonType: "string", description: "must be a string" 
+              }, 
+              tags: { 
+                bsonType: "array", items: { bsonType: "string" }, description: "must be an array of strings" 
+              },
+              season: {
+                 bsonType: "object", 
+                 properties: {
+                    name: {
+                        bsonType: "string"
+                    },
+                    episodes: {
+                        bsonType: "array", items: { 
+                            bsonType: "object", properties: {
+                                name: { bsonType: "string" }, path: { bsonType: "string" }
+                            } 
+                        }, 
+                        description: "must be an array of objects with name and path"
+                    }
+                 }
+            }
+          } 
+      } 
+    } 
+}
+
+//optional fields:
+season {
+     bsonType: "object", 
+     properties: {
+        name: {
+            bsonType: "string"
+        },
+        episodes: {
+            bsonType: "array", items: { bsonType: "string" }, description: "must be array of strings of paths"
+        }
+     }
+    
+}
+"""
+
+collection_name = 'media'
+
 def with_mongo_client(collection_fn):
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
@@ -18,7 +89,6 @@ def with_mongo_client(collection_fn):
         client.close()
 
 #collection_name = 'myCollection' #TODO: change after figuring out some collection structure
-collection_name = 'my_media'
 
 schema = {
     'validator': {
@@ -97,7 +167,8 @@ def query_collections(m_json):
                         'imdb': 1,
                         'tags': 1,
                         'type': 1,
-                        'path': 1
+                        'path': 1,
+                        'seasons': 1
                     }
                 ).sort('title', 1)
             )

@@ -13,36 +13,36 @@ import HideableComponent from './Hideable'
 
 import './MediaBrowser.css'
 
-const openVideo = (path: string) => {
-    console.log(`Opening video in ${path}`)
+const openVideo = (path?: string) => {
+    path && console.log(`Opening video in ${path}`)
 }
 
 const openFolder = (path: string) => {
     console.log(`Opening folder in ${path}`)
 }
 
-const parseTitlesFromStr = (s: String) => 
+const parseTitlesFromStr = (s: String) =>
     s.split(' ')
 
 interface DocProps {
-  d: QueryResult
-  setDoc: (d: QueryResult) => void
+    d: QueryResult
+    setDoc: (d: QueryResult) => void
 }
 
-const DocRow = ({d, setDoc}: DocProps) => 
+const DocRow = ({ d, setDoc }: DocProps) =>
     <div className='document' onClick={() => setDoc(d)}>
         <h2>{d.title}</h2>
         <div className='tagContainer'>
             {
-            d.tags.map(t => 
-                <span key={d.title + t} className='tag'>
-                    {t.toUpperCase()}
-                </span>)
+                d.tags.map(t =>
+                    <span key={d.title + t} className='tag'>
+                        {t.toUpperCase()}
+                    </span>)
             }
         </div>
         <div className='docButtons'>
-            <PlayButton onClick={() => openVideo(d.path)} />
-            <FolderButton onClick={() => openFolder(d.path)}/>
+            {d.path && <PlayButton onClick={() => openVideo(d.path)} />}
+            <FolderButton onClick={() => openFolder(d.folderPath)} />
         </div>
     </div>
 
@@ -68,34 +68,34 @@ const ErrorGifs = [
 const randomGif = () =>
     Math.floor(Math.random() * ErrorGifs.length)
 
-const Docs = ({docs, setDoc}:DocsProps) => {
+const Docs = ({ docs, setDoc }: DocsProps) => {
     const [randGif, setRandomGif] = useState(randomGif())
 
     useEffect(() => {
         setRandomGif(randomGif())
     }, [docs.length])
-    
-    return(
+
+    return (
         <>
-            { docs.length > 0 ? docs.map(doc => (
-                <DocRow key={doc.title + doc.path} setDoc={setDoc} d={doc}/>
-            )) : 
-            <div className='noDocs'>
-                <h3>No results found {'(>_<)'}</h3>
-                You may try the following:
-                <ul>
-                    {NoResultsTips.map((tip, idx) => <li key={tip + idx}>{tip}</li>)}
-                </ul>
-                <img src={ErrorGifs[randGif]}/>
-            </div>}
+            {docs.length > 0 ? docs.map(doc => (
+                <DocRow key={doc.title + doc.path} setDoc={setDoc} d={doc} />
+            )) :
+                <div className='noDocs'>
+                    <h3>No results found {'(>_<)'}</h3>
+                    You may try the following:
+                    <ul>
+                        {NoResultsTips.map((tip, idx) => <li key={tip + idx}>{tip}</li>)}
+                    </ul>
+                    <img src={ErrorGifs[randGif]} />
+                </div>}
         </>
     )
 }
 
 const mediaUpdateInfoStr = (i: number, prefix: string) =>
-  i > 0 ? `${prefix} titles: ${i}. ` : `No ${prefix} titles`
+    i > 0 ? `${prefix} titles: ${i}. ` : `No ${prefix} titles`
 
-const updateInfo = (res: UpdateRes) => 
+const updateInfo = (res: UpdateRes) =>
     <>
         <div>{mediaUpdateInfoStr(res.added, 'new')}</div>
         <div>{mediaUpdateInfoStr(res.removed, 'removed')}</div>
@@ -104,19 +104,19 @@ const updateInfo = (res: UpdateRes) =>
 //for testing
 //const manyTags = ['superhero', 'action', 'test1', 'test2', 'test3', 'test4', 'test4', 'foo', 'bar', 'baz', 'diu', 'dau', 'genre', 'töttöröö', 'barrakuda', 'shark']
 
-const MediaBrowser = () =>  {
+const MediaBrowser = () => {
     const [isInitialLoad, setIsInitiaload] = useState(true)
     const [tagOptions, setTagOptions] = useState<string[]>([])
     const [titles, setTitles] = useState<string[]>([])
     const [tags, setTags] = useState<string[]>([])
-    const [types, setTypes] = useState<MediaType[]>(['movie'])
+    const [types, setTypes] = useState<MediaType[]>(['movie', 'series'])
 
     const [docs, setDocs] = useState<QueryResult[]>([])
 
     const [selectedDoc, setDoc] = useState<QueryResult | undefined>(undefined)
 
     const [showToast, setShowToast] = useState(false)
-    
+
     const [updateLoading, setUpdateLoading] = useState(false)
 
     const [mediaUpdateInfo, setMediaUpdateInfo] = useState<UpdateRes | undefined>()
@@ -129,7 +129,7 @@ const MediaBrowser = () =>  {
 
     const updateTagsFn = () => getTags().then(tagsRes => {
         setTagOptions(tagsRes)
-        if(isInitialLoad) {
+        if (isInitialLoad) {
             setTags(tagsRes)
             setIsInitiaload(false)
         }
@@ -142,17 +142,17 @@ const MediaBrowser = () =>  {
     const updateMediaFn = () => searchMedia(q).then(setDocs)
 
     const triggerToast = () => {
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-        setUpdateLoading(false)
-        setMediaUpdateInfo(undefined)
-        updateMediaFn()
-      }, 3000)
+        setShowToast(true);
+        setTimeout(() => {
+            setShowToast(false);
+            setUpdateLoading(false)
+            setMediaUpdateInfo(undefined)
+            updateMediaFn()
+        }, 3000)
     }
 
     useEffect(() => {
-        const delay = 150; 
+        const delay = 150;
 
         const timeoutId = setTimeout(() => {
             updateMediaFn()
@@ -163,59 +163,59 @@ const MediaBrowser = () =>  {
 
     return (
         <div className='main'>
-          {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)}/>}
-          <div className='mediaBrowserContainer'>
-              <div className='searchField'>
-                  <input
-                      placeholder='Search titles...'
-                      className='search'
-                      type='text' 
-                      onChange={e => setTitles(parseTitlesFromStr(e.target.value))}
-                  />
-              </div>
-              <HideableComponent contentName='tags'>
-                <div className='searchParamContainer'>
-                
-                  {tagOptions.map(t => (
-                      <span key={t}>
-                          <Selection isChecked={tags.includes(t)} option={t} onClick={() => {
-                                  if (_.difference(tagOptions, tags).length === 0) {
-                                    setTags([t])
-                                  } else {
-                                    if (tags.includes(t)) {
-                                        setTags(tags.filter(tag => tag !== t))
-                                    } else {
-                                        setTags([t, ...tags])
-                                    }
-                                  }
-                              }} />
-                      </span>
-                  ))}
-                  <div className='toggleTags'>
-                    <button onClick={() => {
-                        if (tags.length > 0) {
-                            setTags([])
-                        } else {
-                            setTags(tagOptions)
-                        }
-                    }}>Toggle tags</button>
-                  </div>
+            {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
+            <div className='mediaBrowserContainer'>
+                <div className='searchField'>
+                    <input
+                        placeholder='Search titles...'
+                        className='search'
+                        type='text'
+                        onChange={e => setTitles(parseTitlesFromStr(e.target.value))}
+                    />
                 </div>
-              </HideableComponent>
-              
-              <div className='docContainer'>
-                <Docs docs={docs} setDoc={setDoc}/>
-              </div>
-              <div>
-                <button disabled={updateLoading} onClick={() => 
-                    Promise.resolve(setUpdateLoading(true)).then(() => updateMedias().then(setMediaUpdateInfo).finally(() => triggerToast()))
-                }>
-                  Scan for updates
-                </button>
-              </div>
+                <HideableComponent contentName='tags'>
+                    <div className='searchParamContainer'>
+
+                        {tagOptions.map(t => (
+                            <span key={t}>
+                                <Selection isChecked={tags.includes(t)} option={t} onClick={() => {
+                                    if (_.difference(tagOptions, tags).length === 0) {
+                                        setTags([t])
+                                    } else {
+                                        if (tags.includes(t)) {
+                                            setTags(tags.filter(tag => tag !== t))
+                                        } else {
+                                            setTags([t, ...tags])
+                                        }
+                                    }
+                                }} />
+                            </span>
+                        ))}
+                        <div className='toggleTags'>
+                            <button onClick={() => {
+                                if (tags.length > 0) {
+                                    setTags([])
+                                } else {
+                                    setTags(tagOptions)
+                                }
+                            }}>Toggle tags</button>
+                        </div>
+                    </div>
+                </HideableComponent>
+
+                <div className='docContainer'>
+                    <Docs docs={docs} setDoc={setDoc} />
+                </div>
+                <div>
+                    <button disabled={updateLoading} onClick={() =>
+                        Promise.resolve(setUpdateLoading(true)).then(() => updateMedias().then(setMediaUpdateInfo).finally(() => triggerToast()))
+                    }>
+                        Scan for updates
+                    </button>
+                </div>
             </div>
             <div className='detailedMediaContainer'>
-                {selectedDoc && <MetaInfoByUrl doc={selectedDoc} onPlay={() => openVideo(selectedDoc.path)} onOpenFolder={() => openFolder(selectedDoc.path)}/>}
+                {selectedDoc && <MetaInfoByUrl doc={selectedDoc} onPlay={() => openVideo(selectedDoc.path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} />}
             </div>
         </div>
     )

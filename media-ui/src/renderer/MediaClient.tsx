@@ -74,12 +74,24 @@ export interface QueryReq {
     tags: string[]
 }
 
+export interface Episode {
+    name: string,
+    path: string
+}
+
+export interface Season {
+    name: string
+    episodes: Episode[]
+}
+
 export interface QueryResult {
     title: string
     type: MediaType
     tags: string[]
     imdb: string
-    path: string
+    folderPath: string
+    path?: string
+    seasons?: Season[]
 }
 
 const termsAsParam = (values: string[], field: string) => 
