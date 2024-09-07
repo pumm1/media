@@ -9,10 +9,10 @@ import errorGif2 from './monke-pc.gif'
 import errorGif3 from './throw-pc.gif'
 import errorGif4 from './pc-trash.gif'
 import Toast from './Toast'
-import HideableComponent from './Hideable'
+import Hideable from './Hideable'
+import MediaIcon from './MovieIcon'
 
 import './MediaBrowser.css'
-import Hideable from './Hideable'
 
 const openVideo = (path?: string) => {
     path && console.log(`Opening video in ${path}`)
@@ -32,7 +32,7 @@ interface DocProps {
 
 const DocRow = ({ d, setDoc }: DocProps) =>
     <div className='document' onClick={() => setDoc(d)}>
-        <h2>{d.title}</h2>
+        <h2>{d.title} <MediaIcon type={d.type}/></h2>
         <div className='tagContainer'>
             {
                 d.tags.map(t =>
@@ -202,7 +202,7 @@ const MediaBrowser = () => {
                         onChange={e => setTitles(parseTitlesFromStr(e.target.value))}
                     />
                 </div>
-                <HideableComponent contentName='tags'>
+                <Hideable contentName='tags'>
                     <div className='searchParamContainer'>
                         {tagOptions.map(t => (
                             <span key={t}>
@@ -229,7 +229,7 @@ const MediaBrowser = () => {
                             }}>Toggle tags</button>
                         </div>
                     </div>
-                </HideableComponent>
+                </Hideable>
 
                 <div className='docContainer'>
                     <Docs docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />

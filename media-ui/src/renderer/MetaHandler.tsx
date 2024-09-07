@@ -6,6 +6,7 @@ import LoadingIndicator from "./LoadingIndicator";
 import './MetaHandler.css'
 import {PlayButton, FolderButton} from "./CommonButtons";
 import Hideable from "./Hideable";
+import MediaIcon from "./MovieIcon";
 
 
 export interface MetaInfo {
@@ -55,17 +56,17 @@ interface EpisodeInfoProps {
     episodes: Episode[]
     onPlay: () => void
 }
-const EpisodeInfo = ({episodes, onPlay}: EpisodeInfoProps) => 
+const SeasonEpisodesInfo = ({episodes, onPlay}: EpisodeInfoProps) => 
     <div className="episodEcontainer">
-        {episodes.map(e => <div className="episode">{e.name} <PlayButton onClick={onPlay}/></div>)}
+        {episodes.map((e, idx) => <div key={e.path + idx} className="episode">{e.name} <PlayButton onClick={onPlay}/></div>)}
     </div>
 
 const SeasonInfo = ({seasons, onPlay}: SeasonInfoProps) => 
     <div className="seasonsContainer">
         <Hideable contentName="Seasons">
-            {seasons.map(s => 
-                <div className="seasonContainer">
-                    <Hideable contentName={s.name}><EpisodeInfo onPlay={onPlay} episodes={s.episodes}/></Hideable>
+            {seasons.map((s, idx) => 
+                <div key={s.name + idx} className="seasonContainer">
+                    <Hideable contentName={s.name}><SeasonEpisodesInfo onPlay={onPlay} episodes={s.episodes}/></Hideable>
                 </div>)
             }
         </Hideable>
@@ -78,6 +79,7 @@ const MetaInfo = ({title, description, info, image, onPlay, doc, onOpenFolder}: 
             <div className="buttons">
                 {doc.path && <PlayButton onClick={onPlay}/> }
                 <FolderButton onClick={onOpenFolder}/>
+                <MediaIcon type={doc.type}/>
             </div>
             <p>{description ?? ''}</p>
             <div className="seasonsAndImg">
