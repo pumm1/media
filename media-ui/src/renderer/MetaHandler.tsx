@@ -51,14 +51,25 @@ interface SeasonInfoProps {
     onPlay: () => void
 }
 
+const sortedEpisodes = (episodes: Episode[]) =>
+    episodes.sort((a,b) => {
+        if (a.name.toLowerCase() < b.name.toLowerCase()) {
+            return -1
+        } else if (a.name.toLowerCase() > b.name.toLowerCase()) {
+            return 1
+        } else {
+            return 0
+        }
+    })
 
 interface EpisodeInfoProps {
     episodes: Episode[]
     onPlay: () => void
 }
+
 const SeasonEpisodesInfo = ({episodes, onPlay}: EpisodeInfoProps) => 
     <div className="episodEcontainer">
-        {episodes.map((e, idx) => <div key={e.path + idx} className="episode">{e.name} <PlayButton onClick={onPlay}/></div>)}
+        {sortedEpisodes(episodes).map((e, idx) => <div key={e.path + idx} className="episode">{e.name} <PlayButton onClick={onPlay}/></div>)}
     </div>
 
 const SeasonInfo = ({seasons, onPlay}: SeasonInfoProps) => 

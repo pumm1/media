@@ -4,7 +4,7 @@
 }
 
 .mediaBrowserContainer {
-    flex: 1;
+    flex: 0.6 1;
     margin: 16px;
 }
 

@@ -1,61 +1,22 @@
 import json
-from mediaDAO import add_media_to_collection, query_collections, existing_files, remove_media_by_files, existing_tags
+from mediaDAO import add_media_to_collection, query_collections, existing_movies, remove_media_by_files, existing_tags, \
+    existing_series, update_series_seasons, delete_media_by_ids
 import os
+from bson import ObjectId
 from bson.json_util import dumps, loads
 from pandas.core.common import flatten
 
 from queryReq import QueryReq
-from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f, path_f, medias_to_remove_json
+from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f, path_f, medias_to_remove_json, folder_path_f, \
+    seasons_f, id_f
+
+from mediaObjects import Movie, Series, Season, Episode
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 medias_dir = os.path.join(current_dir, 'medias')
 
 mode_read = 'r'
 mode_write = 'w+'
-
-
-class Movie:
-    def __init__(self, title: str, folder_path: str, path: str):
-        self.title = title
-        self.folder_path = folder_path
-        self.path = path
-
-class Episode:
-    def __init__(self, name: str, path: str):
-        self.name = name
-        self.path = path
-
-    def asJson(self):
-        return {
-            "name": self.name,
-            "path": self.path
-
-        }
-
-
-class Season:
-    def __init__(self, name: str, episodes: list[Episode]):
-        self.name = name
-        self.episodes = episodes
-
-    def asJson(self):
-        return {
-            "name": self.name,
-            "episodes": list(map(lambda e: e.asJson(), self.episodes))
-        }
-
-
-class Series:
-    def __init__(self, title: str, folder_path: str, seasons: list[Season]):
-        self.title = title
-        self.folder_path = folder_path
-        self.seasons = seasons
-
-    def asJson(self):
-        return {
-            "title": self.title,
-            "seasons": list(map(lambda s: s.asJson(), self.seasons))
-        }
 
 def is_meta(file_name: str) -> bool:
     return file_name == 'meta.json'
@@ -132,12 +93,23 @@ def is_media_file(file: str) -> bool:
     return is_valid
 
 
-def get_existing_titles():
-    files = existing_files()
+def get_existing_movie_files():
+    files = existing_movies()
     existing = []
     for file in files:
-        print(file)
         existing.append(file[path_f])
+
+    return existing
+
+
+def get_existing_series():
+    res = existing_series()
+    all_existing_series = json.loads(dumps(res))
+    existing: list[Series] = []
+    for series in all_existing_series:
+        id = series[id_f]
+        s = Series(id, series[title_f], series[folder_path_f], series[seasons_f])
+        existing.append(s)
 
     return existing
 
@@ -158,7 +130,7 @@ def remove_medias_by_files(files: list[str]):
     return removed
 
 
-def go_through_movies(movies_dir: str) -> (int, list[Movie]):
+def go_through_movies(movies_dir: str) -> (int, list[str]):
     added = 0
     found_movies = []
     movie_folders = os.listdir(movies_dir)
@@ -182,9 +154,9 @@ def go_through_movies(movies_dir: str) -> (int, list[Movie]):
                     media_file_path = os.path.join(movie_folder_path, file)
                 else:
                     print(f'Extra media file found in {movie_folder_path}!')
+        movie = Movie(None, movie_folder, movie_folder_path, media_file_path)
+        found_movies.append(movie)
         if (not has_been_added) and media_file_path is not None:
-            movie = Movie(movie_folder, movie_folder_path, media_file_path)
-            found_movies.append(movie)
             save_media_info_for_movie(meta_data, movie)
             update_meta(meta_data, meta_file_path)  #TODO: use once fixed
             added = added + 1
@@ -192,7 +164,7 @@ def go_through_movies(movies_dir: str) -> (int, list[Movie]):
     found_files = list(map(lambda m: m.path, found_movies))
 
     print(f'Found movie files: {found_files}')
-    return added, found_movies
+    return added, found_files
 
 
 """
@@ -244,9 +216,9 @@ def go_through_series(series_dir: str):
                 season = Season(season_dir, season_episodes)
                 seasons.append(season)
 
+        series = Series(None, series_name, series_path, seasons)
+        found_series.append(series)
         if (not has_been_added) and (not meta_data is None):
-            series = Series(series_name, series_path, seasons)
-            found_series.append(series)
             save_media_info_for_series(meta_data, series)
             update_meta(meta_data, meta_file_path)  # TODO: use once fixed
             added = added + 1
@@ -258,13 +230,56 @@ def go_through_series(series_dir: str):
     return added, found_series
 
 
-#TODO: how to handle shows
+def remove_not_found_movies(found_movie_files: list[str]):
+    existing = get_existing_movie_files()
+    existing_movies_set = set(existing)
+    found_movies_set = set(found_movie_files)
+    movie_files_to_be_removed = list(existing_movies_set - found_movies_set)
+
+    print(f'Existing movies: {existing}')
+    print(f'Found movies: {found_movie_files}')
+    print(f'Should be removed: {movie_files_to_be_removed}')
+    #TODO: fix, as files to be removed contains wrong things
+    removed = remove_medias_by_files(movie_files_to_be_removed)
+    return removed
+
+
+def update_existing_series_with_found(found_series: list[Series]):
+    existing_series = get_existing_series()
+    series_to_delete: list[Series] = []
+    updated = 0
+    for e in existing_series:
+        #print(f'Existing: ({e.id}) {e.title} ({e.folder_path})')
+        matching_series: Series | None = None
+        for s in found_series:
+            print(f'Found: {s.title} ({s.folder_path})')
+            if s.__eq__(e):
+                matching_series = s
+                break
+
+        #print(f'matching series found: {matching_series is not None}')
+        if matching_series is not None:
+            m_seasons = matching_series.seasons
+            if len(m_seasons) < 1:
+                print(f'{matching_series.title} seasons missing - marking to be deleted')
+                series_to_delete.append(e)
+            elif e.seasons != m_seasons:
+                print(f'{matching_series} difference in seasons with found - updating')
+                updated = updated + 1
+                update_series_seasons(ObjectId(e.id['$oid']), matching_series)
+
+    series_ids_to_delete = list(map(lambda s: s.id, series_to_delete))
+    deleted = delete_media_by_ids(series_ids_to_delete)
+    return deleted, updated
+
+
+
 def go_through_medias():
     added = 0
     removed = 0
     media_type_folders = os.listdir(medias_dir)
-    existing = get_existing_titles()
-    found_files = []
+    found_movie_files = []
+    series: list[Series] = []
     for media_folder in media_type_folders:  #series, movies
         print(f'Media: {media_folder}')
         media_type_dir = os.path.join(medias_dir, media_folder)
@@ -275,24 +290,23 @@ def go_through_medias():
             #TODO: NOTE: folderPATH vs PATH
             (added_movies, movie_files) = go_through_movies(media_type_dir)
             added = added + added_movies
-            found_files = found_files + movie_files
+            found_movie_files = movie_files
         elif media_folder == 'Series':
             (added_series, found_series) = go_through_series(media_type_dir)
+            series = found_series
             added = added + added_series
         else:
             print(f'Unsupported media type: {media_folder}')
 
-    existing_set = set(existing)
-    found_set = set(found_files)
+    (removed_series, updated_series) = update_existing_series_with_found(series)
+    removed = remove_not_found_movies(found_movie_files) + removed_series
 
-    files_to_be_removed = list(existing_set - found_set)
+    return {'added': added, 'updatedSeries': updated_series, 'removed': removed}
 
-    print(f'Should be removed: {files_to_be_removed}')
-    removed = remove_medias_by_files(files_to_be_removed)
 
-    return {'added': added, 'removed': removed}
-
-#go_through_medias()
+#TODO: fix series update
+media_res = go_through_medias()
+print(f'..... RES: {media_res}')
 
 #search_collections()
 
@@ -307,4 +321,4 @@ def test_series():
     print(series_as_json)
 
 
-test_series()
+#test_series()

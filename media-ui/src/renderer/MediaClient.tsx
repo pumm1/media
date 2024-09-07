@@ -119,6 +119,7 @@ export const searchMedia = (r: QueryReq) => {
 
 export interface UpdateRes {
     added: number
+    updatedSeries: number,
     removed: number
 }
 

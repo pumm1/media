@@ -1,6 +1,8 @@
 from pymongo import MongoClient
 
 from queryBuilder import title_f, in_f
+from bson import ObjectId
+from mediaObjects import Movie, Series, Season, Episode
 
 client = MongoClient('localhost', 27017)
 
@@ -176,13 +178,15 @@ def query_collections(m_json):
             collection_not_found_warn()
             return []
 
-def existing_files():
+def existing_movies():
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
         collection = db.get_collection(collection_name)
         if collection is not None:
             return list(
-                collection.find({},
+                collection.find({
+                    'type': 'movie'
+                },
                     {
                         '_id': 0,
                         'path': 1
@@ -192,6 +196,30 @@ def existing_files():
         else:
             collection_not_found_warn()
             return []
+
+
+def existing_series():
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return list(
+                collection.find({
+                    'type': 'series'
+                },
+                    {
+                        '_id': 1,
+                        'title': 1,
+                        'imdb': 1,
+                        'folderPath': 1,
+                        'seasons': 1
+                    }
+                )
+            )
+        else:
+            collection_not_found_warn()
+            return []
+
 
 
 def existing_tags():
@@ -210,6 +238,38 @@ def existing_tags():
         else:
             collection_not_found_warn()
             return []
+
+
+def update_series_seasons(id: ObjectId, s: Series):
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        print(f"... update {id} with value: {s.asJson()['seasons']}")
+        if collection is not None:
+            collection.update_one({
+                '_id': id
+            }, {
+                '$set': {'seasons': s.asJson()['seasons']}
+            }, True)
+
+        else:
+            collection_not_found_warn()
+            return 0
+
+
+def delete_media_by_ids(ids):
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return collection.delete_many({
+                'id': {
+                    in_f: ids
+                }
+            }).deleted_count
+        else:
+            collection_not_found_warn()
+            return 0
 
 
 def remove_media_by_files(medias_to_delete_json):

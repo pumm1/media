@@ -115,6 +115,7 @@ const mediaUpdateInfoStr = (i: number, prefix: string) =>
 const updateInfo = (res: UpdateRes) =>
     <>
         <div>{mediaUpdateInfoStr(res.added, 'new')}</div>
+        <div>{mediaUpdateInfoStr(res.updatedSeries, 'updated [series]')}</div>
         <div>{mediaUpdateInfoStr(res.removed, 'removed')}</div>
     </>
 
@@ -152,8 +153,26 @@ const MediaBrowser = () => {
             types: allTypes
         }
     }
+
+    interface TypeOption {
+        values: MediaType[]
+        label: string
+    }
         
-    
+    const typeOptions: TypeOption[] = [
+        {
+            label: 'All',
+            values: ['movie', 'series']
+        },
+        {
+            label: 'Movies',
+            values: ['movie']
+        },
+        {
+            label: 'Series',
+            values: ['series']
+        }
+    ]
 
 
     const updateMediaFn = (q: QueryReq) => searchMedia(q).then(setDocs)
@@ -201,6 +220,11 @@ const MediaBrowser = () => {
                         type='text'
                         onChange={e => setTitles(parseTitlesFromStr(e.target.value))}
                     />
+                    <select>
+                        {typeOptions.map (opt => 
+                            <option value={opt.values} onClick={() => setTypes(opt.values)}>{opt.label}</option>)
+                        }
+                    </select>
                 </div>
                 <Hideable contentName='tags'>
                     <div className='searchParamContainer'>

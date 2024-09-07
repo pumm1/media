@@ -9,10 +9,12 @@ in_f = '$in'
 #field names
 id_f = '_id'
 title_f = 'title'
+folder_path_f = 'folderPath'
 type_f = 'type'
 tags_f = 'tags'
 imdb_f = 'imdb'
 path_f = 'path'
+seasons_f = 'seasons'
 
 
 def m_json_from_req(req: QueryReq):
