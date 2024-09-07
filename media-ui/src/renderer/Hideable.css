@@ -2,16 +2,20 @@
     margin: 8px 0px;
 }
 .slide-container {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-in-out;
-  }
-  
-  .content {
-    padding: 4px 0px;
-  }
+    overflow: auto;
+    transition: max-height 1s ease-in-out;
+    max-height: 0; /* Start with collapsed state */
+}
 
-  .toggle-button {
+.slide-container.open {
+    max-height: 1000px; /* Large value that covers all possible content heights */
+}
+  
+.content {
+    padding: 4px 0px;
+}
+
+.toggle-button {
     width: 0;
     height: 0;
     border-left: 10px solid transparent;
@@ -20,9 +24,8 @@
     background: white;
     cursor: pointer;
     transition: transform 0.3s ease-in-out;
-  }
-  
-  .toggle-button.open {
+}
+
+.toggle-button.open {
     transform: rotate(90deg); /* Rotate to vertical when content is visible */
-  }
-  
+}

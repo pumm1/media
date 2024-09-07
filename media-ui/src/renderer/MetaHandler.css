@@ -7,3 +7,30 @@
 .buttons {
     display: flex;
 }
+
+.seasonsAndImg {
+    display: flex;
+    justify-content: space-between;
+}
+
+.seasonsContainer {
+    width: 100%;;
+}
+
+.seasonContainer {
+    margin: 0px 8px;
+}
+
+.episodEcontainer {
+    display: grid;
+}
+
+.episode {
+    padding: 8px 4px;
+    border-radius: var(--main-radius);
+    width: 90%;
+}
+
+.episode:hover {
+    background-color: var(--secondary-dark);
+}

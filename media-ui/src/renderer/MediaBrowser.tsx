@@ -12,6 +12,7 @@ import Toast from './Toast'
 import HideableComponent from './Hideable'
 
 import './MediaBrowser.css'
+import Hideable from './Hideable'
 
 const openVideo = (path?: string) => {
     path && console.log(`Opening video in ${path}`)
@@ -49,6 +50,7 @@ const DocRow = ({ d, setDoc }: DocProps) =>
 interface DocsProps {
     docs: QueryResult[]
     setDoc: (d: QueryResult) => void
+    initialResultsFetched: boolean
 }
 
 const NoResultsTips = [
@@ -68,26 +70,41 @@ const ErrorGifs = [
 const randomGif = () =>
     Math.floor(Math.random() * ErrorGifs.length)
 
-const Docs = ({ docs, setDoc }: DocsProps) => {
+
+interface NoResultsProps {
+    numOfDocs: number
+}
+const NoResuls = ({numOfDocs}: NoResultsProps) => {
     const [randGif, setRandomGif] = useState(randomGif())
 
     useEffect(() => {
         setRandomGif(randomGif())
-    }, [docs.length])
+    }, [numOfDocs])
 
+    return (
+        <div className='noDocs'>
+            <h3>No results found {'(>_<)'}</h3>
+            <Hideable contentName='tips'>
+                <>
+                You may try the following:
+                <ul>
+                    {NoResultsTips.map((tip, idx) => <li key={tip + idx}>{tip}</li>)}
+                </ul>
+                <img src={ErrorGifs[randGif]} />
+                </>
+            </Hideable>
+        </div>
+    )
+}
+
+const Docs = ({ docs, setDoc, initialResultsFetched }: DocsProps) => {
     return (
         <>
             {docs.length > 0 ? docs.map(doc => (
                 <DocRow key={doc.title + doc.path} setDoc={setDoc} d={doc} />
             )) :
-                <div className='noDocs'>
-                    <h3>No results found {'(>_<)'}</h3>
-                    You may try the following:
-                    <ul>
-                        {NoResultsTips.map((tip, idx) => <li key={tip + idx}>{tip}</li>)}
-                    </ul>
-                    <img src={ErrorGifs[randGif]} />
-                </div>}
+                !initialResultsFetched ? <></> : <NoResuls numOfDocs={docs.length}/>
+            }
         </>
     )
 }
@@ -103,13 +120,14 @@ const updateInfo = (res: UpdateRes) =>
 
 //for testing
 //const manyTags = ['superhero', 'action', 'test1', 'test2', 'test3', 'test4', 'test4', 'foo', 'bar', 'baz', 'diu', 'dau', 'genre', 'töttöröö', 'barrakuda', 'shark']
+const allTypes: MediaType[] = ['movie', 'series']
 
 const MediaBrowser = () => {
-    const [isInitialLoad, setIsInitiaload] = useState(true)
+    const [initialResultsFetched, setInitialResultsFetched] = useState(false)
     const [tagOptions, setTagOptions] = useState<string[]>([])
     const [titles, setTitles] = useState<string[]>([])
     const [tags, setTags] = useState<string[]>([])
-    const [types, setTypes] = useState<MediaType[]>(['movie', 'series'])
+    const [types, setTypes] = useState<MediaType[]>(allTypes)
 
     const [docs, setDocs] = useState<QueryResult[]>([])
 
@@ -122,24 +140,35 @@ const MediaBrowser = () => {
     const [mediaUpdateInfo, setMediaUpdateInfo] = useState<UpdateRes | undefined>()
 
     const q: QueryReq = {
-        titles: titles,
-        tags: tags,
-        types: types
+        titles,
+        tags,
+        types
     }
 
-    const updateTagsFn = () => getTags().then(tagsRes => {
-        setTagOptions(tagsRes)
-        if (isInitialLoad) {
-            setTags(tagsRes)
-            setIsInitiaload(false)
+    const initialQ = (tags: string[]): QueryReq => {
+        return {
+            titles: [],
+            tags,
+            types: allTypes
         }
+    }
+        
+    
+
+
+    const updateMediaFn = (q: QueryReq) => searchMedia(q).then(setDocs)
+
+    const initialResultsFn = () => getTags().then(tagsRes => {
+        setTagOptions(tagsRes)
+        updateMediaFn(initialQ(tagsRes)).then(() => { 
+            setInitialResultsFetched(true)
+            setTags(tagsRes)
+        })
     })
 
     useEffect(() => {
-        updateTagsFn()
+        initialResultsFn()
     }, [])
-
-    const updateMediaFn = () => searchMedia(q).then(setDocs)
 
     const triggerToast = () => {
         setShowToast(true);
@@ -147,15 +176,15 @@ const MediaBrowser = () => {
             setShowToast(false);
             setUpdateLoading(false)
             setMediaUpdateInfo(undefined)
-            updateMediaFn()
+            updateMediaFn(q)
         }, 3000)
     }
 
     useEffect(() => {
-        const delay = 150;
+        const delay = 400;
 
         const timeoutId = setTimeout(() => {
-            updateMediaFn()
+            updateMediaFn(q)
         }, delay)
 
         return () => clearTimeout(timeoutId)
@@ -167,7 +196,7 @@ const MediaBrowser = () => {
             <div className='mediaBrowserContainer'>
                 <div className='searchField'>
                     <input
-                        placeholder='Search titles...'
+                        placeholder='Search titles containing...'
                         className='search'
                         type='text'
                         onChange={e => setTitles(parseTitlesFromStr(e.target.value))}
@@ -175,7 +204,6 @@ const MediaBrowser = () => {
                 </div>
                 <HideableComponent contentName='tags'>
                     <div className='searchParamContainer'>
-
                         {tagOptions.map(t => (
                             <span key={t}>
                                 <Selection isChecked={tags.includes(t)} option={t} onClick={() => {
@@ -204,7 +232,7 @@ const MediaBrowser = () => {
                 </HideableComponent>
 
                 <div className='docContainer'>
-                    <Docs docs={docs} setDoc={setDoc} />
+                    <Docs docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
                 </div>
                 <div>
                     <button disabled={updateLoading} onClick={() =>
