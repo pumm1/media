@@ -15,16 +15,19 @@ import MediaIcon from './MovieIcon'
 
 import './MediaBrowser.css'
 
+const openFile = (path: string) =>
+    window.electronAPI.openFile(path)
+
 const openVideo = (path?: string) => {
     if (path) {
-        console.log(`Opening video: ${path}`);
-        window.electronAPI.openFile(path);  // Call the exposed API
+        console.log(`Opening video: ${path}`)
+        openFile(path)
     }
 }
 
 const openFolder = (path: string) => {
-    console.log(`Opening folder: ${path}`);
-    window.electronAPI.openFile(path);  // Call the exposed API
+    console.log(`Opening folder: ${path}`)
+    openFile(path)
 }
 
 const parseTitlesFromStr = (s: String) =>
