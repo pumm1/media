@@ -26,8 +26,8 @@ const openFile = (path: string): void =>{
 }
 
 const openVideo = (path?: string) => {
+    console.log(`Opening video: ${path}`)
     if (path) {
-        console.log(`Opening video: ${path}`)
         openFile(path)
     }
 }
@@ -291,7 +291,7 @@ const MediaBrowser = () => {
                 </div>
             </div>
             <div className='detailedMediaContainer'>
-                {selectedDoc && <MetaInfoByUrl doc={selectedDoc} onPlay={() => openVideo(selectedDoc.path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} />}
+                {selectedDoc && <MetaInfoByUrl doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} />}
             </div>
         </div>
     )

@@ -41,14 +41,14 @@ const resolveLinkMeta = async (url: string): Promise<MetaInfo| undefined> => {
 }
 
 interface MetaInfoProps extends MetaInfo {
-    onPlay: (path: string) => void
+    playMedia: (path: string) => void
     onOpenFolder: () => void
     doc: QueryResult
 }
 
 interface SeasonInfoProps {
     seasons: Season[]
-    onPlay: (path: string) => void
+    playMedia: (path: string) => void
 }
 
 const sortedEpisodes = (episodes: Episode[]) =>
@@ -64,47 +64,47 @@ const sortedEpisodes = (episodes: Episode[]) =>
 
 interface EpisodeInfoProps {
     episodes: Episode[]
-    onPlay: (path: string) => void
+    playMedia: (path: string) => void
 }
 
-const SeasonEpisodesInfo = ({episodes, onPlay}: EpisodeInfoProps) => 
+const SeasonEpisodesInfo = ({episodes, playMedia}: EpisodeInfoProps) => 
     <div className="episodEcontainer">
-        {sortedEpisodes(episodes).map((e, idx) => <div key={e.path + idx} className="episode">{e.name} <PlayButton onClick={() => onPlay(e.path)}/></div>)}
+        {sortedEpisodes(episodes).map((e, idx) => <div key={e.path + idx} className="episode">{e.name} <PlayButton onClick={() => playMedia(e.path)}/></div>)}
     </div>
 
-const SeasonInfo = ({seasons, onPlay}: SeasonInfoProps) => 
+const SeasonInfo = ({seasons, playMedia}: SeasonInfoProps) => 
     <div className="seasonsContainer">
         <Hideable contentName="Seasons">
             {seasons.map((s, idx) => 
                 <div key={s.name + idx} className="seasonContainer">
-                    <Hideable contentName={s.name}><SeasonEpisodesInfo onPlay={onPlay} episodes={s.episodes}/></Hideable>
+                    <Hideable contentName={s.name}><SeasonEpisodesInfo playMedia={playMedia} episodes={s.episodes}/></Hideable>
                 </div>)
             }
         </Hideable>
     </div>
 
-const MetaInfo = ({title, description, info, image, onPlay, doc, onOpenFolder}: MetaInfoProps) => 
+const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder}: MetaInfoProps) => 
         <div className="metaContainer">
             <a href={doc.imdb}><h2>{title}</h2></a>
             <p>{info}</p>
             <div className="buttons">
-                {doc.path && <PlayButton onClick={() => doc.path && onPlay(doc.path)}/> }
+                {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
                 <FolderButton onClick={onOpenFolder}/>
                 <MediaIcon type={doc.type}/>
             </div>
             <p>{description ?? ''}</p>
             <div className="seasonsAndImg">
-                {doc.seasons && <SeasonInfo onPlay={onPlay} seasons={doc.seasons}/>}
+                {doc.seasons && <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/>}
                 <img src={image} width={9*40} height={16*40}></img>
             </div>
         </div>
 
 export interface MetaInfoByUrlProps {
     doc: QueryResult
-    onPlay: (path: string) => void
+    playMedia: (path: string) => void
     onOpenFolder: () => void
 }
-const MetaInfoByUrl = ({doc, onPlay, onOpenFolder}: MetaInfoByUrlProps) => {
+const MetaInfoByUrl = ({doc, playMedia, onOpenFolder}: MetaInfoByUrlProps) => {
     const [metaInfo, setMetaInfo] = useState<MetaInfo | undefined>(undefined)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -120,7 +120,7 @@ const MetaInfoByUrl = ({doc, onPlay, onOpenFolder}: MetaInfoByUrlProps) => {
 
     return (
         isLoading ? <LoadingIndicator /> :
-        metaInfo ? <MetaInfo doc={doc} onOpenFolder={onOpenFolder} onPlay={() => doc.path && onPlay(doc.path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+        metaInfo ? <MetaInfo doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
     )
 }
 
