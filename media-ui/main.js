@@ -12,6 +12,8 @@ const __dirname = path.dirname(__filename);
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
+    width: 2000,
+    height: 1800,
     fullscreen: true,  // This makes the app open in full-screen mode
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

@@ -224,6 +224,15 @@ const MediaBrowser = () => {
         return () => clearTimeout(timeoutId)
     }, [JSON.stringify(q)])
 
+    const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedValues = Array.from(event.target.selectedOptions, (option) => {
+            const selectedLabel = option.label;
+            const selectedOption = typeOptions.find(opt => opt.label === selectedLabel);
+            return selectedOption ? selectedOption.values : [];
+        }).flat();
+        setTypes(selectedValues);
+    };
+
     return (
         <div className='main'>
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
@@ -235,9 +244,9 @@ const MediaBrowser = () => {
                         type='text'
                         onChange={e => setTitles(parseTitlesFromStr(e.target.value))}
                     />
-                    <select>
-                        {typeOptions.map (opt => 
-                            <option value={opt.values} onClick={() => setTypes(opt.values)}>{opt.label}</option>)
+                    <select onChange={handleChange}>
+                        {typeOptions.map ((opt, idx) => 
+                            <option key={opt.label + idx} value={opt.values}>{opt.label}</option>)
                         }
                     </select>
                 </div>

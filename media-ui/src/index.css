@@ -36,6 +36,22 @@ a:hover {
   color: var(--main-red);
 }
 
+select {
+  background-color: white;
+  font-size: 18px;
+  text-transform: uppercase;
+  font-weight: bold;
+  max-height: 40px;
+  margin: auto;
+  padding: 4px;
+  border-radius: var(--main-radius);
+  text-align: center;
+}
+
+option {
+  margin: auto;
+}
+
 button {
   text-transform: uppercase;
   margin-right: 4px;

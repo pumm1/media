@@ -41,14 +41,14 @@ const resolveLinkMeta = async (url: string): Promise<MetaInfo| undefined> => {
 }
 
 interface MetaInfoProps extends MetaInfo {
-    onPlay: () => void
+    onPlay: (path: string) => void
     onOpenFolder: () => void
     doc: QueryResult
 }
 
 interface SeasonInfoProps {
     seasons: Season[]
-    onPlay: () => void
+    onPlay: (path: string) => void
 }
 
 const sortedEpisodes = (episodes: Episode[]) =>
@@ -64,12 +64,12 @@ const sortedEpisodes = (episodes: Episode[]) =>
 
 interface EpisodeInfoProps {
     episodes: Episode[]
-    onPlay: () => void
+    onPlay: (path: string) => void
 }
 
 const SeasonEpisodesInfo = ({episodes, onPlay}: EpisodeInfoProps) => 
     <div className="episodEcontainer">
-        {sortedEpisodes(episodes).map((e, idx) => <div key={e.path + idx} className="episode">{e.name} <PlayButton onClick={onPlay}/></div>)}
+        {sortedEpisodes(episodes).map((e, idx) => <div key={e.path + idx} className="episode">{e.name} <PlayButton onClick={() => onPlay(e.path)}/></div>)}
     </div>
 
 const SeasonInfo = ({seasons, onPlay}: SeasonInfoProps) => 
@@ -88,7 +88,7 @@ const MetaInfo = ({title, description, info, image, onPlay, doc, onOpenFolder}: 
             <a href={doc.imdb}><h2>{title}</h2></a>
             <p>{info}</p>
             <div className="buttons">
-                {doc.path && <PlayButton onClick={onPlay}/> }
+                {doc.path && <PlayButton onClick={() => doc.path && onPlay(doc.path)}/> }
                 <FolderButton onClick={onOpenFolder}/>
                 <MediaIcon type={doc.type}/>
             </div>
@@ -101,7 +101,7 @@ const MetaInfo = ({title, description, info, image, onPlay, doc, onOpenFolder}: 
 
 export interface MetaInfoByUrlProps {
     doc: QueryResult
-    onPlay: () => void
+    onPlay: (path: string) => void
     onOpenFolder: () => void
 }
 const MetaInfoByUrl = ({doc, onPlay, onOpenFolder}: MetaInfoByUrlProps) => {
@@ -120,7 +120,7 @@ const MetaInfoByUrl = ({doc, onPlay, onOpenFolder}: MetaInfoByUrlProps) => {
 
     return (
         isLoading ? <LoadingIndicator /> :
-        metaInfo ? <MetaInfo doc={doc} onOpenFolder={onOpenFolder} onPlay={onPlay} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+        metaInfo ? <MetaInfo doc={doc} onOpenFolder={onOpenFolder} onPlay={() => doc.path && onPlay(doc.path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
     )
 }
 
