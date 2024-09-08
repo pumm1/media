@@ -12,11 +12,18 @@ import Toast from './Toast'
 import Hideable from './Hideable'
 import MediaIcon from './MovieIcon'
 
-
 import './MediaBrowser.css'
 
-const openFile = (path: string) =>
-    window.electronAPI.openFile(path)
+const isElectron = () => {
+    // Check if 'process.versions.electron' exists, which is only available in Electron
+    return !!window.electronAPI && window.electronAPI.isElectron
+}
+
+const openFile = (path: string): void =>{
+    if (isElectron()) {
+        window.electronAPI.openFile(path)
+    }
+}
 
 const openVideo = (path?: string) => {
     if (path) {
