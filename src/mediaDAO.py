@@ -170,7 +170,8 @@ def query_collections(m_json):
                         'tags': 1,
                         'type': 1,
                         'path': 1,
-                        'seasons': 1
+                        'seasons': 1,
+                        'folderPath': 1
                     }
                 ).sort('title', 1)
             )

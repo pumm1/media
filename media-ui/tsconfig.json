@@ -18,9 +18,16 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "outDir": "./build",   // Ensure TypeScript outputs to the correct directory
+    "baseUrl": "./src",  // This ensures Electron finds the React code in src
+    "rootDir": "./src"
   },
   "include": [
-    "src"
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "build"     // Exclude the build folder to avoid conflicts
   ]
 }

@@ -12,14 +12,19 @@ import Toast from './Toast'
 import Hideable from './Hideable'
 import MediaIcon from './MovieIcon'
 
+
 import './MediaBrowser.css'
 
 const openVideo = (path?: string) => {
-    path && console.log(`Opening video in ${path}`)
+    if (path) {
+        console.log(`Opening video: ${path}`);
+        window.electronAPI.openFile(path);  // Call the exposed API
+    }
 }
 
 const openFolder = (path: string) => {
-    console.log(`Opening folder in ${path}`)
+    console.log(`Opening folder: ${path}`);
+    window.electronAPI.openFile(path);  // Call the exposed API
 }
 
 const parseTitlesFromStr = (s: String) =>
