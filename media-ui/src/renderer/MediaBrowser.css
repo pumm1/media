@@ -6,6 +6,7 @@
 .mediaBrowserContainer {
     flex: 0.6 1;
     margin: 16px;
+    max-height: 100vh;
 }
 
 .detailedMediaContainer {
@@ -14,28 +15,43 @@
 }
 
 .docContainer {
-    display: grid;
     min-height: 100px;
-    max-height: 700px;
+    max-height: 65vh;
     overflow-y: auto;
     margin-bottom: 8px;
     padding-bottom: 8px;
     border-bottom: var(--main-white) 2px solid;
     border-top: var(--main-white) 2px solid;
+    border-radius: var(--main-radius);
 }
 
 .document {
-    margin: 4px 8px;
     cursor: pointer;
     border-radius: var(--big-radius);
     padding: var(--main-padding);
     max-height: 200px;
-    width: 96%;
 }
 
 .document:hover {
     background: #424242;
     background-color: var(--secondary-dark);
+}
+
+.mediaInfo {
+    display: inline-flex;
+    gap: 8px;
+    margin: auto;
+}
+
+.seasonInfo {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--main-dark);
+    border-radius: var(--small-radius);
+    padding: 4px 8px;
+    margin-left: 8px;
+    margin: auto;
+    background-color: var(--main-white);
 }
 
 .docButtons {
@@ -68,6 +84,7 @@
 .tagContainer {
     display: flex;
     margin-bottom: 8px;
+    max-height: 20vh;
 }
 
 .tag {
@@ -80,4 +97,8 @@
 
 .toggleTags {
     margin: 8px 0px 0px 0px;
+}
+
+.scanner {
+    height: 20vh;
 }

@@ -94,7 +94,7 @@ const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder
             </div>
             <p>{description ?? ''}</p>
             <div className="seasonsAndImg">
-                {doc.seasons && <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/>}
+                {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
                 <img src={image} width={9*40} height={16*40}></img>
             </div>
         </div>

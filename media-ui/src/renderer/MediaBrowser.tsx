@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { MediaType, QueryReq, QueryResult, UpdateRes, getTags, searchMedia, updateMedias } from './MediaClient'
+import { MediaType, QueryReq, QueryResult, Season, UpdateRes, getTags, searchMedia, updateMedias } from './MediaClient'
 import Selection from './Selection'
 import MetaInfoByUrl from './MetaHandler'
 import _ from 'lodash'
@@ -45,9 +45,19 @@ interface DocProps {
     setDoc: (d: QueryResult) => void
 }
 
+const seasonStr = (seasons: Season[]) => {
+    const str = seasons.length > 1 ? 'Seasons' : 'Season'
+
+    return `${seasons.length} ${str}`
+}
+
 const DocRow = ({ d, setDoc }: DocProps) =>
     <div className='document' onClick={() => setDoc(d)}>
-        <h2>{d.title} <MediaIcon type={d.type}/></h2>
+        <h2>{d.title}</h2>
+        <div className='mediaInfo'>
+            <MediaIcon type={d.type}/> 
+            {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
+        </div>
         <div className='tagContainer'>
             {
                 d.tags.map(t =>
@@ -282,7 +292,7 @@ const MediaBrowser = () => {
                 <div className='docContainer'>
                     <Docs docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
                 </div>
-                <div>
+                <div className='scanner'>
                     <button disabled={updateLoading} onClick={() =>
                         Promise.resolve(setUpdateLoading(true)).then(() => updateMedias().then(setMediaUpdateInfo).finally(() => triggerToast()))
                     }>
