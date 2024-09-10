@@ -1,4 +1,4 @@
-import { MediaType } from './MediaClient'
+import { MediaType } from '../MediaClient'
 import movieImage from './movie.png'
 import seriesImage from './series.jpg'
 import './MovieIcon.css'

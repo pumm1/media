@@ -2,11 +2,11 @@ import axios from "axios";
 import {load} from 'cheerio'
 import { useEffect, useState } from "react";
 import { QueryResult, Season, Episode, createUrl, preview } from "./MediaClient";
-import LoadingIndicator from "./LoadingIndicator";
+import LoadingIndicator from "./common/LoadingIndicator";
 import './MetaHandler.css'
-import {PlayButton, FolderButton} from "./CommonButtons";
-import Hideable from "./Hideable";
-import MediaIcon from "./MovieIcon";
+import {PlayButton, FolderButton} from "./common/CommonButtons";
+import Hideable from "./common/Hideable";
+import MediaIcon from "./common/MovieIcon";
 
 
 export interface MetaInfo {
