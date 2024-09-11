@@ -8,8 +8,11 @@ import {PlayButton, FolderButton} from "./common/CommonButtons";
 import Hideable from "./common/Hideable";
 import MediaIcon from "./common/MovieIcon";
 
+interface PossibleError {
+    error?: string
+}
 
-export interface MetaInfo {
+export interface MetaInfo extends PossibleError {
     title?: string
     info?: string
     description?: string
@@ -84,7 +87,7 @@ const SeasonInfo = ({seasons, playMedia}: SeasonInfoProps) =>
         </Hideable>
     </div>
 
-const imgScaler = 30
+const imgScaler = 500
 
 const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder, onClose}: MetaInfoProps) => {
     const componentRef = useRef<HTMLDivElement | null>(null)
@@ -105,8 +108,8 @@ const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder
 
     return(
         <div className="metaContainer" ref={componentRef}>
-            <a href={doc.imdb}><h2>{title}</h2></a>
-            <p>{info}</p>
+            <a href={doc.imdb} target="_blank"><h2>{title}</h2></a>
+            <p>{info !== undefined ? info : '[Info not available]'}</p>
             <MediaIcon type={doc.type}/>
             <div className="buttons">
                 {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
@@ -115,8 +118,9 @@ const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder
             <p>{description ?? ''}</p>
             <div className="seasonsAndImg">
                 {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
-                <img src={image} width={9*imgScaler} height={16*imgScaler}></img>
-            </div>
+                <img src={image} width={0.675*imgScaler} height={1*imgScaler}></img>
+                {/**we recommend a vertical alignment (i.e. portrait orientation) with an aspect ratio of 1:0.675 */}
+            </div>  
         </div>
     )
 }

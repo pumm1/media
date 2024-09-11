@@ -58,6 +58,7 @@ def preview():
             return response.text, response.status_code, {'Content-Type': response.headers['Content-Type']}
 
         except requests.exceptions.RequestException as e:
+            print(f'Error fetching preview for url: {url}')
             return jsonify({'error': str(e)}), 500
     else:
         return invalid_req()

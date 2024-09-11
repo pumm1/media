@@ -29,8 +29,12 @@ const TagSelector = ({selectedTags, tagOptions, setTags}: TagSelectorProps) => {
             ))}
             <div className='toggleTags'>
                 <button onClick={() => {
-                    if (selectedTags.length > 0) {
-                        setTags([])
+                    if (selectedTags.length > 1) {
+                        if (selectedTags.length < tagOptions.length) {
+                            setTags(tagOptions)
+                        } else {
+                            setTags([])
+                        }
                     } else {
                         setTags(tagOptions)
                     }
