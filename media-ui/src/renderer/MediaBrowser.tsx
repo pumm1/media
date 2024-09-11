@@ -8,6 +8,7 @@ import TagSelector from './TagSelector'
 import Documents from './Documents'
 
 import './MediaBrowser.css'
+import LoadingIndicator from './common/LoadingIndicator'
 
 const isElectron = () => {
     // Check if 'process.versions.electron' exists, which is only available in Electron
@@ -58,6 +59,7 @@ const MediaBrowser = () => {
     const [titles, setTitles] = useState<string[]>([])
     const [tags, setTags] = useState<string[]>([])
     const [types, setTypes] = useState<MediaType[]>(allTypes)
+    const [searchLoading, setSearchLoading] = useState(false)
 
     const [docs, setDocs] = useState<QueryResult[]>([])
 
@@ -99,7 +101,11 @@ const MediaBrowser = () => {
     ]
 
 
-    const updateMediaFn = (q: QueryReq) => searchMedia(q).then(setDocs)
+    const updateMediaFn = (q: QueryReq) => {
+        setSearchLoading(true)
+
+        return searchMedia(q).then(setDocs).then(() => setSearchLoading(false))
+    }
 
     const initialResultsFn = () => getTags().then(tagsRes => {
         setTagOptions(tagsRes)
@@ -136,17 +142,29 @@ const MediaBrowser = () => {
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedValues = Array.from(event.target.selectedOptions, (option) => {
             const selectedLabel = option.label;
-            const selectedOption = typeOptions.find(opt => opt.label === selectedLabel);
-            return selectedOption ? selectedOption.values : [];
+            const selectedOption = typeOptions.find(opt => opt.label === selectedLabel)
+            
+            return selectedOption ? selectedOption.values : []
         }).flat();
         setTypes(selectedValues);
-    };
+    }
+    const blurByAmount = (amount: number) =>{
+            const filter = {
+                filter: `blur(${amount}px)`, 
+                transition: 'filter 0.5s ease'
+            }
+
+            return filter
+        }
 
     return (
         <div className='main'>
+            {selectedDoc && <div className='detailedMediaContainer'>
+                <MetaInfoByUrl doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} onClose={() => setDoc(undefined)}/>
+            </div>}
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
-            <div className='mediaBrowserContainer'>
-                <SearchInput setTitles={setTitles} typeOptions={typeOptions} handleTagsChange={handleChange}/>
+            <div className='mediaBrowserContainer' style={selectedDoc ? blurByAmount(2) : blurByAmount(0)}>
+                <SearchInput isLoading={searchLoading} setTitles={setTitles} typeOptions={typeOptions} handleTagsChange={handleChange}/>
                 <TagSelector setTags={setTags} selectedTags={tags} tagOptions={tagOptions}/>
                 <Documents docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} openFolder={openFolder} openVideo={openFile}/>
                 <div className='scanner'>
@@ -156,9 +174,6 @@ const MediaBrowser = () => {
                         Scan for updates
                     </button>
                 </div>
-            </div>
-            <div className='detailedMediaContainer'>
-                {selectedDoc && <MetaInfoByUrl doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} />}
             </div>
         </div>
     )

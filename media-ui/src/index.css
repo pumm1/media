@@ -42,7 +42,7 @@ select {
   text-transform: uppercase;
   font-weight: bold;
   max-height: 40px;
-  margin: auto;
+  margin: 8px 0px;
   padding: 4px;
   border-radius: var(--main-radius);
   text-align: center;

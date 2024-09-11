@@ -1,19 +1,26 @@
 .main {
-    display: flex;
+    position: relative;
     color: white;
 }
 
 .mediaBrowserContainer {
-    flex: 0.6 1;
+    position: relative;
     margin: 16px;
-    max-height: 100vh;
 }
 
 .detailedMediaContainer {
-    flex: 1;
-    margin: 0px 8px;
+    overflow-y: auto;
+    position: absolute;
+    max-height: 860px;
+    z-index: 999;
+    padding: 8px;
+    top: 80%;
+    left: 50%;
+    border-radius: 8px;
+    transform: translate(-50%, -50%);
 }
 
 .scanner {
-    height: 20vh;
+    margin: 8px px;
+
 }

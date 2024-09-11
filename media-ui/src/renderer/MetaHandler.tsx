@@ -1,6 +1,6 @@
 import axios from "axios";
 import {load} from 'cheerio'
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { QueryResult, Season, Episode, createUrl, preview } from "./MediaClient";
 import LoadingIndicator from "./common/LoadingIndicator";
 import './MetaHandler.css'
@@ -44,6 +44,7 @@ interface MetaInfoProps extends MetaInfo {
     playMedia: (path: string) => void
     onOpenFolder: () => void
     doc: QueryResult
+    onClose: () => void
 }
 
 interface SeasonInfoProps {
@@ -83,28 +84,50 @@ const SeasonInfo = ({seasons, playMedia}: SeasonInfoProps) =>
         </Hideable>
     </div>
 
-const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder}: MetaInfoProps) => 
-        <div className="metaContainer">
+const imgScaler = 30
+
+const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder, onClose}: MetaInfoProps) => {
+    const componentRef = useRef<HTMLDivElement | null>(null)
+
+    const handleClickOutside = (event: MouseEvent) => {
+        if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
+            onClose()
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClickOutside)
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
+
+    return(
+        <div className="metaContainer" ref={componentRef}>
             <a href={doc.imdb}><h2>{title}</h2></a>
             <p>{info}</p>
+            <MediaIcon type={doc.type}/>
             <div className="buttons">
                 {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
                 <FolderButton onClick={onOpenFolder}/>
-                <MediaIcon type={doc.type}/>
             </div>
             <p>{description ?? ''}</p>
             <div className="seasonsAndImg">
                 {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
-                <img src={image} width={9*40} height={16*40}></img>
+                <img src={image} width={9*imgScaler} height={16*imgScaler}></img>
             </div>
         </div>
+    )
+}
 
 export interface MetaInfoByUrlProps {
     doc: QueryResult
     playMedia: (path: string) => void
     onOpenFolder: () => void
+    onClose: () => void
 }
-const MetaInfoByUrl = ({doc, playMedia, onOpenFolder}: MetaInfoByUrlProps) => {
+const MetaInfoByUrl = ({doc, playMedia, onOpenFolder, onClose}: MetaInfoByUrlProps) => {
     const [metaInfo, setMetaInfo] = useState<MetaInfo | undefined>(undefined)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -117,10 +140,11 @@ const MetaInfoByUrl = ({doc, playMedia, onOpenFolder}: MetaInfoByUrlProps) => {
             })
         }
     }, [doc])
+    //metaInfo ? <MetaInfo onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
 
     return (
         isLoading ? <LoadingIndicator /> :
-        metaInfo ? <MetaInfo doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+        metaInfo ? <MetaInfo onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
     )
 }
 

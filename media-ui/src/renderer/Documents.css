@@ -4,13 +4,15 @@
 
 .docContainer {
     min-height: 100px;
-    max-height: 65vh;
+    max-height: 800px;
     overflow-y: auto;
     margin-bottom: 8px;
     padding-bottom: 8px;
     border-bottom: var(--main-white) 2px solid;
     border-top: var(--main-white) 2px solid;
     border-radius: var(--main-radius);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, max-content));
 }
 
 .document {

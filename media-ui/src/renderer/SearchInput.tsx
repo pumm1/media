@@ -1,17 +1,19 @@
 import { TypeOption } from "./MediaBrowser"
 
 import './SearchInput.css'
+import LoadingIndicator from "./common/LoadingIndicator"
 
 const parseTitlesFromStr = (s: String) =>
     s.split(' ')
 
 interface SearchInoutProps {
+    isLoading: boolean
     setTitles: (titles: string[]) => void
     handleTagsChange: (event: React.ChangeEvent<HTMLSelectElement>) => void
     typeOptions: TypeOption[]
 }
 
-const SearchInput = ({setTitles, handleTagsChange, typeOptions}: SearchInoutProps) => {
+const SearchInput = ({isLoading, setTitles, handleTagsChange, typeOptions}: SearchInoutProps) => {
     return (
         <div className='searchField'>
             <input
@@ -25,6 +27,7 @@ const SearchInput = ({setTitles, handleTagsChange, typeOptions}: SearchInoutProp
                     <option key={opt.label + idx} value={opt.values}>{opt.label}</option>)
                 }
             </select>
+            {isLoading && <div className="searchLoading"><LoadingIndicator /> </div>}
         </div>
     )
 }

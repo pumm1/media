@@ -1,8 +1,5 @@
 .loadingContainer {
-    height: 400px;
-    position: relative;
-    top: calc(50% - 40px);
-    left: calc(50% - 40px);
+    overflow: hidden;
 }
 
 .spinner {
