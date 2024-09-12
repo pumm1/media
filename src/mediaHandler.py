@@ -171,23 +171,6 @@ def go_through_movies(movies_dir: str) -> (int, list[str]):
     return added, found_files
 
 
-"""
-own collection for series?
-Series <simpsons>
-|_ Season <season1>
-   |_episode 1
-   |_episode 2
-   |_...
-   |_episode N
-   |_meta.json
-
-1. find meta
-2. go through medias
-3. name: series - season N
-"""
-
-
-#TODO: fix and think logic through..
 def go_through_series(series_dir: str):
     added = 0
     found_series: list[Series] = []
@@ -309,7 +292,6 @@ def go_through_medias():
     return {'added': added, 'updatedSeries': updated_series, 'removed': removed}
 
 
-#TODO: fix series update
 #media_res = go_through_medias()
 #print(f'..... RES: {media_res}')
 

@@ -2,6 +2,8 @@ import _ from 'lodash'
 import Hideable from './common/Hideable'
 import Selection from './common/Selection'
 
+import './TagSelector.css'
+
 interface TagSelectorProps {
     setTags: (tags: string[]) => void
     selectedTags: string[]
