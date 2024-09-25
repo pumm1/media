@@ -18,6 +18,14 @@ medias_dir = os.path.join(current_dir, 'medias')
 mode_read = 'r'
 mode_write = 'w+'
 
+"""
+TODO: 
+- allow configuring media directories (array of directories)
+- function to check for directories without meta.json
+    -> include one if not found with the dir name as default name
+- allow updating tags
+"""
+
 def is_meta(file_name: str) -> bool:
     return file_name == 'meta.json'
 
