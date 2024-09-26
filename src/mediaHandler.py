@@ -200,7 +200,7 @@ def go_through_movies(movies_dir: str) -> (int, list[str]):
                         print(f'Extra media file found in {movie_folder_path}!')
             movie = Movie(None, movie_folder, movie_folder_path, media_file_path)
             found_movies.append(movie)
-            if (not has_been_added) and media_file_path is not None:
+            if (not has_been_added) and media_file_path is not None and meta_data is not None:
                 save_media_info_for_movie(meta_data, movie)
                 update_meta(meta_data, meta_file_path)  # TODO: use once fixed
                 added = added + 1
