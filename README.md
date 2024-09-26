@@ -3,12 +3,30 @@
 This software is for managing media files (movies and series). 
 Anyone using this should themselves own the media by legal means (e.g. buy a DVD or Blu-Ray and rip it for their own personal usage and easier storage)
 
-The media files should be located under `/src/medias` 
-and there one should have folders for `Movies` and `Series`. 
+
+In `/src`, include `sources.json` with each source directory in the `directories` array:
+```
+{
+  directories: [
+    "<absolute_path_to_dir1>",
+    "<absolute_path_to_dir2>",
+    ....
+  ]
+}
+``` 
+
+Under each `<absolute_path_to_dir` have folders for `Movies` and `Series`. 
+So each directory looks like such:
+```
+├── <soruce_dir>
+│   ├── Movies
+│   ├── Series
+...
+```
 
 Each movie should be in their own folder with a `meta.json` file, so the directory structure is as follows:
 ```
-//under /medias
+//under each source dir
 ...
 ├── Movies
 │   ├── Foobar
@@ -19,7 +37,7 @@ Each movie should be in their own folder with a `meta.json` file, so the directo
 │   │   └── meta.json
 ...
 ```
-The `meta.json` file has the following structure (initially):
+The `meta.json` file has the following structure:
 ```
 {
   "title": "<Title goes here>", 
@@ -28,12 +46,18 @@ The `meta.json` file has the following structure (initially):
   "type": "movie"
 }
 ```
-Once the software scans the `medias` folder, it updates a given title's `meta.json` with `"added": true` to keep track what's been added and what has not.  
+
+Once the software scans the `directories` folder(s), it updates a given title's `meta.json` 
+with `"added": true` to keep track what's been added and what has not.  
+When `meta.json` is not found, the software includes a template of `meta.json` 
+with slightly different file name just not to include the items with possibly wrong data to the DB. 
+Once the file is modified accordingly and renamed to `meta.json`, it'll get detected by the software.
 
 Series have a similar structure to the movies, but they should also have each season in their own folders.
 So the series structure should be as follows:
 ```
-//under /medias
+//under each source dir
+//episode names don't really matter
 ...
 ── Series
 │   ├── some series
@@ -42,6 +66,9 @@ So the series structure should be as follows:
 │   │       ├── S01E01.mp4
 │   │       ├── S01E02.mp4
 │   │       ├── S01E03.mp4
+│   │   └── season 2
+│   │       ├── S02E01.mp4
+│   │       ├── S02E02.mp4
 ...
 ```
 Series are added only once, but the system can recognize if new episodes or seasons have been added to the series, and it then updates the series seasons.

@@ -13,10 +13,25 @@ from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f, path_
 from mediaObjects import Movie, Series, Season, Episode
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
-medias_dir = os.path.join(current_dir, 'medias')
+#medias_dir = os.path.join(current_dir, 'medias')
+
+temp_meta_file_name = 'n_meta.json'
+meta_file_name = 'meta.json'
 
 mode_read = 'r'
 mode_write = 'w+'
+
+source_dirs = []
+
+with open('sources.json', mode_read) as json_file:
+    data = json.load(json_file)
+    directories = data.get('directories')
+    if directories is not None:
+        source_dirs = directories
+    else:
+        print(f'!!! Directories not found !!!')
+
+
 
 """
 TODO: 
@@ -27,14 +42,17 @@ TODO:
 """
 
 def is_meta(file_name: str) -> bool:
-    return file_name == 'meta.json'
+    return file_name == meta_file_name
+
+def is_temp_meta(file_name: str) -> bool:
+    return file_name == temp_meta_file_name
 
 
 def update_meta(data: dict, file_name):
     print(f'Updating meta for {file_name}')
     data['added'] = True
     json_file = open(file_name, mode_write)
-    json_file.write(json.dumps(data))
+    json_file.write(json.dumps(data,indent=4))
     json_file.close()
 
 
@@ -140,6 +158,20 @@ def remove_medias_by_files(files: list[str]):
 def is_not_hidden_file(file: str) -> bool:
     return not file.startswith('.')
 
+def add_new_meta_file(folder_name: str, folder_path: str, type: str):
+    print(f'Meta not found for {folder_name} - adding temp meta file')
+    json_template = {
+        title_f: folder_name,
+        imdb_f: '<add_url_here>',
+        tags_f: [],
+        type_f: type,
+        'added': False
+    }
+    meta_file = os.path.join(folder_path, 'n_meta.json')
+    with open(meta_file, 'w') as f:
+        json.dump(json_template, f, indent=4)
+
+
 
 def go_through_movies(movies_dir: str) -> (int, list[str]):
     added = 0
@@ -172,6 +204,8 @@ def go_through_movies(movies_dir: str) -> (int, list[str]):
                 save_media_info_for_movie(meta_data, movie)
                 update_meta(meta_data, meta_file_path)  # TODO: use once fixed
                 added = added + 1
+            if meta_data is None:
+                add_new_meta_file(movie_folder, movie_folder_path, 'movie')
 
     found_files = list(map(lambda m: m.path, found_movies))
 
@@ -197,7 +231,7 @@ def go_through_series(series_dir: str):
                     meta_file_path = os.path.join(series_path, season_dir)
                     (has_been_added, meta_data) = file_has_been_added(meta_file_path)
             for season_dir in season_folders:
-                if not is_meta(season_dir):
+                if not is_meta(season_dir) and not is_temp_meta(season_dir):
                     print(f'[{series_name}]: SEASON - {season_dir}')
                     season_path = os.path.join(series_path, season_dir)
                     season_files = os.listdir(season_path)
@@ -218,6 +252,8 @@ def go_through_series(series_dir: str):
                 save_media_info_for_series(meta_data, series)
                 update_meta(meta_data, meta_file_path)  # TODO: use once fixed
                 added = added + 1
+            if meta_data is None:
+                add_new_meta_file(series_name, series_path, 'series')
 
     found_files = []
     seasons: list[Season] = flatten(list(map(lambda s: s.seasons, found_series)))
@@ -273,31 +309,32 @@ def update_existing_series_with_found(found_series: list[Series]):
 def go_through_medias():
     added = 0
     removed = 0
-    media_type_folders = os.listdir(medias_dir)
-    found_movie_files = []
-    series: list[Series] = []
-    for media_folder in media_type_folders:  #series, movies
-        print(f'Media: {media_folder}')
-        media_type_dir = os.path.join(medias_dir, media_folder)
+    for source_dir in source_dirs:
+        media_type_folders = os.listdir(source_dir)
+        found_movie_files = []
+        series: list[Series] = []
+        for media_folder in media_type_folders:  # series, movies
+            print(f'Media: {media_folder}')
+            media_type_dir = os.path.join(source_dir, media_folder)
 
-        if media_folder == 'Movies':
-            print(f'Movies path: {media_type_dir}')
-            #TODO: uncomment once series works
-            #TODO: NOTE: folderPATH vs PATH
-            (added_movies, movie_files) = go_through_movies(media_type_dir)
-            added = added + added_movies
-            found_movie_files = movie_files
-        elif media_folder == 'Series':
-            (added_series, found_series) = go_through_series(media_type_dir)
-            series = found_series
-            added = added + added_series
-        else:
-            print(f'Unsupported media type: {media_folder}')
+            if media_folder == 'Movies':
+                print(f'Movies path: {media_type_dir}')
+                # TODO: uncomment once series works
+                # TODO: NOTE: folderPATH vs PATH
+                (added_movies, movie_files) = go_through_movies(media_type_dir)
+                added = added + added_movies
+                found_movie_files = movie_files
+            elif media_folder == 'Series':
+                (added_series, found_series) = go_through_series(media_type_dir)
+                series = found_series
+                added = added + added_series
+            else:
+                print(f'Unsupported media type: {media_folder}')
 
-    (removed_series, updated_series) = update_existing_series_with_found(series)
-    removed = remove_not_found_movies(found_movie_files) + removed_series
+        (removed_series, updated_series) = update_existing_series_with_found(series)
+        removed = remove_not_found_movies(found_movie_files) + removed_series
 
-    return {'added': added, 'updatedSeries': updated_series, 'removed': removed}
+        return {'added': added, 'updatedSeries': updated_series, 'removed': removed}
 
 
 #media_res = go_through_medias()
