@@ -68,10 +68,15 @@ const toQueryParams = (params: Record<string, string>) => {
 
 export type MediaType = 'movie' | 'series'
 
+export type SortType = 'title' | 'created'
+export type SortDirection = 'default' | 'reverse'
+
 export interface QueryReq {
     titles: string[]
     types: MediaType[]
     tags: string[]
+    sort: SortType
+    sortDirection: SortDirection 
 }
 
 export interface Episode {
@@ -102,8 +107,10 @@ export const createSearchParams = (r: QueryReq): string => {
     const titleParams = termsAsParam(r.titles, 'title')
     const tagParams = termsAsParam(r.tags, 'tag')
     const typeParams = termsAsParam(r.types, 'type')
+    const sortParam = termsAsParam([r.sort], 'sort')
+    const sortDirectionParam = termsAsParam([r.sortDirection], 'sortDirection')
 
-    const params = [titleParams, tagParams, typeParams]
+    const params = [titleParams, tagParams, typeParams, sortParam, sortDirectionParam]
 
     return params.length > 0 ? `?${params.join('&')}` : ''
 }

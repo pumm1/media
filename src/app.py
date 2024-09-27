@@ -32,8 +32,10 @@ def search():
         titles = request.args.getlist('title')
         tags = request.args.getlist('tag')
         types = request.args.getlist('type')
+        sort = request.args.get('sort', type=str)
+        sort_direction = request.args.get('sortDirection', type=str)
 
-        query = QueryReq(titles, tags, types)
+        query = QueryReq(titles, tags, types, sort, sort_direction)
 
         return jsonify(search_collections(query))
     else:

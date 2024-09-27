@@ -115,12 +115,7 @@ def file_has_been_added(file_name: str):
 def search_collections(q: QueryReq):
     m_json = m_json_from_req(q)
 
-    res = query_collections(m_json)
-    """
-    print(f'Amount of docs found: {len(res)}')
-    for doc in res:
-        print(f'Doc in results: {doc}')
-    """
+    res = query_collections(m_json, q.sort, q.sort_direction)
 
     json_str = dumps(res)
     json_res = loads(json_str)

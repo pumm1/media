@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { MediaType, QueryReq, QueryResult, Season, UpdateRes, getTags, searchMedia, updateMedias } from './MediaClient'
+import { MediaType, QueryReq, QueryResult, Season, SortDirection, SortType, UpdateRes, getTags, searchMedia, updateMedias } from './MediaClient'
 import MetaInfoByUrl from './MetaHandler'
 import _ from 'lodash'
 import Toast from './common/Toast'
@@ -59,6 +59,8 @@ const MediaBrowser = () => {
     const [titles, setTitles] = useState<string[]>([])
     const [tags, setTags] = useState<string[]>([])
     const [types, setTypes] = useState<MediaType[]>(allTypes)
+    const [sort, setSort] = useState<SortType>('title')
+    const [sortDirection, setSortDirection] = useState<SortDirection>('default')
     const [searchLoading, setSearchLoading] = useState(false)
 
     const [docs, setDocs] = useState<QueryResult[]>([])
@@ -74,14 +76,20 @@ const MediaBrowser = () => {
     const q: QueryReq = {
         titles,
         tags,
-        types
+        types,
+        sort,
+        sortDirection
     }
+
+    console.log(`... q: ${JSON.stringify(q)}`)
 
     const initialQ = (tags: string[]): QueryReq => {
         return {
             titles: [],
             tags,
-            types: allTypes
+            types: allTypes,
+            sort: 'title',
+            sortDirection: 'default'
         }
     }
         
@@ -139,15 +147,19 @@ const MediaBrowser = () => {
         return () => clearTimeout(timeoutId)
     }, [JSON.stringify(q)])
 
-    const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleTagsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedValues = Array.from(event.target.selectedOptions, (option) => {
             const selectedLabel = option.label;
             const selectedOption = typeOptions.find(opt => opt.label === selectedLabel)
             
             return selectedOption ? selectedOption.values : []
         }).flat();
-        setTypes(selectedValues);
+        setTypes(selectedValues)
     }
+
+    const sortOptions: SortType[] = ['title', 'created']
+    const directionOptions: SortDirection[] = ['default', 'reverse']
+    
     const blurByAmount = (amount: number) =>{
             const filter = {
                 filter: `blur(${amount}px)`, 
@@ -164,7 +176,7 @@ const MediaBrowser = () => {
             </div>}
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
             <div className='mediaBrowserContainer' style={selectedDoc ? blurByAmount(2) : blurByAmount(0)}>
-                <SearchInput isLoading={searchLoading} setTitles={setTitles} typeOptions={typeOptions} handleTagsChange={handleChange}/>
+                <SearchInput isLoading={searchLoading} setTitles={setTitles} typeOptions={typeOptions} handleTagsChange={handleTagsChange} sortOptions={sortOptions} setSortType={setSort} directionOptions={directionOptions} setSortDirection={setSortDirection}/>
                 <TagSelector setTags={setTags} selectedTags={tags} tagOptions={tagOptions}/>
                 <Documents docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} openFolder={openFolder} openVideo={openFile}/>
                 <div className='scanner'>

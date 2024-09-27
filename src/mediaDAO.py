@@ -155,7 +155,13 @@ def add_media_to_collection(m_json):
             collection_not_found_warn()
 
 
-def query_collections(m_json):
+def query_collections(m_json, sort: str | None, sort_direction: int | None):
+    sort_by = 'title'
+    direction = 1
+    if sort_direction is not None:
+        direction = sort_direction
+    if sort is not None:
+        sort_by = sort
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
         collection = db.get_collection(collection_name)
@@ -171,9 +177,10 @@ def query_collections(m_json):
                         'type': 1,
                         'path': 1,
                         'seasons': 1,
-                        'folderPath': 1
+                        'folderPath': 1,
+                        'created': 1
                     }
-                ).sort('title', 1)
+                ).sort(sort_by, direction)
             )
         else:
             collection_not_found_warn()
