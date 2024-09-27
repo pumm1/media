@@ -13,7 +13,7 @@ interface TagSelectorProps {
 const TagSelector = ({selectedTags, tagOptions, setTags}: TagSelectorProps) => {
     return (
         <Hideable contentName='tags'>
-            <div>
+            <div className='tags'>
             {tagOptions.map(t => (
                 <span key={t}>
                     <Selection isChecked={selectedTags.includes(t)} option={t} onClick={() => {

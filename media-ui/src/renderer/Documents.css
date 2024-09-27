@@ -4,7 +4,6 @@
 
 .docContainer {
     min-height: 100px;
-    max-height: 800px;
     overflow-y: auto;
     margin-bottom: 8px;
     padding-bottom: 8px;

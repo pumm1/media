@@ -5,6 +5,7 @@ import os
 from bson import ObjectId
 from bson.json_util import dumps, loads
 from pandas.core.common import flatten
+from datetime import datetime
 
 from queryReq import QueryReq
 from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f, path_f, medias_to_remove_json, folder_path_f, \
@@ -48,12 +49,30 @@ def is_temp_meta(file_name: str) -> bool:
     return file_name == temp_meta_file_name
 
 
-def update_meta(data: dict, file_name):
+def update_meta_added(data: dict, file_name: str):
     print(f'Updating meta for {file_name}')
     data['added'] = True
     json_file = open(file_name, mode_write)
     json_file.write(json.dumps(data,indent=4))
     json_file.close()
+
+
+def reset_meta(file_name: str, name: str):
+    print(f'Resetting meta for {name} [{file_name}]')
+
+    # Open the file in read mode to load the JSON data
+    with open(file_name, 'r') as json_file:
+        data = json.load(json_file)  # Load the JSON data
+
+    # Modify the JSON data
+    data['added'] = False
+
+    # Open the file in write mode to save the updated data
+    with open(file_name, 'w') as json_file:
+        json.dump(data, json_file, indent=4)  # Write the updated data
+
+    print(f'{name} reset done')
+
 
 
 def save_media_info_for_movie(data, m: Movie):
@@ -63,7 +82,8 @@ def save_media_info_for_movie(data, m: Movie):
         "tags": data[tags_f],
         "imdb": data[imdb_f],
         "folderPath": m.folder_path,
-        "path": m.path
+        "path": m.path,
+        "created": datetime.now()
     }
 
     add_media_to_collection(m_json)
@@ -75,7 +95,8 @@ def save_media_info_for_series(data, s: Series):
         "tags": data[tags_f],
         "imdb": data[imdb_f],
         "folderPath": s.folder_path,
-        "seasons": list(map(lambda s: s.asJson(), s.seasons))
+        "seasons": list(map(lambda s: s.asJson(), s.seasons)),
+        "created": datetime.now()
     }
 
     add_media_to_collection(m_json)
@@ -107,7 +128,7 @@ def search_collections(q: QueryReq):
     return json_res
 
 
-valid_media_file_suffixes = ['.mp4', '.mkv', 'mov']
+valid_media_file_suffixes = ['.mp4', '.mkv', '.mov', 'avi']
 
 
 def is_media_file(file: str) -> bool:
@@ -202,7 +223,7 @@ def go_through_movies(movies_dir: str) -> (int, list[str]):
             found_movies.append(movie)
             if (not has_been_added) and media_file_path is not None and meta_data is not None:
                 save_media_info_for_movie(meta_data, movie)
-                update_meta(meta_data, meta_file_path)  # TODO: use once fixed
+                update_meta_added(meta_data, meta_file_path)  # TODO: use once fixed
                 added = added + 1
             if meta_data is None:
                 add_new_meta_file(movie_folder, movie_folder_path, 'movie')
@@ -250,7 +271,7 @@ def go_through_series(series_dir: str):
             found_series.append(series)
             if (not has_been_added) and (not meta_data is None):
                 save_media_info_for_series(meta_data, series)
-                update_meta(meta_data, meta_file_path)  # TODO: use once fixed
+                update_meta_added(meta_data, meta_file_path)  # TODO: use once fixed
                 added = added + 1
             if meta_data is None:
                 add_new_meta_file(series_name, series_path, 'series')
@@ -271,7 +292,6 @@ def remove_not_found_movies(found_movie_files: list[str]):
     print(f'Existing movies: {existing}')
     print(f'Found movies: {found_movie_files}')
     print(f'Should be removed: {movie_files_to_be_removed}')
-    #TODO: fix, as files to be removed contains wrong things
     removed = remove_medias_by_files(movie_files_to_be_removed)
     return removed
 
@@ -352,5 +372,25 @@ def test_series():
     print(f'.... found series:')
     print(series_as_json)
 
+#TODO: function to reset stuff from DB and allow rescanning from UI
+#makes it nicer to e.g. add new fields to the schema and have them usable for all media
+def reset_media():
+    for source_dir in source_dirs:
+        media_type_folders = os.listdir(source_dir)
+        for media_type_folder in media_type_folders:
+            if media_type_folder == 'Movies' or media_type_folder == 'Series':
+                media_type_path = os.path.join(source_dir, media_type_folder)
+                media_folders = os.listdir(media_type_path)
+                for media_folder in media_folders:
+                    if is_not_hidden_file(media_folder):
+                        media_folder_path = os.path.join(media_type_path, media_folder)
+                        media_folder_files = os.listdir(media_folder_path)
+                        for file in media_folder_files:
+                            if is_meta(file):
+                                meta_file_path = os.path.join(media_folder_path, file)
+                                reset_meta(meta_file_path, media_folder)
+                                break
+
 
 #test_series()
+

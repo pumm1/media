@@ -9,6 +9,7 @@ in_f = '$in'
 #field names
 id_f = '_id'
 title_f = 'title'
+created_f = 'created'
 folder_path_f = 'folderPath'
 type_f = 'type'
 tags_f = 'tags'

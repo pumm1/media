@@ -4,6 +4,9 @@
 }
 
 .mediaBrowserContainer {
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
     position: relative;
     margin: 16px;
 }
