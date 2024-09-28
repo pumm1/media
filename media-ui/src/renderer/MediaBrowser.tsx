@@ -4,18 +4,18 @@ import MetaInfoByUrl from './MetaHandler'
 import _ from 'lodash'
 import Toast from './common/Toast'
 import SearchInput from './SearchInput'
-import TagSelector from './TagSelector'
+import SearchOptions from './SearchOptions'
 import Documents from './Documents'
+import LoadingIndicator from './common/LoadingIndicator'
 
 import './MediaBrowser.css'
-import LoadingIndicator from './common/LoadingIndicator'
 
 const isElectron = () => {
     // Check if 'process.versions.electron' exists, which is only available in Electron
     return !!window.electronAPI && window.electronAPI.isElectron
 }
 
-const openFile = (path: string): void =>{
+const openFile = (path: string): void => {
     if (isElectron()) {
         window.electronAPI.openFile(path)
     }
@@ -81,8 +81,6 @@ const MediaBrowser = () => {
         sortDirection
     }
 
-    console.log(`... q: ${JSON.stringify(q)}`)
-
     const initialQ = (tags: string[]): QueryReq => {
         return {
             titles: [],
@@ -147,7 +145,7 @@ const MediaBrowser = () => {
         return () => clearTimeout(timeoutId)
     }, [JSON.stringify(q)])
 
-    const handleTagsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleTypesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedValues = Array.from(event.target.selectedOptions, (option) => {
             const selectedLabel = option.label;
             const selectedOption = typeOptions.find(opt => opt.label === selectedLabel)
@@ -176,9 +174,9 @@ const MediaBrowser = () => {
             </div>}
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
             <div className='mediaBrowserContainer' style={selectedDoc ? blurByAmount(2) : blurByAmount(0)}>
-                <SearchInput isLoading={searchLoading} setTitles={setTitles} typeOptions={typeOptions} handleTagsChange={handleTagsChange} sortOptions={sortOptions} setSortType={setSort} directionOptions={directionOptions} setSortDirection={setSortDirection}/>
-                <TagSelector setTags={setTags} selectedTags={tags} tagOptions={tagOptions}/>
-                <Documents docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} openFolder={openFolder} openVideo={openFile}/>
+                <SearchInput isLoading={searchLoading} setTitles={setTitles}/>
+                <SearchOptions typeOptions={typeOptions} handleTypesChange={handleTypesChange} sortOptions={sortOptions} setSortType={setSort} directionOptions={directionOptions} setSortDirection={setSortDirection} setTags={setTags} selectedTags={tags} tagOptions={tagOptions}/>
+                <Documents docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
                 <div className='scanner'>
                     <button disabled={updateLoading} onClick={() =>
                         Promise.resolve(setUpdateLoading(true)).then(() => updateMedias().then(setMediaUpdateInfo).finally(() => triggerToast()))

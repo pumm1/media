@@ -1,3 +1,7 @@
+.optionsContainer {
+    display: flex;
+}
+
 .tags {
     max-width: 800px;
 }

@@ -89,6 +89,8 @@ export interface Season {
     episodes: Episode[]
 }
 
+export type ISODateString = string & { __brand: "ISODateString" };
+
 export interface QueryResult {
     title: string
     type: MediaType
@@ -96,6 +98,7 @@ export interface QueryResult {
     imdb: string
     folderPath: string
     path?: string
+    created: ISODateString
     seasons?: Season[]
 }
 

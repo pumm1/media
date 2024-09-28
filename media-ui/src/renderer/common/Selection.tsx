@@ -6,9 +6,23 @@ interface SelectionProps {
     onClick: (option: string) => void
 }
 
+type PillVariant = 'Static' | 'Dynamic'
+
+interface PillProps {
+  variant: PillVariant
+  keyProp: string
+  children: any
+  isChecked?: boolean
+}
+
+export const Pill = ({ keyProp, children, isChecked, variant }: PillProps) => 
+  <label key={keyProp} className={variant === 'Dynamic' ? `pill ${isChecked ? 'selected' : ''}` : 'staticHighlightPill'}>
+    {children}
+  </label>
+
 const Selection = ({isChecked, option, onClick, }: SelectionProps) => {
   return (
-    <label key={option} className={`pill ${isChecked ? 'selected' : ''}`}>
+      <Pill variant='Dynamic' keyProp={option} isChecked={isChecked}>
           <input
             type="checkbox"
             value={option}
@@ -16,8 +30,8 @@ const Selection = ({isChecked, option, onClick, }: SelectionProps) => {
             onChange={() => onClick(option)}
           />
           {option}
-        </label>
-  );
-};
+      </Pill>
+  )
+}
 
 export default Selection

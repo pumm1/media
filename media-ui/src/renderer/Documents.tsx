@@ -1,4 +1,4 @@
-import { QueryResult, Season } from "./MediaClient"
+import { ISODateString, QueryResult, Season } from "./MediaClient"
 import { FolderButton, PlayButton } from "./common/CommonButtons"
 import errorGif1 from './angry-panda.gif';
 import errorGif2 from './monke-pc.gif'
@@ -9,6 +9,7 @@ import MediaIcon from "./common/MovieIcon"
 import './Documents.css'
 import Hideable from "./common/Hideable";
 import { useEffect, useState } from "react";
+import { Pill } from "./common/Selection";
 
 const seasonStr = (seasons: Season[]) => {
     const str = seasons.length > 1 ? 'Seasons' : 'Season'
@@ -16,22 +17,26 @@ const seasonStr = (seasons: Season[]) => {
     return `${seasons.length} ${str}`
 }
 
-interface OpenProps {
-    openVideo: (path: string) => void
-    openFolder: (path: string) => void
-}
-
-interface DocProps extends OpenProps {
+interface DocProps {
     d: QueryResult
     setDoc: (d: QueryResult) => void
 }
 
-const DocRow = ({ d, setDoc, openVideo, openFolder }: DocProps) =>
+const isNew = (date: ISODateString): boolean => {
+    const now = new Date()
+    const oneWeekInPast = new Date().setDate(now.getDate()-7)
+
+    return Date.parse(date) > oneWeekInPast
+}
+
+
+const DocRow = ({ d, setDoc }: DocProps) =>
     <div className='document' onClick={() => setDoc(d)}>
         <h2>{d.title}</h2>
         <div className='mediaInfo'>
             <MediaIcon type={d.type}/> 
             {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
+            {isNew(d.created) && <Pill variant='Static' keyProp={d.title}>New!</Pill>}
         </div>
         <div className='tagContainer'>
             {
@@ -41,13 +46,9 @@ const DocRow = ({ d, setDoc, openVideo, openFolder }: DocProps) =>
                     </span>)
             }
         </div>
-        <div className='docButtons'>
-            {d.path && <PlayButton onClick={() => d.path && openVideo(d.path)} />}
-            <FolderButton onClick={() => openFolder(d.folderPath)} />
-        </div>
     </div>
 
-interface DocsProps extends OpenProps {
+interface DocsProps {
     docs: QueryResult[]
     setDoc: (d: QueryResult) => void
     initialResultsFetched: boolean
@@ -97,11 +98,11 @@ const NoResuls = ({numOfDocs}: NoResultsProps) => {
     )
 }
 
-const Docs = ({ docs, setDoc, initialResultsFetched, openFolder, openVideo }: DocsProps) => {
+const Docs = ({ docs, setDoc, initialResultsFetched }: DocsProps) => {
     return (
         <>
             {docs.length > 0 ? docs.map(doc => (
-                <DocRow key={doc.title + doc.path} setDoc={setDoc} d={doc} openFolder={openFolder} openVideo={openVideo}/>
+                <DocRow key={doc.title + doc.path} setDoc={setDoc} d={doc}/>
             )) :
                 !initialResultsFetched ? <></> : <NoResuls numOfDocs={docs.length}/>
             }
@@ -109,9 +110,9 @@ const Docs = ({ docs, setDoc, initialResultsFetched, openFolder, openVideo }: Do
     )
 }
 
-const Documents = ({docs, setDoc, initialResultsFetched, openFolder, openVideo}: DocsProps) => 
+const Documents = ({docs, setDoc, initialResultsFetched }: DocsProps) => 
     <div className='docContainer'>
-        <Docs docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} openFolder={openFolder} openVideo={openVideo}/>
+        <Docs docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
     </div>
 
 export default Documents
