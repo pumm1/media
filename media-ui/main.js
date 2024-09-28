@@ -20,7 +20,12 @@ function createWindow() {
       contextIsolation: true,   // Recommended for security
       enableRemoteModule: false, // Security measure
       nodeIntegration: false,    // Disable nodeIntegration in renderer
+      zoomFactor: 1.5,
     },
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.setZoomFactor(1.5);  // Set zoom to 150%
   });
 
   // Load the React app in dev or production mode
