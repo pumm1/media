@@ -1,0 +1,16 @@
+.selected {
+    border-radius: var(--main-radius);
+    background-color: var(--main-red);
+    cursor: pointer;
+}
+
+.notSelected {
+    background-color: var(--secondary-white);
+    border-radius: var(--main-radius);
+    border: solid 1px var(--main-red);
+    cursor: pointer;
+}
+
+.notSelected:hover {
+    background-color: var(--main-white);
+}

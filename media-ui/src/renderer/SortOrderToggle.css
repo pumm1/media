@@ -1,0 +1,9 @@
+.icon {
+    cursor: pointer;
+    transition: transform 0s ease; /* Smooth rotation transition */
+  }
+  
+  .rotated {
+    transform: rotate(180deg); /* Rotate by 180 degrees */
+  }
+  

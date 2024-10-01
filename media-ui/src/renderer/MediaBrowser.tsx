@@ -73,6 +73,8 @@ const MediaBrowser = () => {
 
     const [mediaUpdateInfo, setMediaUpdateInfo] = useState<UpdateRes | undefined>()
 
+    const [sinceWeeksAgo, setSinceWeeksAgo] = useState(1)
+
     const q: QueryReq = {
         titles,
         tags,
@@ -175,8 +177,8 @@ const MediaBrowser = () => {
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
             <div className='mediaBrowserContainer' style={selectedDoc ? blurByAmount(2) : blurByAmount(0)}>
                 <SearchInput isLoading={searchLoading} setTitles={setTitles}/>
-                <SearchOptions typeOptions={typeOptions} handleTypesChange={handleTypesChange} sortOptions={sortOptions} setSortType={setSort} directionOptions={directionOptions} setSortDirection={setSortDirection} setTags={setTags} selectedTags={tags} tagOptions={tagOptions}/>
-                <Documents docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
+                <SearchOptions currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} sortOptions={sortOptions} setSortType={setSort} usedSort={sort} setSortDirection={setSortDirection} setTags={setTags} selectedTags={tags} tagOptions={tagOptions}/>
+                <Documents sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
                 <div className='scanner'>
                     <button disabled={updateLoading} onClick={() =>
                         Promise.resolve(setUpdateLoading(true)).then(() => updateMedias().then(setMediaUpdateInfo).finally(() => triggerToast()))

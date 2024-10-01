@@ -10,6 +10,7 @@ import './Documents.css'
 import Hideable from "./common/Hideable";
 import { useEffect, useState } from "react";
 import { Pill } from "./common/Selection";
+import FadingCompoennt from "./common/FadingComponent";
 
 const seasonStr = (seasons: Season[]) => {
     const str = seasons.length > 1 ? 'Seasons' : 'Season'
@@ -20,23 +21,25 @@ const seasonStr = (seasons: Season[]) => {
 interface DocProps {
     d: QueryResult
     setDoc: (d: QueryResult) => void
+    sinceWeeksAgo: number
 }
 
-const isNew = (date: ISODateString): boolean => {
+const isNew = (date: ISODateString, sinceWeeksAgo: number): boolean => {
     const now = new Date()
-    const oneWeekInPast = new Date().setDate(now.getDate()-7)
+    const oneWeekInPast = new Date().setDate(now.getDate() - (7 * sinceWeeksAgo))
 
     return Date.parse(date) > oneWeekInPast
 }
 
-
-const DocRow = ({ d, setDoc }: DocProps) =>
+const DocRow = ({ d, setDoc, sinceWeeksAgo }: DocProps) =>
     <div className='document' onClick={() => setDoc(d)}>
         <h2>{d.title}</h2>
         <div className='mediaInfo'>
             <MediaIcon type={d.type}/> 
             {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
-            {isNew(d.created) && <Pill variant='Static' keyProp={d.title}>New!</Pill>}
+            <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
+                <Pill variant='Static' keyProp={d.title}>New!</Pill>
+            </FadingCompoennt>
         </div>
         <div className='tagContainer'>
             {
@@ -51,7 +54,8 @@ const DocRow = ({ d, setDoc }: DocProps) =>
 interface DocsProps {
     docs: QueryResult[]
     setDoc: (d: QueryResult) => void
-    initialResultsFetched: boolean
+    initialResultsFetched: boolean, 
+    sinceWeeksAgo: number
 }
 
 const NoResultsTips = [
@@ -98,11 +102,11 @@ const NoResuls = ({numOfDocs}: NoResultsProps) => {
     )
 }
 
-const Docs = ({ docs, setDoc, initialResultsFetched }: DocsProps) => {
+const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => {
     return (
         <>
             {docs.length > 0 ? docs.map(doc => (
-                <DocRow key={doc.title + doc.path} setDoc={setDoc} d={doc}/>
+                <DocRow sinceWeeksAgo={sinceWeeksAgo} key={doc.title + doc.path} setDoc={setDoc} d={doc}/>
             )) :
                 !initialResultsFetched ? <></> : <NoResuls numOfDocs={docs.length}/>
             }
@@ -110,9 +114,9 @@ const Docs = ({ docs, setDoc, initialResultsFetched }: DocsProps) => {
     )
 }
 
-const Documents = ({docs, setDoc, initialResultsFetched }: DocsProps) => 
+const Documents = ({docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => 
     <div className='docContainer'>
-        <Docs docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
+        <Docs sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
     </div>
 
 export default Documents

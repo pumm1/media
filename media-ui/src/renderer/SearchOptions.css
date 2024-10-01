@@ -1,9 +1,21 @@
-.optionsContainer {
+.filters {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 240px;
+}
+
+.range {
+    vertical-align: middle;
+}
+
+.newSince {
+    margin: 12px 0px;
 }
 
 .tags {
-    max-width: 800px;
+    width: 800px;
+    margin: 8px 0px;
 }
 
 .toggleTags {

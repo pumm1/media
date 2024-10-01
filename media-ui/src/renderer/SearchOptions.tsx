@@ -1,10 +1,13 @@
-import _ from 'lodash'
+import _, { sortBy } from 'lodash'
 import Hideable from './common/Hideable'
 import Selection from './common/Selection'
-
-import './SearchOptions.css'
 import { SortDirection, SortType } from './MediaClient'
 import { TypeOption } from './MediaBrowser'
+
+import './SearchOptions.css'
+import SortOrderIcon from './common/SortOrderIcon'
+import SortOrderToggle from './SortOrderToggle'
+import {AlphabeticalSelection, CreatedSelection} from './common/SortSelections'
 
 interface SeachOptionsProps {
     setTags: (tags: string[]) => void
@@ -12,13 +15,16 @@ interface SeachOptionsProps {
     tagOptions: string[]
     handleTypesChange: (event: React.ChangeEvent<HTMLSelectElement>) => void
     typeOptions: TypeOption[]
+    usedSort: SortType
     setSortType: (s: SortType) => void
     sortOptions: SortType[]
     setSortDirection: (s: SortDirection) => void
-    directionOptions: SortDirection[]
+    currentSortDirection: SortDirection
+    sinceWeeksAgo: number
+    setNewSinceWeeksAgo: (s: number) => void
 }
 
-const SearchOptions = ({selectedTags, tagOptions, setTags, sortOptions, setSortDirection, directionOptions, setSortType, handleTypesChange, typeOptions}: SeachOptionsProps) => {
+const SearchOptions = ({selectedTags, tagOptions, setTags, sortOptions, setSortDirection, usedSort, currentSortDirection, setSortType, handleTypesChange, typeOptions, setNewSinceWeeksAgo, sinceWeeksAgo}: SeachOptionsProps) => {
     return (
         <Hideable contentName='options'>
             <div className='optionsContainer'>
@@ -52,32 +58,27 @@ const SearchOptions = ({selectedTags, tagOptions, setTags, sortOptions, setSortD
                         }}>Toggle tags</button>
                     </div>
                 </div>
-                <div>
+                <div className='filters'>
                     <select onChange={handleTypesChange}>
                         {typeOptions.map ((opt, idx) => 
                             <option key={opt.label + idx} value={opt.values}>{opt.label}</option>)
                         }
                     </select>
-                    <select onChange={e => {
-                        const value = e.target.value
-                        if(value === 'title' || value === 'created') {
-                            setSortType(value)
-                        }
-                    }}>
-                        {sortOptions.map ((opt, idx) => 
-                            <option key={opt+ idx} value={opt}>Sort by: {opt}</option>)
-                        }
-                    </select>
-                    <select onChange={e => {
-                        const value = e.target.value
-                        if(value === 'default' || value === 'reverse') {
-                            setSortDirection(value)
-                        }
-                    }}>
-                        {directionOptions.map ((opt, idx) => 
-                            <option key={opt+ idx} value={opt}>Direction: {opt}</option>)
-                        }
-                    </select>
+                    <AlphabeticalSelection isSelected={usedSort === 'title'} onClick={() => setSortType('title')}/>
+                    <CreatedSelection isSelected={usedSort === 'created'} onClick={() => setSortType('created')}/>
+                    <SortOrderToggle onClick={() => {
+                        if (currentSortDirection === 'default') { 
+                            setSortDirection('reverse') 
+                        } else setSortDirection('default')
+                    }} />
+                </div>
+                <div className='newSince'>
+                    Indicate new since
+                    <input className='range' type="range" step={1} min={0} max={8} value={sinceWeeksAgo} onChange={e => {
+                        const value = Number(e.target.value)
+                        setNewSinceWeeksAgo(value)
+                    }}/>
+                    {sinceWeeksAgo} Week(s) ago
                 </div>
             </div>
         </Hideable>
