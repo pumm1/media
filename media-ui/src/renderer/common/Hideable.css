@@ -10,7 +10,6 @@
 .slide-container.open {
     max-height: 800px;
     overflow-y: auto;
-    width: 600px;
 }
   
 .content {
