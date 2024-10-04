@@ -1,8 +1,8 @@
 from pymongo import MongoClient
 
-from queryBuilder import title_f, in_f
+from queryBuilder import in_f
 from bson import ObjectId
-from mediaObjects import Movie, Series, Season, Episode
+from mediaObjects import Series
 
 client = MongoClient('localhost', 27017)
 
@@ -155,7 +155,7 @@ def add_media_to_collection(m_json):
             collection_not_found_warn()
 
 
-def query_collections(m_json, sort: str | None, sort_direction: int | None):
+def query_collections(m_json, sort, sort_direction):
     sort_by = 'title'
     direction = 1
     if sort_direction is not None:
@@ -275,6 +275,16 @@ def delete_media_by_ids(ids):
                     in_f: ids
                 }
             }).deleted_count
+        else:
+            collection_not_found_warn()
+            return 0
+
+def delete_all_medias():
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return collection.delete_many({}).deleted_count
         else:
             collection_not_found_warn()
             return 0

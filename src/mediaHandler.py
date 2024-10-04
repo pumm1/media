@@ -1,6 +1,6 @@
 import json
 from mediaDAO import add_media_to_collection, query_collections, existing_movies, remove_media_by_files, existing_tags, \
-    existing_series, update_series_seasons, delete_media_by_ids
+    existing_series, update_series_seasons, delete_media_by_ids, delete_all_medias
 import os
 from bson import ObjectId
 from bson.json_util import dumps, loads
@@ -74,12 +74,16 @@ def reset_meta(file_name: str, name: str):
     print(f'{name} reset done')
 
 
+def arr_lowercase(arr: list[str]): #list(map(lambda s: s.asJson(), s.seasons)),
+    res = list(map(lambda x: str.lower(x), arr))
+
+    return res
 
 def save_media_info_for_movie(data, m: Movie):
     m_json = {
         "title": data[title_f],
         "type": data[type_f],
-        "tags": data[tags_f],
+        "tags": arr_lowercase(data[tags_f]),
         "imdb": data[imdb_f],
         "folderPath": m.folder_path,
         "path": m.path,
@@ -92,7 +96,7 @@ def save_media_info_for_series(data, s: Series):
     m_json = {
         "title": data[title_f],
         "type": data[type_f],
-        "tags": data[tags_f],
+        "tags": arr_lowercase(data[tags_f]),
         "imdb": data[imdb_f],
         "folderPath": s.folder_path,
         "seasons": list(map(lambda s: s.asJson(), s.seasons)),
@@ -363,8 +367,6 @@ def test_series():
     (added, series) = go_through_series('/Users/sagu/media_project/media/src/medias/Series')
 
     series_as_json = list(map(lambda s: s.asJson(), series))
-
-    print(f'.... found series:')
     print(series_as_json)
 
 #TODO: function to reset stuff from DB and allow rescanning from UI
@@ -385,6 +387,8 @@ def reset_media():
                                 meta_file_path = os.path.join(media_folder_path, file)
                                 reset_meta(meta_file_path, media_folder)
                                 break
+        print(f'All meta files reset, Deleting info from DB')
+        delete_all_medias()
 
 
 #test_series()

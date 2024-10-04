@@ -169,6 +169,13 @@ const MediaBrowser = () => {
             return filter
         }
 
+    const updateMediasFn = () => {
+        Promise.resolve(setUpdateLoading(true)).then(() => updateMedias().then(setMediaUpdateInfo).then(() => getTags().then(setTagOptions)).finally(() => {
+            setUpdateLoading(false)
+            triggerToast()
+        }))
+    }
+
     return (
         <div className='main'>
             {selectedDoc && <div className='detailedMediaContainer'>
@@ -181,7 +188,7 @@ const MediaBrowser = () => {
                 <Documents sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
                 <div className='scanner'>
                     <button disabled={updateLoading} onClick={() =>
-                        Promise.resolve(setUpdateLoading(true)).then(() => updateMedias().then(setMediaUpdateInfo).finally(() => triggerToast()))
+                        updateMediasFn()
                     }>
                         Scan for updates
                     </button>
