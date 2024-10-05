@@ -1,0 +1,14 @@
+.fade {
+    margin: auto;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+  }
+  
+  .fade-in {
+    opacity: 1; /* Fully visible */
+  }
+  
+  .fade-out {
+    opacity: 0; /* Fully invisible */
+  }
+  

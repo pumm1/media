@@ -1,0 +1,10 @@
+.folder-img {
+    width: 25px;
+    height: 25px;
+    object-fit: contain;
+  }
+  
+  .folder-img:hover {
+    filter: invert(1); /* Inverts the colors */
+    transition: filter 0.5s ease; /* Smooth transition */
+  }
