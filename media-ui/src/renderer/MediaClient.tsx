@@ -170,10 +170,15 @@ export interface MetaFileInfo extends MetaBase {
 export const listMetaFiles = () =>
     fetchDataAs<MetaFileInfo[]>('/list-metas')
 
-export interface MetaUpdateReq extends MetaBase {
-
-}
+export interface MetaUpdateReq extends MetaBase {}
 
 export const updateMetaFile = (data: MetaUpdateReq) =>
     putDataAs<boolean>('/update-meta-file', data)
+
+export interface MetaReadyForScanReq {
+    metaPath: string
+}
+
+export const metaFileReadyForScanning = (data: MetaReadyForScanReq) =>
+    putDataAs<boolean>('/meta-file-ready-to-scan', data)
 

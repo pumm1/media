@@ -1,6 +1,6 @@
 import './MetaSettings.css'
 import { useEffect, useRef, useState } from 'react'
-import {listMetaFiles, MetaFileInfo, MetaUpdateReq, updateMetaFile} from './MediaClient'
+import {listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, updateMetaFile} from './MediaClient'
 import LoadingIndicator from './common/LoadingIndicator'
 import MediaIcon from './common/MovieIcon'
 
@@ -28,6 +28,14 @@ const MetaInfoRow = ({metaInfo}: MetaInfoProps) => {
         updateMetaFile(req).then(() => setUpdateLoading(false))
     }
 
+    const readyToScanFn = () => {
+        setUpdateLoading(true)
+        metaFileReadyForScanning({metaPath: metaInfo.metaPath}).then(() => setUpdateLoading(false))
+    }
+
+    const updateTags = (tagsStr: string) => setTags(tagsStr.split(',').map(tag => tag.trim()))
+
+
     return (
         <div className='metaInfoContainer'>
             <div className='metaInfo'>
@@ -37,7 +45,7 @@ const MetaInfoRow = ({metaInfo}: MetaInfoProps) => {
                 </div>
                 Tags
                 <div className='metaField'>
-                    <input type='text' value={tags.join(',')} onChange={e => setTags(e.target.value.split(','))}/>
+                    <input type='text' value={tags.join(',')} onChange={e => updateTags(e.target.value)}/>
                 </div>
                 IMDB
                 <div className='metaField'>
@@ -51,6 +59,7 @@ const MetaInfoRow = ({metaInfo}: MetaInfoProps) => {
                 </div>
                 <div className='metaField'>
                     <button onClick={() => updateFn()}>Update</button>
+                    {metaInfo.isPending && <button onClick={() => readyToScanFn()}>Ready to scan</button>}
                 </div>
                 {updateLoading && <LoadingIndicator />}
             </div>

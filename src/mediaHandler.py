@@ -390,26 +390,20 @@ def list_meta_files():
 
 
 def update_meta_file(req_meta_path: str, data_dict: dict):
-    success = False
-    for source_dir in source_dirs:
-        media_type_folders = os.listdir(source_dir)
-        for media_folder in media_type_folders:  # series, movies
-            if is_not_hidden_file(media_folder) and (media_folder == 'Movies' or media_folder == 'Series'):
-                media_type_path = os.path.join(source_dir, media_folder)
-                media_type_content_dir = os.listdir(media_type_path)
-                for media_content_folder in media_type_content_dir:  #subfolder under series/movies
-                    if is_not_hidden_file(media_content_folder):
-                        media_content_path = os.path.join(media_type_path, media_content_folder)
-                        files = os.listdir(media_content_path)
-                        for file in files:
-                            if is_temp_meta(file) or is_meta(file):
-                                meta_path = os.path.join(media_content_path, file)
-                                if meta_path == req_meta_path:
-                                    print(f'Meta file found for ${meta_path}')
-                                    update_meta_file_with_data(data_dict, meta_path)
-                                    success = True
-                                    break
-    return success
+    cur_file_name = os.path.basename(req_meta_path)
+    if os.path.exists(req_meta_path) and (is_meta(cur_file_name) or is_temp_meta(cur_file_name)):
+        print(f'Updating {req_meta_path}')
+        update_meta_file_with_data(data_dict, req_meta_path)
+    else:
+        print(f'Meta file not found to update {req_meta_path}')
+    return True
+
+def mark_temp_meta_file_ready_for_scanning(temp_absolute_path: str):
+    dir = os.path.dirname(temp_absolute_path)
+    new_abs_path = os.path.join(dir, meta_file_name)
+    cur_file_name = os.path.basename(temp_absolute_path)
+    if cur_file_name == temp_meta_file_name and os.path.exists(temp_absolute_path):
+        os.rename(temp_absolute_path, new_abs_path)
 
 
 def go_through_medias():
