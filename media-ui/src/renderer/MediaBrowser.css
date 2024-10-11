@@ -24,6 +24,6 @@
 }
 
 .scanner {
-    margin: 8px px;
-
+    display: flex;
+    margin: 8px 0px;
 }

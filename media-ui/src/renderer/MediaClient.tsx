@@ -27,6 +27,21 @@ const postDataAs = <T, >(path: string, data: any): Promise<T> =>
        return res.json() as T
     })
 
+const putData = (path: string, data: any) => {
+    const requestOptions = {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }
+
+    return fetch(createUrl(path), requestOptions)
+}
+
+const putDataAs = <T, >(path: string, data: any): Promise<T> => 
+    putData(path, data).then(res => {
+       return res.json() as T
+    })
+
 /*
 const putData = (path: string, data: any) => {
     const requestOptions = {
@@ -138,3 +153,27 @@ export const updateMedias = () =>
 
 export const preview = (url: string) =>
     postData(`/preview`, {url})
+
+interface MetaBase {
+    tags: string[]
+    imdb: string
+    title: string
+    type: MediaType
+    added?: boolean
+    metaPath: string
+}
+
+export interface MetaFileInfo extends MetaBase {
+    isPending: boolean
+}
+
+export const listMetaFiles = () =>
+    fetchDataAs<MetaFileInfo[]>('/list-metas')
+
+export interface MetaUpdateReq extends MetaBase {
+
+}
+
+export const updateMetaFile = (data: MetaUpdateReq) =>
+    putDataAs<boolean>('/update-meta-file', data)
+

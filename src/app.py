@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from queryReq import QueryReq
-from mediaHandler import search_collections, go_through_medias, get_existing_tags
+from mediaHandler import search_collections, go_through_medias, get_existing_tags, reset_media, list_meta_files, \
+    update_meta_file
 import requests
 
 app = Flask(__name__)
@@ -38,6 +39,35 @@ def search():
         query = QueryReq(titles, tags, types, sort, sort_direction)
 
         return jsonify(search_collections(query))
+    else:
+        return invalid_req()
+
+@app.route('/list-metas', methods=[get])
+def list_metas():
+    if request.method == get:
+        return jsonify(list_meta_files())
+    else:
+        return invalid_req()
+
+@app.route('/update-meta-file', methods=[put])
+def update_meta():
+    if request.method == put:
+        data = request.get_json()
+        meta_path_key = 'metaPath'
+        meta_path = data['metaPath']
+        del data[meta_path_key]
+
+        return jsonify(update_meta_file(meta_path, data))
+    else:
+        return invalid_req()
+
+#currently not used from UI and not sure if I should include this
+@app.route('/reset-medias', methods=[put])
+def reset_medias():
+    if request.method == put:
+        reset_media()
+
+        return True
     else:
         return invalid_req()
 

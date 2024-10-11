@@ -9,6 +9,9 @@ import Documents from './Documents'
 import LoadingIndicator from './common/LoadingIndicator'
 
 import './MediaBrowser.css'
+import PopUpContainer from './common/PopUpContainer'
+import { SettingsButton } from './common/CommonButtons'
+import MetaSettings from './MetaSettings'
 
 const isElectron = () => {
     // Check if 'process.versions.electron' exists, which is only available in Electron
@@ -74,6 +77,8 @@ const MediaBrowser = () => {
     const [mediaUpdateInfo, setMediaUpdateInfo] = useState<UpdateRes | undefined>()
 
     const [sinceWeeksAgo, setSinceWeeksAgo] = useState(1)
+
+    const [settingsOpen, setSettingsOpen] = useState(false)
 
     const q: QueryReq = {
         titles,
@@ -158,7 +163,6 @@ const MediaBrowser = () => {
     }
 
     const sortOptions: SortType[] = ['title', 'created']
-    const directionOptions: SortDirection[] = ['default', 'reverse']
     
     const blurByAmount = (amount: number) =>{
             const filter = {
@@ -176,13 +180,20 @@ const MediaBrowser = () => {
         }))
     }
 
+    const useBlur = settingsOpen || selectedDoc !== undefined
+
     return (
         <div className='main'>
-            {selectedDoc && <div className='detailedMediaContainer'>
-                <MetaInfoByUrl doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} onClose={() => setDoc(undefined)}/>
-            </div>}
+            { settingsOpen &&
+                <PopUpContainer>
+                    <MetaSettings onClose={() => setSettingsOpen(false)}/>
+                </PopUpContainer>
+            }
+            {selectedDoc && 
+                <PopUpContainer><MetaInfoByUrl doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} onClose={() => setDoc(undefined)}/></PopUpContainer>
+            }
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
-            <div className='mediaBrowserContainer' style={selectedDoc ? blurByAmount(2) : blurByAmount(0)}>
+            <div className='mediaBrowserContainer' style={useBlur ? blurByAmount(2) : blurByAmount(0)}>
                 <SearchInput isLoading={searchLoading} setTitles={setTitles}/>
                 <SearchOptions currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} sortOptions={sortOptions} setSortType={setSort} usedSort={sort} setSortDirection={setSortDirection} setTags={setTags} selectedTags={tags} tagOptions={tagOptions}/>
                 <Documents sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
@@ -192,6 +203,7 @@ const MediaBrowser = () => {
                     }>
                         Scan for updates
                     </button>
+                    <SettingsButton onClick={() => setSettingsOpen(true)}/>
                 </div>
             </div>
         </div>
