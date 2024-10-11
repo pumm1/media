@@ -31,15 +31,15 @@ const MetaInfoRow = ({metaInfo}: MetaInfoProps) => {
     return (
         <div className='metaInfoContainer'>
             <div className='metaInfo'>
-                Title:
+                Title
                 <div className='metaField'>
                     <input type='text' value={title} onChange={e => setTitle(e.target.value)}/>
                 </div>
-                Tags: 
+                Tags
                 <div className='metaField'>
                     <input type='text' value={tags.join(',')} onChange={e => setTags(e.target.value.split(','))}/>
                 </div>
-                IMDB:
+                IMDB
                 <div className='metaField'>
                     <input type='text' value={imdb} onChange={e => setImdb(e.target.value)}/>
                 </div>
@@ -47,7 +47,7 @@ const MetaInfoRow = ({metaInfo}: MetaInfoProps) => {
                     <MediaIcon type={metaInfo.type} />
                 </div>
                 <div className='metaField'>
-                    {metaInfo.added ? 'Added' : 'Pending'}
+                    <b>{metaInfo.added ? 'Added' : 'Pending'}</b>
                 </div>
                 <div className='metaField'>
                     <button onClick={() => updateFn()}>Update</button>
@@ -106,6 +106,7 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
 
     return (
         <div className='metaContainer' ref={componentRef}>
+            <h3>Meta data management</h3>
             Only pending: <input type='checkbox' checked={useOnlyPending} onChange={onToggle} />
             {usedMetaFiles.length === 0 ? 
                 <div className='loading'><LoadingIndicator /></div> :
