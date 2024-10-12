@@ -1,0 +1,11 @@
+.popUpContainer {
+    overflow-y: auto;
+    position: absolute;
+    max-height: 860px;
+    z-index: 999;
+    padding: 8px;
+    top: 500px;
+    left: 50%;
+    border-radius: 8px;
+    transform: translate(-50%, -50%);
+}

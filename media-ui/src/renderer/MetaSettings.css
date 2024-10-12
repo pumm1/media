@@ -1,0 +1,28 @@
+.metaInfos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 300px);
+    overflow-y: scroll;
+    max-height: 600px;
+    width: 900px;
+}
+
+.metaInfoContainer {
+    display: flex;
+}
+
+.metaInfo {
+    text-transform: uppercase;
+    padding: 8px;
+    margin: 8px 0px;
+    border: 2px solid var(--main-white);
+    border-radius: var(--main-radius);
+}
+
+.metaField {
+    text-transform: uppercase;
+    margin: 4px 0px;
+}
+
+.loading {
+    margin: auto;
+}
