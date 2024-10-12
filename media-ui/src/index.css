@@ -70,7 +70,11 @@ button {
   transition: background-color 0.3s ease; /* Smooth transition on hover */
 }
 
-button:hover {
+button:hover:enabled {
   background-color: black;
   color: white;
+}
+
+button:disabled {
+  background-color: var(--light-dark);
 }

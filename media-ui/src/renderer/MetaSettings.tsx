@@ -4,6 +4,13 @@ import {listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, up
 import LoadingIndicator from './common/LoadingIndicator'
 import MediaIcon from './common/MovieIcon'
 
+const isValidImdbUrl = (url: string) => {
+    const urlValid: boolean = url.startsWith('https://www.imdb.com/title/') || url.startsWith('www.imdb.com/title/')
+
+    return urlValid
+  }
+  
+
 interface MetaInfoProps {
     metaInfo: MetaFileInfo
     updateMetaInfos: () => void
@@ -32,14 +39,15 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
 
     const readyToScanFn = () => {
         setUpdateLoading(true)
-        metaFileReadyForScanning({metaPath: metaInfo.metaPath}).then(() => {
+        updateMetaFile(req).then(() => metaFileReadyForScanning({metaPath: metaInfo.metaPath}).then(() => {
             setUpdateLoading(false)
             updateMetaInfos()
-        })
+        }))
     }
 
     const updateTags = (tagsStr: string) => setTags(tagsStr.split(',').map(tag => tag.trim()))
 
+    const metaIsValid = tags.length > 0 && isValidImdbUrl(imdb)
 
     return (
         <div className='metaInfoContainer'>
@@ -64,7 +72,7 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
                 </div>
                 <div className='metaField'>
                     <button onClick={() => updateFn()}>Update</button>
-                    {metaInfo.isPending && <button onClick={() => readyToScanFn()}>Ready to scan</button>}
+                    {metaInfo.isPending && <button disabled={!metaIsValid} onClick={() => readyToScanFn()}>Ready to scan</button>}
                 </div>
                 {updateLoading && <LoadingIndicator />}
             </div>

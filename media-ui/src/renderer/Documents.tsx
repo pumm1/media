@@ -13,7 +13,7 @@ import { Pill } from "./common/Selection";
 import FadingCompoennt from "./common/FadingComponent";
 
 const seasonStr = (seasons: Season[]) => {
-    const str = seasons.length > 1 ? 'Seasons' : 'Season'
+    const str = seasons.length !== 1 ? 'Seasons' : 'Season'
 
     return `${seasons.length} ${str}`
 }
