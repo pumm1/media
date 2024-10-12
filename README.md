@@ -24,7 +24,10 @@ So each directory looks like such:
 ...
 ```
 
-Each movie should be in their own folder with a `meta.json` file, so the directory structure is as follows:
+Each movie should be in their own folder with a `meta.json` file. User doesn't have to add the `meta.json` to the folders by themselves as it becomes cumbersome.
+Meta files are created automatically, if they don't exist, when scanning the media directories. First a temporary file is created that can be updated through the UI to have all the needed parts, later renamed to `meta.json` after it's ready to be scanned.
+
+With the meta files the directory structure is as follows:
 ```
 //under each source dir
 ...
