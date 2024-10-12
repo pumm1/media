@@ -6,8 +6,10 @@ import MediaIcon from './common/MovieIcon'
 
 interface MetaInfoProps {
     metaInfo: MetaFileInfo
+    updateMetaInfos: () => void
 }
-const MetaInfoRow = ({metaInfo}: MetaInfoProps) => {
+
+const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
     const [updateLoading, setUpdateLoading] = useState(false)
     const [tags, setTags] = useState(metaInfo.tags)
     const [imdb, setImdb] = useState(metaInfo.imdb)
@@ -30,7 +32,10 @@ const MetaInfoRow = ({metaInfo}: MetaInfoProps) => {
 
     const readyToScanFn = () => {
         setUpdateLoading(true)
-        metaFileReadyForScanning({metaPath: metaInfo.metaPath}).then(() => setUpdateLoading(false))
+        metaFileReadyForScanning({metaPath: metaInfo.metaPath}).then(() => {
+            setUpdateLoading(false)
+            updateMetaInfos()
+        })
     }
 
     const updateTags = (tagsStr: string) => setTags(tagsStr.split(',').map(tag => tag.trim()))
@@ -94,14 +99,18 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
     const metaFilesByPending = (metaFiles: MetaFileInfo[], onlyPending: boolean): MetaFileInfo[] =>
         onlyPending ? metaFiles.filter(m => m.isPending) : metaFiles
 
-    const [usedMetaFiles, setUsedMetaFiles] = useState<MetaFileInfo[]>([])
+    const [usedMetaFiles, setUsedMetaFiles] = useState<MetaFileInfo[] | undefined>(undefined)
 
-    useEffect(() => {
-        // Fetch all meta files when the component mounts
+    const updateMetaFiles = () => {
         listMetaFiles().then(metas => {
             setAllMetaFiles(metas)
             setUsedMetaFiles(metaFilesByPending(metas, useOnlyPending)) // Initialize with pending or all based on current toggle
         })
+    }
+
+    useEffect(() => {
+        // Fetch all meta files when the component mounts
+        updateMetaFiles()
     }, [])
 
     useEffect(() => {
@@ -117,10 +126,10 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
         <div className='metaContainer' ref={componentRef}>
             <h3>Meta data management</h3>
             Only pending: <input type='checkbox' checked={useOnlyPending} onChange={onToggle} />
-            {usedMetaFiles.length === 0 ? 
+            {usedMetaFiles === undefined ? 
                 <div className='loading'><LoadingIndicator /></div> :
                 <div className='metaInfos'>
-                    {usedMetaFiles.map(m => <MetaInfoRow key={m.title + m.imdb + m.metaPath} metaInfo={m} />)}
+                    {usedMetaFiles.map(m => <MetaInfoRow key={m.title + m.imdb + m.metaPath} metaInfo={m} updateMetaInfos={updateMetaFiles}/>)}
                 </div>
             }
         </div>
