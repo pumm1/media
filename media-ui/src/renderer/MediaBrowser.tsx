@@ -44,6 +44,7 @@ const updateInfo = (res: UpdateRes) =>
         <div>{mediaUpdateInfoStr(res.added, 'new')}</div>
         <div>{mediaUpdateInfoStr(res.updatedSeries, 'updated [series]')}</div>
         <div>{mediaUpdateInfoStr(res.removed, 'removed')}</div>
+        <div>{mediaUpdateInfoStr(res.pendingConfig, 'pending configuration')}</div>
     </>
 
 //for testing

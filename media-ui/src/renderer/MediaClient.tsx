@@ -43,15 +43,6 @@ const putDataAs = <T, >(path: string, data: any): Promise<T> =>
     })
 
 /*
-const putData = (path: string, data: any) => {
-    const requestOptions = {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    }
-
-    return fetch(path, requestOptions)
-}
 
 const deleteData = (path: string, data: any) => {
     const requestOptions = {
@@ -62,11 +53,6 @@ const deleteData = (path: string, data: any) => {
 
     return fetch(path, requestOptions)
 }
-
-const putDataAs = <T, >(path: string, data: any): Promise<T> => 
-    putData(path, data).then(res => {
-        return res.json() as T
-    })
 
 const deleteDataAs = <T, >(path: string, data: any): Promise<T> => 
     deleteData(path, data).then(res => {
@@ -146,6 +132,7 @@ export interface UpdateRes {
     added: number
     updatedSeries: number,
     removed: number
+    pendingConfig: number
 }
 
 export const updateMedias = () => 
