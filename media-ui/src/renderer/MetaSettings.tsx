@@ -14,9 +14,10 @@ const isValidImdbUrl = (url: string) => {
 interface MetaInfoProps {
     metaInfo: MetaFileInfo
     updateMetaInfos: () => void
+    existingTags: string[]
 }
 
-const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
+const MetaInfoRow = ({metaInfo, updateMetaInfos, existingTags}: MetaInfoProps) => {
     const [updateLoading, setUpdateLoading] = useState(false)
     const [tags, setTags] = useState(metaInfo.tags)
     const [imdb, setImdb] = useState(metaInfo.imdb)
@@ -45,9 +46,11 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
         }))
     }
 
-    const updateTags = (tagsStr: string) => setTags(tagsStr.split(',').map(tag => tag.trim()))
+    const updateTagsFromStr = (tagsStr: string) => setTags(tagsStr.split(',').map(tag => tag.trim()))
 
     const metaIsValid = tags.length > 0 && isValidImdbUrl(imdb)
+
+    const tagsToSelect = existingTags.filter(t => !tags.includes(t))
 
     return (
         <div className='metaInfoContainer'>
@@ -58,7 +61,12 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
                 </div>
                 Tags
                 <div className='metaField'>
-                    <input type='text' value={tags.join(',')} onChange={e => updateTags(e.target.value)}/>
+                    <input type='text' value={tags.join(',')} onChange={e => updateTagsFromStr(e.target.value)}/>
+                    <select onChange={e => setTags(tags.concat(e.target.value))}>
+                        {tagsToSelect.map(t => 
+                            <option key={t} value={t}>{t}</option>
+                        )}
+                    </select>
                 </div>
                 IMDB
                 <div className='metaField'>
@@ -82,9 +90,10 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
 
 interface MetaSettingsProps {
     onClose: () => void
+    existingTags: string[]
 }
 
-const MetaSettings = ({onClose}: MetaSettingsProps) => {
+const MetaSettings = ({ onClose, existingTags }: MetaSettingsProps) => {
     const [allMetaFiles, setAllMetaFiles] = useState<MetaFileInfo[]>([])
     const [useOnlyPending, setUseOnlyPending] = useState(true)
 
@@ -137,7 +146,7 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
             {usedMetaFiles === undefined ? 
                 <div className='loading'><LoadingIndicator /></div> :
                 <div className='metaInfos'>
-                    {usedMetaFiles.map(m => <MetaInfoRow key={m.title + m.imdb + m.metaPath} metaInfo={m} updateMetaInfos={updateMetaFiles}/>)}
+                    {usedMetaFiles.map(m => <MetaInfoRow key={m.title + m.imdb + m.metaPath} existingTags={existingTags} metaInfo={m} updateMetaInfos={updateMetaFiles}/>)}
                 </div>
             }
         </div>

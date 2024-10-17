@@ -187,7 +187,7 @@ const MediaBrowser = () => {
         <div className='main'>
             { settingsOpen &&
                 <PopUpContainer>
-                    <MetaSettings onClose={() => setSettingsOpen(false)}/>
+                    <MetaSettings existingTags={tags} onClose={() => setSettingsOpen(false)}/>
                 </PopUpContainer>
             }
             {selectedDoc && 
