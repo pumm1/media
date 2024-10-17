@@ -17,6 +17,8 @@ interface MetaInfoProps {
     existingTags: string[]
 }
 
+const nonEmptyStringsOnly = (arr: string[]) => arr.filter(item => item !== '')
+
 const MetaInfoRow = ({metaInfo, updateMetaInfos, existingTags}: MetaInfoProps) => {
     const [updateLoading, setUpdateLoading] = useState(false)
     const [tags, setTags] = useState(metaInfo.tags)
@@ -25,7 +27,7 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos, existingTags}: MetaInfoProps) =
     const [title, setTitle] = useState(metaInfo.title)
     
     const req: MetaUpdateReq = {
-        tags,
+        tags: nonEmptyStringsOnly(tags),
         imdb,
         added,
         title,
@@ -62,7 +64,7 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos, existingTags}: MetaInfoProps) =
                 Tags
                 <div className='metaField'>
                     <input type='text' value={tags.join(',')} onChange={e => updateTagsFromStr(e.target.value)}/>
-                    <select onChange={e => setTags(tags.concat(e.target.value))}>
+                    <select onChange={e => setTags((nonEmptyStringsOnly(tags).concat(e.target.value)))}>
                         {tagsToSelect.map(t => 
                             <option key={t} value={t}>{t}</option>
                         )}
