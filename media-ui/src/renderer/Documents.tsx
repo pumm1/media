@@ -1,4 +1,4 @@
-import { ISODateString, QueryResult, Season } from "./MediaClient"
+import { ISODateString, QueryResult, Season, rescanMedia } from "./MediaClient"
 import { FolderButton, PlayButton } from "./common/CommonButtons"
 import errorGif1 from './angry-panda.gif';
 import errorGif2 from './monke-pc.gif'
@@ -114,7 +114,7 @@ const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps)
     )
 }
 
-const Documents = ({docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => 
+const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => 
     <div className='docContainer'>
         <Docs sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
     </div>

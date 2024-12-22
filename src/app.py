@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from queryReq import QueryReq
 from mediaHandler import search_collections, go_through_medias, get_existing_tags, reset_media, list_meta_files, \
-    update_meta_file, mark_temp_meta_file_ready_for_scanning
+    update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_path
 import requests
 
 app = Flask(__name__)
@@ -84,9 +84,9 @@ def preview():
 def update_media():
     return(jsonify(go_through_medias()))
 
-@app.route('/rescan', methods=[put])
+@app.route('/rescan-media', methods=[put])
 def rescan_media():
-    data = request.get_json()
-    folder_path = data['folderPath']
-    return "TODO"
+    folder_path = request.get_json()
+
+    return jsonify(rescan_media_by_path(folder_path))
 

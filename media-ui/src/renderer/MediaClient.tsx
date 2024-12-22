@@ -169,3 +169,5 @@ export interface MetaReadyForScanReq {
 export const metaFileReadyForScanning = (data: MetaReadyForScanReq) =>
     putDataAs<boolean>('/meta-file-ready-to-scan', data)
 
+export const rescanMedia = (folderPath: string) =>
+    putDataAs<boolean>('/rescan-media', folderPath)

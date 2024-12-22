@@ -466,6 +466,8 @@ def go_through_medias():
         return {'added': added, 'updatedSeries': updated_series, 'removed': removed, 'pendingConfig': new_temp_metas}
 
 
+# ideally should use ID, but the mongodb has had some problems with the ID usage.
+# TODO: should refactor the logic later to use ID
 def rescan_media_by_path(folder_path: str):
     """
     fetch media by folder path, delete the media from mongodb, handle by media type and add back to db
@@ -533,4 +535,4 @@ def reset_media():
 
 #test_series()
 
-rescan_media_by_path('/Users/sagu/media_project/media/src/medias/Series/salkkarit')
+#rescan_media_by_path('/Users/sagu/media_project/media/src/medias/Series/salkkarit')

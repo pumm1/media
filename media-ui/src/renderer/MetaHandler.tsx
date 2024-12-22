@@ -1,7 +1,7 @@
 import axios from "axios";
 import {load} from 'cheerio'
 import { useEffect, useRef, useState } from "react";
-import { QueryResult, Season, Episode, createUrl, preview } from "./MediaClient";
+import { QueryResult, Season, Episode, createUrl, preview, rescanMedia } from "./MediaClient";
 import LoadingIndicator from "./common/LoadingIndicator";
 import './MetaHandler.css'
 import {PlayButton, FolderButton} from "./common/CommonButtons";
@@ -48,6 +48,7 @@ interface MetaInfoProps extends MetaInfo {
     onOpenFolder: () => void
     doc: QueryResult
     onClose: () => void
+    updateMediasFn: () => void
 }
 
 interface SeasonInfoProps {
@@ -89,7 +90,7 @@ const SeasonInfo = ({seasons, playMedia}: SeasonInfoProps) =>
 
 const imgScaler = 500
 
-const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder, onClose}: MetaInfoProps) => {
+const MetaInfo = ({updateMediasFn, title, description, info, image, playMedia, doc, onOpenFolder, onClose}: MetaInfoProps) => {
     const componentRef = useRef<HTMLDivElement | null>(null)
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -106,6 +107,11 @@ const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder
         }
     }, [])
 
+    const rescanFn = () => rescanMedia(doc.folderPath).then(() => updateMediasFn())
+
+    const onRescan = () => 
+        Promise.resolve(onClose()).then(() => rescanFn())
+
     return(
         <div className="metaContainer" ref={componentRef}>
             <a href={doc.imdb} target="_blank"><h2>{title}</h2></a>
@@ -114,6 +120,7 @@ const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder
             <div className="buttons">
                 {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
                 <FolderButton onClick={onOpenFolder}/>
+                <button onClick={() => onRescan()}>Rescan</button>
             </div>
             <p>{description ?? ''}</p>
             <div className="seasonsAndImg">
@@ -130,8 +137,10 @@ export interface MetaInfoByUrlProps {
     playMedia: (path: string) => void
     onOpenFolder: () => void
     onClose: () => void
+    updateMediasFn: () => void
 }
-const MetaInfoByUrl = ({doc, playMedia, onOpenFolder, onClose}: MetaInfoByUrlProps) => {
+
+const MetaInfoByUrl = ({updateMediasFn, doc, playMedia, onOpenFolder, onClose}: MetaInfoByUrlProps) => {
     const [metaInfo, setMetaInfo] = useState<MetaInfo | undefined>(undefined)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -148,7 +157,7 @@ const MetaInfoByUrl = ({doc, playMedia, onOpenFolder, onClose}: MetaInfoByUrlPro
 
     return (
         isLoading ? <LoadingIndicator /> :
-        metaInfo ? <MetaInfo onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+        metaInfo ? <MetaInfo updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
     )
 }
 

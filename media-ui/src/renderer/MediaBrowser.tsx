@@ -191,7 +191,7 @@ const MediaBrowser = () => {
                 </PopUpContainer>
             }
             {selectedDoc && 
-                <PopUpContainer><MetaInfoByUrl doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} onClose={() => setDoc(undefined)}/></PopUpContainer>
+                <PopUpContainer><MetaInfoByUrl updateMediasFn={updateMediasFn} doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} onClose={() => setDoc(undefined)}/></PopUpContainer>
             }
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
             <div className='mediaBrowserContainer' style={useBlur ? blurByAmount(2) : blurByAmount(0)}>
