@@ -56,7 +56,7 @@ def meta_file_ready_to_scan():
 def reset_medias():
     reset_media()
 
-    return True
+    return jsonify(True)
 
 @app.route('/preview', methods=[post])
 def preview():
@@ -80,6 +80,13 @@ def preview():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/update-medias', methods = [post])
+@app.route('/update-medias', methods=[post])
 def update_media():
     return(jsonify(go_through_medias()))
+
+@app.route('/rescan', methods=[put])
+def rescan_media():
+    data = request.get_json()
+    folder_path = data['folderPath']
+    return "TODO"
+
