@@ -133,14 +133,13 @@ const MediaBrowser = () => {
         initialResultsFn()
     }, [])
 
-    const triggerToast = () => {
+    const triggerToastAndUpdateMedias = () => {
         setShowToast(true);
-        setTimeout(() => {
+        updateMediaFn(q).then(() => setTimeout(() => {
             setShowToast(false);
             setUpdateLoading(false)
             setMediaUpdateInfo(undefined)
-            updateMediaFn(q)
-        }, 3000)
+        }, 3000))
     }
 
     useEffect(() => {
@@ -175,10 +174,11 @@ const MediaBrowser = () => {
         }
 
     const updateMediasFn = () => {
-        Promise.resolve(setUpdateLoading(true)).then(() => updateMedias().then(setMediaUpdateInfo).then(() => getTags().then(setTagOptions)).finally(() => {
+        setUpdateLoading(true)
+        updateMedias().then(setMediaUpdateInfo).then(() => getTags().then(setTagOptions)).finally(() => {
             setUpdateLoading(false)
-            triggerToast()
-        }))
+            triggerToastAndUpdateMedias()
+        })
     }
 
     const useBlur = settingsOpen || selectedDoc !== undefined

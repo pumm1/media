@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { QueryResult, Season, Episode, createUrl, preview, rescanMedia } from "./MediaClient";
 import LoadingIndicator from "./common/LoadingIndicator";
 import './MetaHandler.css'
-import {PlayButton, FolderButton} from "./common/CommonButtons";
+import {PlayButton, FolderButton, RefreshButton} from "./common/CommonButtons";
 import Hideable from "./common/Hideable";
 import MediaIcon from "./common/MovieIcon";
 
@@ -112,15 +112,23 @@ const MetaInfo = ({updateMediasFn, title, description, info, image, playMedia, d
     const onRescan = () => 
         Promise.resolve(onClose()).then(() => rescanFn())
 
+    useEffect(() => {
+        componentRef.current?.focus(); //requred for using escape to close modal
+      }, [])
+
     return(
-        <div className="metaContainer" ref={componentRef}>
+        <div tabIndex={0} className="metaContainer" ref={componentRef} onKeyDown={e => {
+            if (e.key === 'Escape') {
+                onClose()
+            }
+        }}>
             <a href={doc.imdb} target="_blank"><h2>{title}</h2></a>
             <p>{info !== undefined ? info : '[Info not available]'}</p>
             <MediaIcon type={doc.type}/>
             <div className="buttons">
                 {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
                 <FolderButton onClick={onOpenFolder}/>
-                <button onClick={() => onRescan()}>Rescan</button>
+                <RefreshButton onClick={() => onRescan()} />
             </div>
             <p>{description ?? ''}</p>
             <div className="seasonsAndImg">
