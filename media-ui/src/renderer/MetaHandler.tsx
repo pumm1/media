@@ -1,7 +1,7 @@
 import axios from "axios";
 import {load} from 'cheerio'
 import { useEffect, useRef, useState } from "react";
-import { QueryResult, Season, Episode, createUrl, preview, rescanMedia } from "./MediaClient";
+import { QueryResult, Season, Episode, createUrl, rescanMedia, preview } from "./MediaClient";
 import LoadingIndicator from "./common/LoadingIndicator";
 import './MetaHandler.css'
 import {PlayButton, FolderButton, RefreshButton} from "./common/CommonButtons";
@@ -21,14 +21,7 @@ export interface MetaInfo extends PossibleError {
 
 export const resolveLinkMeta = async (url: string): Promise<MetaInfo| undefined> => {
   try {
-    const { data } = await axios.post(createUrl('/preview'), {url})
-    const $ = load(data)
-
-    const title = $('meta[property="og:title"]').attr('content') || $('title').text()
-    const info = $('meta[property="og:description"]').attr('content')
-    const description = $('meta[name="description"]').attr('content')
-    const image = $('meta[property="og:image"]').attr('content')
-    //const link = $('meta[property="og:url"]').attr('content') || url;
+    const { title, info, description, image } = await preview(url)
 
     return {
         title,

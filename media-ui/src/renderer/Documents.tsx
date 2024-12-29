@@ -1,4 +1,4 @@
-import { ISODateString, QueryResult, Season, preview } from "./MediaClient"
+import { ISODateString, QueryResult, Season } from "./MediaClient"
 import errorGif1 from './angry-panda.gif';
 import errorGif2 from './monke-pc.gif'
 import errorGif3 from './throw-pc.gif'

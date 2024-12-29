@@ -139,8 +139,15 @@ export interface UpdateRes {
 export const updateMedias = () => 
     postDataAs<UpdateRes>(`/update-medias`, {})
 
+export interface MetaResponse {
+    title?: string
+    info?: string
+    description?: string
+    image?: string
+}
+
 export const preview = (url: string) =>
-    postData(`/preview`, {url})
+    postDataAs<MetaResponse>(`/preview`, {url})
 
 interface MetaBase {
     tags: string[]
