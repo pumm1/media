@@ -1,16 +1,16 @@
-import { ISODateString, QueryResult, Season, rescanMedia } from "./MediaClient"
-import { FolderButton, PlayButton } from "./common/CommonButtons"
+import { ISODateString, QueryResult, Season, preview } from "./MediaClient"
 import errorGif1 from './angry-panda.gif';
 import errorGif2 from './monke-pc.gif'
 import errorGif3 from './throw-pc.gif'
 import errorGif4 from './pc-trash.gif'
 import MediaIcon from "./common/MovieIcon"
+import Hideable from "./common/Hideable"
+import { useEffect, useState } from "react"
+import { Pill } from "./common/Selection"
+import FadingCompoennt from "./common/FadingComponent"
+import { MetaInfo, resolveLinkMeta } from "./MetaHandler"
 
 import './Documents.css'
-import Hideable from "./common/Hideable";
-import { useEffect, useState } from "react";
-import { Pill } from "./common/Selection";
-import FadingCompoennt from "./common/FadingComponent";
 
 const seasonStr = (seasons: Season[]) => {
     const str = seasons.length > 1 ? 'Seasons' : 'Season'
@@ -31,25 +31,42 @@ const isNew = (date: ISODateString, sinceWeeksAgo: number): boolean => {
     return Date.parse(date) > oneWeekInPast
 }
 
-const DocRow = ({ d, setDoc, sinceWeeksAgo }: DocProps) =>
-    <div className='document' onClick={() => setDoc(d)}>
-        <h2>{d.title}</h2>
-        <div className='mediaInfo'>
-            <MediaIcon type={d.type}/> 
-            {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
-            <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
-                <Pill variant='Static' keyProp={d.title}>New!</Pill>
-            </FadingCompoennt>
+const smallImgScaler = 120
+
+const DocRow = ({ d, setDoc, sinceWeeksAgo }: DocProps) => {
+    const [metaInfo, setMetaInfo] = useState<MetaInfo | undefined>(undefined)
+    const img = metaInfo?.image
+
+    useEffect(() => {
+        resolveLinkMeta(d.imdb).then(setMetaInfo)
+    }, [d])
+
+    //{img && <img className='image' src={img} width={0.675*smallImgScaler} height={1*smallImgScaler}></img>}
+
+    return (
+        <div className="documentContainer">
+            <div className='documentImage' style={{'backgroundImage': `url(${img})`, 'backgroundSize': 'cover', 'maskImage': 'linear-gradient(to bottom, transparent, var(--main-dark) 100%, var(--main-dark) 100%, transparent)'}}/>
+            <div className='document' onClick={() => setDoc(d)}>
+                <h2 style={{WebkitTextStroke: '2px var(--main-dark)', fontSize: '32px'}}>{d.title}</h2>
+                <div className='mediaInfo'>
+                    <MediaIcon type={d.type}/> 
+                    {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
+                    <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
+                        <Pill variant='Static' keyProp={d.title}>New!</Pill>
+                    </FadingCompoennt>
+                </div>
+                <div className='tagContainer'>
+                    {
+                        d.tags.map(t =>
+                            <span key={d.title + t} className='tag'>
+                                {t.toUpperCase()}
+                            </span>)
+                    }
+                </div>
+            </div>
         </div>
-        <div className='tagContainer'>
-            {
-                d.tags.map(t =>
-                    <span key={d.title + t} className='tag'>
-                        {t.toUpperCase()}
-                    </span>)
-            }
-        </div>
-    </div>
+    )
+}
 
 interface DocsProps {
     docs: QueryResult[]

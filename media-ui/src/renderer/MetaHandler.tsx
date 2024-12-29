@@ -19,7 +19,7 @@ export interface MetaInfo extends PossibleError {
     image?: string
 }
 
-const resolveLinkMeta = async (url: string): Promise<MetaInfo| undefined> => {
+export const resolveLinkMeta = async (url: string): Promise<MetaInfo| undefined> => {
   try {
     const { data } = await axios.post(createUrl('/preview'), {url})
     const $ = load(data)
@@ -141,6 +141,7 @@ const MetaInfo = ({updateMediasFn, title, description, info, image, playMedia, d
 }
 
 export interface MetaInfoByUrlProps {
+    metaInfo?: MetaInfo
     doc: QueryResult
     playMedia: (path: string) => void
     onOpenFolder: () => void
@@ -148,8 +149,8 @@ export interface MetaInfoByUrlProps {
     updateMediasFn: () => void
 }
 
-const MetaInfoByUrl = ({updateMediasFn, doc, playMedia, onOpenFolder, onClose}: MetaInfoByUrlProps) => {
-    const [metaInfo, setMetaInfo] = useState<MetaInfo | undefined>(undefined)
+const MetaInfoByUrl = ({metaInfo, updateMediasFn, doc, playMedia, onOpenFolder, onClose}: MetaInfoByUrlProps) => {
+    const [currentMetaInfo, setMetaInfo] = useState<MetaInfo | undefined>(metaInfo)
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
@@ -165,7 +166,7 @@ const MetaInfoByUrl = ({updateMediasFn, doc, playMedia, onOpenFolder, onClose}: 
 
     return (
         isLoading ? <LoadingIndicator /> :
-        metaInfo ? <MetaInfo updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+        currentMetaInfo ? <MetaInfo updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={currentMetaInfo.title} info={currentMetaInfo.info} description={currentMetaInfo.description} image={currentMetaInfo.image}/> :  <></>
     )
 }
 
