@@ -1,6 +1,6 @@
 import './MetaSettings.css'
 import { useEffect, useRef, useState } from 'react'
-import {listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, updateMetaFile} from './MediaClient'
+import {listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, rescanMedia, resetMedias, updateMetaFile} from './MediaClient'
 import LoadingIndicator from './common/LoadingIndicator'
 import MediaIcon from './common/MovieIcon'
 
@@ -122,16 +122,25 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
         setUseOnlyPending(prev => !prev) // This will trigger the useEffect to recalculate usedMetaFiles
     }
 
+    const [showReset, setShowReset] = useState(false)
+
     return (
         <div className='metaContainer' ref={componentRef}>
             <h3>Meta data management</h3>
-            Only pending: <input type='checkbox' checked={useOnlyPending} onChange={onToggle} />
-            {usedMetaFiles === undefined ? 
-                <div className='loading'><LoadingIndicator /></div> :
-                <div className='metaInfos'>
-                    {usedMetaFiles.map(m => <MetaInfoRow key={m.title + m.imdb + m.metaPath} metaInfo={m} updateMetaInfos={updateMetaFiles}/>)}
-                </div>
-            }
+            <div className='scanAll'>
+                <button onClick={() => setShowReset(!showReset)}>{showReset ? 'Cancel' : 'Reset everything' }</button>
+                {showReset && <p>This action deletes everything from the DB (Doesn't delete any actual media from the hard drive)</p>}
+                {showReset && <button onClick={() => resetMedias()}>Confirm reset</button>}
+            </div>
+            <div>
+                Show only pending: <input type='checkbox' checked={useOnlyPending} onChange={onToggle} />
+                {usedMetaFiles === undefined ? 
+                    <div className='loading'><LoadingIndicator /></div> :
+                    <div className='metaInfos'>
+                        {usedMetaFiles.map(m => <MetaInfoRow key={m.title + m.imdb + m.metaPath} metaInfo={m} updateMetaInfos={updateMetaFiles}/>)}
+                    </div>
+                }
+            </div>
         </div>
     )
 }
