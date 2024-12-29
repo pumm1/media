@@ -1,18 +1,17 @@
 import json
 from mediaDAO import add_media_to_collection, query_collections, existing_movies, remove_media_by_files, existing_tags, \
-    existing_series, update_series_seasons, delete_media_by_ids, delete_all_medias, media_by_folder, \
+    existing_series, update_series_seasons, delete_media_by_ids, delete_all_medias, media_by_uuid, \
     remove_media_by_title
 import os
 from bson import ObjectId
 from bson.json_util import dumps, loads
 from pandas.core.common import flatten
 from datetime import datetime
-
 from queryReq import QueryReq
 from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f, path_f, medias_to_remove_json, folder_path_f, \
-    seasons_f, id_f
-
+    seasons_f, uuid_f
 from mediaObjects import Movie, Series, Season, Episode
+import uuid
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 #medias_dir = os.path.join(current_dir, 'medias')
@@ -86,9 +85,13 @@ def arr_lowercase(arr: list[str]):  #list(map(lambda s: s.asJson(), s.seasons)),
 
     return res
 
+def new_uuid() -> str:
+    return str(uuid.uuid4())
+
 
 def save_media_info_for_movie(data, m: Movie):
     m_json = {
+        "uuid": new_uuid(),
         "title": data[title_f],
         "type": data[type_f],
         "tags": arr_lowercase(data[tags_f]),
@@ -103,6 +106,7 @@ def save_media_info_for_movie(data, m: Movie):
 
 def save_media_info_for_series(data, s: Series):
     m_json = {
+        "uuid": new_uuid(),
         "title": data[title_f],
         "type": data[type_f],
         "tags": arr_lowercase(data[tags_f]),
@@ -131,7 +135,9 @@ def search_collections(q: QueryReq):
 
     res = query_collections(m_json, q.sort, q.sort_direction)
 
-    json_str = dumps(res)
+    print(f'.... RES: \n{res}')
+
+    json_str = dumps(res, default=str)
     json_res = loads(json_str)
 
     return json_res
@@ -163,8 +169,7 @@ def get_existing_series():
     all_existing_series = json.loads(dumps(res))
     existing: list[Series] = []
     for series in all_existing_series:
-        id = series[id_f]
-        s = Series(id, series[title_f], series[folder_path_f], series[seasons_f])
+        s = Series(series[uuid_f], series[title_f], series[folder_path_f], series[seasons_f])
         existing.append(s)
 
     return existing
@@ -357,7 +362,7 @@ def update_existing_series_with_found(found_series: list[Series]):
             elif e.seasons != m_seasons:
                 print(f'{matching_series} difference in seasons with found - updating')
                 updated = updated + 1
-                update_series_seasons(ObjectId(e.id['$oid']), matching_series)
+                update_series_seasons(e.uuid, matching_series)
 
     series_ids_to_delete = list(map(lambda s: s.id, series_to_delete))
     deleted = delete_media_by_ids(series_ids_to_delete)
@@ -468,16 +473,17 @@ def go_through_medias():
 
 # ideally should use ID, but the mongodb has had some problems with the ID usage.
 # TODO: should refactor the logic later to use ID
-def rescan_media_by_path(folder_path: str):
+def rescan_media_by_uuid(uuid: str):
     """
     fetch media by folder path, delete the media from mongodb, handle by media type and add back to db
     """
-    found_items = media_by_folder(folder_path)
+    found_items = media_by_uuid(uuid)
     if len(found_items) > 0:
         media_json = json.loads(dumps(found_items[0]))
 
         title = media_json['title']
         media_type = media_json['type']
+        folder_path = media_json['folderPath']
         meta_path = f'{folder_path}/{meta_file_name}'
         reset_meta(meta_path, title)
 
@@ -492,7 +498,7 @@ def rescan_media_by_path(folder_path: str):
 
         return True
     else:
-        print(f'No results found with {folder_path}')
+        print(f'No results found with id: {uuid}')
 
         return False
 
@@ -536,3 +542,5 @@ def reset_media():
 #test_series()
 
 #rescan_media_by_path('/Users/sagu/media_project/media/src/medias/Series/salkkarit')
+
+#reset_media()

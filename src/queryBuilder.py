@@ -7,7 +7,7 @@ all_f = '$all'
 in_f = '$in'
 
 #field names
-id_f = '_id'
+uuid_f = 'uuid'
 title_f = 'title'
 created_f = 'created'
 folder_path_f = 'folderPath'

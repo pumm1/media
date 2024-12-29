@@ -107,7 +107,7 @@ const MetaInfo = ({updateMediasFn, title, description, info, image, playMedia, d
         }
     }, [])
 
-    const rescanFn = () => rescanMedia(doc.folderPath).then(() => updateMediasFn())
+    const rescanFn = () => rescanMedia(doc.uuid).then(() => updateMediasFn())
 
     const onRescan = () => 
         Promise.resolve(onClose()).then(() => rescanFn())

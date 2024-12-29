@@ -11,7 +11,7 @@
     border-top: var(--main-white) 2px solid;
     border-radius: var(--main-radius);
     display: grid;
-    grid-template-columns: repeat(auto-fill, 420px);
+    grid-template-columns: repeat(auto-fill, 440px);
 }
 
 .document {

@@ -175,6 +175,7 @@ def query_collections(m_json, sort, sort_direction):
                     m_json,
                     {
                         '_id': 0,
+                        'uuid': 1,
                         'title': 1,
                         'imdb': 1,
                         'tags': 1,
@@ -221,7 +222,7 @@ def existing_series():
                     'type': 'series'
                 },
                     {
-                        '_id': 1,
+                        'uuid': 1,
                         'title': 1,
                         'imdb': 1,
                         'folderPath': 1,
@@ -252,17 +253,18 @@ def existing_tags():
             return []
 
 
-def media_by_folder(folder_path: str):
+def media_by_uuid(uuid: str):
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
         collection = db.get_collection(collection_name)
         if collection is not None:
             return list(
                 collection.find({
-                    'folderPath': folder_path
+                    'uuid': uuid
                 },
                     {
                         '_id': 0,
+                        'uuid': 1,
                         'title': 1,
                         'imdb': 1,
                         'tags': 1,
@@ -279,14 +281,14 @@ def media_by_folder(folder_path: str):
             return []
 
 
-def update_series_seasons(id: ObjectId, s: Series):
+def update_series_seasons(uuid: str, s: Series):
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
         collection = db.get_collection(collection_name)
         print(f"... update {id} with value: {s.asJson()['seasons']}")
         if collection is not None:
             collection.update_one({
-                '_id': id
+                'uuid': uuid
             }, {
                 '$set': {'seasons': s.asJson()['seasons']}
             }, True)

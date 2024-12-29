@@ -93,6 +93,7 @@ export interface Season {
 export type ISODateString = string & { __brand: "ISODateString" };
 
 export interface QueryResult {
+    uuid: string
     title: string
     type: MediaType
     tags: string[]
@@ -169,5 +170,8 @@ export interface MetaReadyForScanReq {
 export const metaFileReadyForScanning = (data: MetaReadyForScanReq) =>
     putDataAs<boolean>('/meta-file-ready-to-scan', data)
 
-export const rescanMedia = (folderPath: string) =>
-    putDataAs<boolean>('/rescan-media', folderPath)
+export const rescanMedia = (uuid: string) =>
+    putDataAs<boolean>('/rescan-media', uuid)
+
+export const resetMedias = () => 
+    putDataAs<boolean>('/reset-medias', {})

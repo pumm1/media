@@ -1,6 +1,6 @@
 class Movie:
-    def __init__(self, id, title: str, folder_path: str, path: str):
-        self.id = id
+    def __init__(self, uuid, title: str, folder_path: str, path: str):
+        self.uuid = uuid
         self.title = title
         self.folder_path = folder_path
         self.path = path
@@ -37,13 +37,13 @@ class Season:
 
 
 class Series:
-    def __init__(self, id, title: str, folder_path: str, seasons: list[Season]):
-        self.id = id
+    def __init__(self, uuid, title: str, folder_path: str, seasons: list[Season]):
+        self.uuid = uuid
         self.title = title
         self.folder_path = folder_path
         self.seasons = seasons
     def __eq__(self, other):
-        return self.id == other.id or self.folder_path == other.folder_path
+        return self.uuid == other.uuid or self.folder_path == other.folder_path
 
     def asJson(self):
         return {
