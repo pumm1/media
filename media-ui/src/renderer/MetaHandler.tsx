@@ -1,7 +1,5 @@
-import axios from "axios";
-import {load} from 'cheerio'
-import { useEffect, useRef, useState } from "react";
-import { QueryResult, Season, Episode, createUrl, rescanMedia, preview } from "./MediaClient";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { QueryResult, Season, Episode, rescanMedia, preview } from "./MediaClient";
 import LoadingIndicator from "./common/LoadingIndicator";
 import './MetaHandler.css'
 import {PlayButton, FolderButton, RefreshButton} from "./common/CommonButtons";
@@ -17,23 +15,6 @@ export interface MetaInfo extends PossibleError {
     info?: string
     description?: string
     image?: string
-}
-
-export const resolveLinkMeta = async (url: string): Promise<MetaInfo| undefined> => {
-  try {
-    const { title, info, description, image } = await preview(url)
-
-    return {
-        title,
-        info,
-        description,
-        image,
-        
-    }
-  } catch (error) {
-    console.error(error);
-    return undefined;
-  }
 }
 
 interface MetaInfoProps extends MetaInfo {
@@ -83,14 +64,14 @@ const SeasonInfo = ({seasons, playMedia}: SeasonInfoProps) =>
 
 const imgScaler = 500
 
-const MetaInfo = ({updateMediasFn, title, description, info, image, playMedia, doc, onOpenFolder, onClose}: MetaInfoProps) => {
+const MetaInfoModal = ({updateMediasFn, title, description, info, image, playMedia, doc, onOpenFolder, onClose}: MetaInfoProps) => {
     const componentRef = useRef<HTMLDivElement | null>(null)
 
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = useCallback((event: MouseEvent) => {
         if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
-            onClose()
+            onClose();
         }
-    }
+    }, [onClose]); // Dependencies for useCallback
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside)
@@ -98,7 +79,7 @@ const MetaInfo = ({updateMediasFn, title, description, info, image, playMedia, d
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
         }
-    }, [])
+    }, [handleClickOutside])
 
     const rescanFn = () => rescanMedia(doc.uuid).then(() => updateMediasFn())
 
@@ -115,7 +96,7 @@ const MetaInfo = ({updateMediasFn, title, description, info, image, playMedia, d
                 onClose()
             }
         }}>
-            <a href={doc.imdb} target="_blank"><h2>{title}</h2></a>
+            <a href={doc.imdb} target="_blank" rel="noopener noreferrer"><h2>{title}</h2></a>
             <p>{info !== undefined ? info : '[Info not available]'}</p>
             <MediaIcon type={doc.type}/>
             <div className="buttons">
@@ -126,7 +107,7 @@ const MetaInfo = ({updateMediasFn, title, description, info, image, playMedia, d
             <p>{description ?? ''}</p>
             <div className="seasonsAndImg">
                 {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
-                <img src={image} width={0.675*imgScaler} height={1*imgScaler}></img>
+                <img src={image} alt="Not found" width={0.675*imgScaler} height={1*imgScaler}></img>
                 {/**we recommend a vertical alignment (i.e. portrait orientation) with an aspect ratio of 1:0.675 */}
             </div>  
         </div>
@@ -149,7 +130,7 @@ const MetaInfoByUrl = ({metaInfo, updateMediasFn, doc, playMedia, onOpenFolder, 
     useEffect(() => {
         if (doc.imdb) {
             setIsLoading(true)
-            resolveLinkMeta(doc.imdb).then(info => {
+            preview(doc.imdb).then(info => {
                 setIsLoading(false)
                 setMetaInfo(info)
             })
@@ -159,7 +140,7 @@ const MetaInfoByUrl = ({metaInfo, updateMediasFn, doc, playMedia, onOpenFolder, 
 
     return (
         isLoading ? <LoadingIndicator /> :
-        currentMetaInfo ? <MetaInfo updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={currentMetaInfo.title} info={currentMetaInfo.info} description={currentMetaInfo.description} image={currentMetaInfo.image}/> :  <></>
+        currentMetaInfo ? <MetaInfoModal updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={currentMetaInfo.title} info={currentMetaInfo.info} description={currentMetaInfo.description} image={currentMetaInfo.image}/> :  <></>
     )
 }
 

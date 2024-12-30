@@ -1,4 +1,4 @@
-import { ISODateString, QueryResult, Season } from "./MediaClient"
+import { ISODateString, MetaResponse, QueryResult, Season, preview } from "./MediaClient"
 import errorGif1 from './angry-panda.gif';
 import errorGif2 from './monke-pc.gif'
 import errorGif3 from './throw-pc.gif'
@@ -8,7 +8,6 @@ import Hideable from "./common/Hideable"
 import { useEffect, useState } from "react"
 import { Pill } from "./common/Selection"
 import FadingCompoennt from "./common/FadingComponent"
-import { MetaInfo, resolveLinkMeta } from "./MetaHandler"
 
 import './Documents.css'
 
@@ -31,16 +30,14 @@ const isNew = (date: ISODateString, sinceWeeksAgo: number): boolean => {
     return Date.parse(date) > oneWeekInPast
 }
 
-const smallImgScaler = 120
-
 const DocRow = ({ d, setDoc, sinceWeeksAgo }: DocProps) => {
-    const [metaInfo, setMetaInfo] = useState<MetaInfo | undefined>(undefined)
+    const [metaInfo, setMetaInfo] = useState<MetaResponse | undefined>(undefined)
+
     const img = metaInfo?.image
 
     useEffect(() => {
-        resolveLinkMeta(d.imdb).then(setMetaInfo)
-    }, [d])
-
+        preview(d.imdb).then(setMetaInfo)
+    }, [d.imdb])
     //{img && <img className='image' src={img} width={0.675*smallImgScaler} height={1*smallImgScaler}></img>}
 
     return (
@@ -114,7 +111,7 @@ const NoResuls = ({numOfDocs}: NoResultsProps) => {
                 <ul>
                     {NoResultsTips.map((tip, idx) => <li key={tip + idx}>{tip}</li>)}
                 </ul>
-                <img src={ErrorGifs[randGif]} />
+                <img src={ErrorGifs[randGif]} alt="Not found" />
                 </>
             </Hideable>
         </div>

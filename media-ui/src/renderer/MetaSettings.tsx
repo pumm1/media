@@ -1,6 +1,6 @@
 import './MetaSettings.css'
-import { useEffect, useRef, useState } from 'react'
-import {listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, rescanMedia, resetMedias, updateMetaFile} from './MediaClient'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, resetMedias, updateMetaFile} from './MediaClient'
 import LoadingIndicator from './common/LoadingIndicator'
 import MediaIcon from './common/MovieIcon'
 
@@ -13,13 +13,12 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
     const [updateLoading, setUpdateLoading] = useState(false)
     const [tags, setTags] = useState(metaInfo.tags)
     const [imdb, setImdb] = useState(metaInfo.imdb)
-    const [added, setAdded] = useState(metaInfo.added)
     const [title, setTitle] = useState(metaInfo.title)
     
     const req: MetaUpdateReq = {
         tags,
         imdb,
-        added,
+        added: metaInfo.added,
         title,
         type: metaInfo.type,
         metaPath: metaInfo.metaPath
@@ -82,36 +81,38 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
 
     const componentRef = useRef<HTMLDivElement | null>(null)
 
-    const handleClickOutside = (event: MouseEvent) => {
-        if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
-            onClose()
-        }
-    }
-
     useEffect(() => {
+
+        const handleClickOutside = (event: MouseEvent) => {
+            if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
+                onClose()
+            }
+        }
+
         document.addEventListener('mousedown', handleClickOutside)
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
         }
-    }, [])
+    }, [onClose])
 
     const metaFilesByPending = (metaFiles: MetaFileInfo[], onlyPending: boolean): MetaFileInfo[] =>
         onlyPending ? metaFiles.filter(m => m.isPending) : metaFiles
 
     const [usedMetaFiles, setUsedMetaFiles] = useState<MetaFileInfo[] | undefined>(undefined)
 
-    const updateMetaFiles = () => {
+    const updateMetaFiles = useCallback(() => {
         listMetaFiles().then(metas => {
             setAllMetaFiles(metas)
             setUsedMetaFiles(metaFilesByPending(metas, useOnlyPending)) // Initialize with pending or all based on current toggle
         })
-    }
+    }, [useOnlyPending]) // Dependencies for useCallback
 
     useEffect(() => {
         // Fetch all meta files when the component mounts
         updateMetaFiles()
-    }, [])
+    }, [updateMetaFiles]) // Dependency array includes the memoized updateMetaFiles
+
 
     useEffect(() => {
         // Update usedMetaFiles whenever allMetaFiles or useOnlyPending changes
