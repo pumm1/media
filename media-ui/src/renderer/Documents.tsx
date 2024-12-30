@@ -48,21 +48,23 @@ const DocRow = ({ d, setDoc, sinceWeeksAgo }: DocProps) => {
             <div className='documentImage' style={{'backgroundImage': `url(${img})`, 'backgroundSize': 'cover', 'maskImage': 'linear-gradient(to bottom, transparent, var(--main-dark) 100%, var(--main-dark) 100%, transparent)'}}/>
             <div className='document' onClick={() => setDoc(d)}>
                 <h2 style={{WebkitTextStroke: '2px var(--main-dark)', fontSize: '32px'}}>{d.title}</h2>
-                <div className='mediaInfo'>
-                    <MediaIcon type={d.type}/> 
-                    {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
-                    <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
-                        <Pill variant='Static' keyProp={d.title}>New!</Pill>
-                    </FadingCompoennt>
-                </div>
-                <div className='tagContainer'>
-                    {
-                        d.tags.map(t =>
-                            <span key={d.title + t} className='tag'>
-                                {t.toUpperCase()}
-                            </span>)
-                    }
-                </div>
+                <span className="infoContainer">
+                    <div className='mediaInfo'>
+                        <MediaIcon type={d.type}/> 
+                        {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
+                        <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
+                            <Pill variant='Static' keyProp={d.title}>New!</Pill>
+                        </FadingCompoennt>
+                    </div>
+                    <div className='tagContainer'>
+                        {
+                            d.tags.map(t =>
+                                <span key={d.title + t} className='tag'>
+                                    {t.toUpperCase()}
+                                </span>)
+                        }
+                    </div>
+                </span>
             </div>
         </div>
     )
