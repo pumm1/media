@@ -11,8 +11,9 @@
     border-top: var(--main-white) 2px solid;
     border-radius: var(--main-radius);
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     grid-gap: 16px 16px; /* Adjust the gap between grid items */
+    max-width: 100%;
 }
 
 .infoContainer {
