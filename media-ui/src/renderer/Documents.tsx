@@ -44,7 +44,6 @@ const DocRow = ({ d, setDoc, sinceWeeksAgo }: DocProps) => {
         <div className="documentContainer">
             <div className='documentImage' style={{'backgroundImage': `url(${img})`, 'backgroundSize': 'cover', 'maskImage': 'linear-gradient(to bottom, transparent, var(--main-dark) 100%, var(--main-dark) 100%, transparent)'}}/>
             <div className='document' onClick={() => setDoc(d)}>
-                <h2 style={{fontSize: '26px', fontWeight: 500, textTransform: 'uppercase', textAlign: 'center'}}>{d.title}</h2>
                 <span className="infoContainer">
                     <div className='mediaInfo'>
                         <MediaIcon type={d.type}/> 
