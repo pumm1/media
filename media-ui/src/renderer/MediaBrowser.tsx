@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { MutableRefObject, useEffect, useRef, useState } from 'react'
 import { MediaType, QueryReq, QueryResult, Season, SortDirection, SortType, UpdateRes, getTags, searchMedia, updateMedias } from './MediaClient'
 import MetaInfoByUrl from './MetaHandler'
 import _ from 'lodash'
@@ -183,6 +183,15 @@ const MediaBrowser = () => {
 
     const useBlur = settingsOpen || selectedDoc !== undefined
 
+    const inputRef: MutableRefObject<HTMLInputElement | null> = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+        // Keep the input focused after results come in
+        if (inputRef.current) {
+            inputRef.current.focus()
+        }
+    }, [docs]);  // Depend on docs or the state that triggers search result changes
+
     return (
         <div className='main'>
             { settingsOpen &&
@@ -195,7 +204,7 @@ const MediaBrowser = () => {
             }
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
             <div className='mediaBrowserContainer' style={useBlur ? blurByAmount(2) : blurByAmount(0)}>
-                <SearchInput isLoading={searchLoading} setTitles={setTitles}/>
+                <SearchInput reference={inputRef} isLoading={searchLoading} setTitles={setTitles}/>
                 <SearchOptions currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} sortOptions={sortOptions} setSortType={setSort} usedSort={sort} setSortDirection={setSortDirection} setTags={setTags} selectedTags={tags} tagOptions={tagOptions}/>
                 <Documents sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
                 <div className='scanner'>

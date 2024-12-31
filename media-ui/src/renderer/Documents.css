@@ -11,9 +11,10 @@
     border-top: var(--main-white) 2px solid;
     border-radius: var(--main-radius);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     grid-gap: 16px 16px; /* Adjust the gap between grid items */
     max-width: 100%;
+    overflow-x: hidden;
 }
 
 .infoContainer {
@@ -23,10 +24,16 @@
 .documentContainer {
     position: relative;
     aspect-ratio: 675 / 1000;
+    outline: none; /* Remove default blue outline */
+}
+.documentContainer:focus {
+    filter: brightness(1.3);
+    transform: scale(1.02); /* Slight zoom effect */
 }
 
 .documentContainer:hover {
-    filter: brightness(1.5)
+    filter: brightness(1.3);
+    transform: scale(1.02); /* Slight zoom effect */
 }
 
 .documentImage {
