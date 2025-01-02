@@ -138,29 +138,39 @@ const NoResuls = ({numOfDocs}: NoResultsProps) => {
     )
 }
 
-const focusGridItem = (index: number): void => {
-    // Query the element
-    const gridItem = document.querySelector(`.documentContainer[data-index="${index}"]`) as HTMLDivElement | null
-
-    // Check if the element is found and focusable
-    if (gridItem) {
-        gridItem.focus()
-        gridItem.scrollIntoView({
-            behavior: 'smooth', // Optional: For smooth scrolling
-            block: 'center', // Scroll so the item is centered in the container
-            inline: 'nearest' // Ensure horizontal scroll if needed (use 'start' for left alignment)
-        })
-    } else {
-        console.error(`Grid item not found for index: ${index}`)
-        console.log("Available elements:", document.querySelectorAll(".documentContainer"))
-    }
-}
-
 const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => {
+    const [isKeyboardNav, setIsKeyboardNav] = useState(false)
+    const scrollTimeout = useRef<number | null>(null)
+    const [isFocusing, setIsFocusing] = useState(false)
+
+    const focusGridItem = (index: number): void => {
+        setIsFocusing(true)
+        // Query the element
+        const gridItem = document.querySelector(`.documentContainer[data-index="${index}"]`) as HTMLDivElement | null
+    
+        // Check if the element is found and focusable
+        if (gridItem) {
+            gridItem.focus()
+            gridItem.scrollIntoView({
+                behavior: 'smooth', // Optional: For smooth scrolling
+                block: 'center', // Scroll so the item is centered in the container
+                inline: 'nearest' // Ensure horizontal scroll if needed (use 'start' for left alignment)
+            })
+            // Allow keyboard inputs again after a slight delay
+            setTimeout(() => {
+                setIsFocusing(false)
+            }, 280) // Adjust the delay if needed
+        } else {
+            console.error(`Grid item not found for index: ${index}`)
+            console.log("Available elements:", document.querySelectorAll(".documentContainer"))
+        }
+    }
+
     const handleKeyDown = (
         event: React.KeyboardEvent<HTMLDivElement>, 
         itemIndex: number
       ) => {
+        if (isFocusing) return;
         const totalItems = docs.length
         let newIndex: number | undefined
     
@@ -169,6 +179,7 @@ const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps)
                 if (itemIndex - 4 >= 0) {
                     newIndex = (itemIndex - 4)
                 }
+                setIsKeyboardNav(true)
                 break
             case 'ArrowLeft': // Handle single column or row
                 if (itemIndex - 1 >= 0) {
@@ -179,6 +190,7 @@ const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps)
                 if ((itemIndex + 4) < totalItems) {
                     newIndex = (itemIndex + 4)
                 }
+                setIsKeyboardNav(true)
                 break
             case 'ArrowRight': // Handle single column or row
                 if (itemIndex + 1 < totalItems) {
@@ -198,9 +210,22 @@ const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps)
         }
 
     
-        event.preventDefault();
-        if (newIndex !== undefined) {
-          focusGridItem(newIndex);
+        event.preventDefault()
+        if (newIndex !== undefined && isKeyboardNav) {
+          focusGridItem(newIndex)
+
+            if (scrollTimeout.current) {
+                clearTimeout(scrollTimeout.current)
+            }
+
+            // Debounce the scrollIntoView
+            scrollTimeout.current = window.setTimeout(() => {
+                const focusedItem = document.querySelector(
+                    `.documentContainer[data-index="${newIndex}"]`
+                ) as HTMLDivElement | null
+
+                focusedItem?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
+            }, 650) // Adjust the delay (e.g., 100ms) for smoother navigation
         }
     }
 
