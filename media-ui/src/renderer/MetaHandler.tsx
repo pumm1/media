@@ -62,7 +62,7 @@ const SeasonInfo = ({seasons, playMedia}: SeasonInfoProps) =>
         </Hideable>
     </div>
 
-const imgScaler = 500
+const imgScaler = 200
 
 const MetaInfoModal = ({updateMediasFn, title, description, info, image, playMedia, doc, onOpenFolder, onClose}: MetaInfoProps) => {
     const componentRef = useRef<HTMLDivElement | null>(null)

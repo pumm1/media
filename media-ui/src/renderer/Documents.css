@@ -5,17 +5,15 @@
 .docContainer {
     min-height: 100px;
     overflow-y: auto;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
     border-bottom: var(--main-white) 2px solid;
     border-top: var(--main-white) 2px solid;
     border-radius: var(--main-radius);
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-gap: 16px 16px; /* Adjust the gap between grid items */
+    grid-gap: 16px 8px; /* Adjust the gap between grid items */
     max-width: 100%;
     overflow-x: hidden;
-    padding: var(--main-padding);
+    padding: var(--small-padding);
 }
 
 .infoContainer {
@@ -53,7 +51,6 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 100%;
 }
 
 .mediaInfo {
