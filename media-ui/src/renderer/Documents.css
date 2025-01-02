@@ -48,7 +48,7 @@
     z-index: 1;
     cursor: pointer;
     border-radius: var(--big-radius);
-    padding: var(--main-padding);
+    padding: var(--big-padding);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
