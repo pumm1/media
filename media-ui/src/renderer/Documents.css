@@ -15,6 +15,7 @@
     grid-gap: 16px 16px; /* Adjust the gap between grid items */
     max-width: 100%;
     overflow-x: hidden;
+    padding: var(--main-padding);
 }
 
 .infoContainer {
