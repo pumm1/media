@@ -32,6 +32,7 @@
 
 .episodEcontainer {
     display: grid;
+    grid-template-columns: repeat(4, auto);
 }
 
 .episode {
