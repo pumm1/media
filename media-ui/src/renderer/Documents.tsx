@@ -56,7 +56,7 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
             setDoc(d)}} ref={containerRef} className="documentContainer" tabIndex={1} data-index={idx}>
             {
                 img ? 
-                <div className='documentImage' style={{'backgroundImage': `url(${img})`, 'backgroundSize': 'cover', 'maskImage': 'linear-gradient(to bottom, transparent, var(--main-dark) 100%, var(--main-dark) 100%, transparent)'}}/> 
+                <div className='documentImage' style={{'backgroundImage': `url(${img})`}}/> 
                 : <h2 style={{textAlign: 'center'}}>{d.title}</h2>
             }
             <div className='document'>
@@ -147,16 +147,6 @@ const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps)
 
 const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => {
     const containerRef = useRef<HTMLDivElement | null>(null)
-
-    useEffect(() => {
-        if (docs.length > 0) {
-            const firstDoc = document.querySelector<HTMLDivElement>(".documentContainer[data-index='0']")
-            if (firstDoc) {
-                firstDoc.focus()
-            }
-        }
-    }, [docs]);
-
 
     return(
         <div className='docContainer' ref={containerRef}>
