@@ -130,7 +130,7 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
             </div>
             {suggestions && suggestions.length > 0 && 
                 <div className="suggestionsContainer">
-                    <h3>Similar titles</h3>
+                    <h3>You Might Also Like...</h3>
                     <div className="suggestions">
                         {suggestions.map(s => <Suggestion setDoc={setDoc} doc={s}/>)}
                     </div>
