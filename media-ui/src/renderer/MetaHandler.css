@@ -4,12 +4,29 @@
     height: 100%;
 }
 
+.infoContainer {
+    padding: 12px;
+    height: 100%;
+}
+
 .metaContainer {
     background-color: var(--very-dark);
     padding: 12px;
     overflow-y: auto;
     border-radius: var(--main-radius);
     border: solid 2px var(--main-white);
+}
+
+.suggestionsContainer {
+    padding: var(--main-padding);
+}
+
+.suggestions {
+    padding-top: var(--big-padding);
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    grid-gap: 8px 16px;
+    justify-content: center;
 }
 
 .buttons {

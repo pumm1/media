@@ -12,6 +12,7 @@ import './MediaBrowser.css'
 import PopUpContainer from './common/PopUpContainer'
 import { SettingsButton } from './common/CommonButtons'
 import MetaSettings from './MetaSettings'
+import SlidingPageContainer from './common/SlidingPageContainer'
 
 const isElectron = () => {
     // Check if 'process.versions.electron' exists, which is only available in Electron
@@ -70,6 +71,7 @@ const MediaBrowser = () => {
     const [docs, setDocs] = useState<QueryResult[]>([])
 
     const [selectedDoc, setDoc] = useState<QueryResult | undefined>(undefined)
+    const [showSlidingPage, setShowSlidingPage] = useState(false)
 
     const [showToast, setShowToast] = useState(false)
 
@@ -134,16 +136,16 @@ const MediaBrowser = () => {
     }, [])
 
     const triggerToastAndUpdateMedias = () => {
-        setShowToast(true);
+        setShowToast(true)
         updateMediaFn(q).then(() => setTimeout(() => {
-            setShowToast(false);
+            setShowToast(false)
             setUpdateLoading(false)
             setMediaUpdateInfo(undefined)
         }, 3000))
     }
 
     useEffect(() => {
-        const delay = 400;
+        const delay = 400
 
         const timeoutId = setTimeout(() => {
             updateMediaFn(q)
@@ -154,11 +156,11 @@ const MediaBrowser = () => {
 
     const handleTypesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedValues = Array.from(event.target.selectedOptions, (option) => {
-            const selectedLabel = option.label;
+            const selectedLabel = option.label
             const selectedOption = typeOptions.find(opt => opt.label === selectedLabel)
             
             return selectedOption ? selectedOption.values : []
-        }).flat();
+        }).flat()
         setTypes(selectedValues)
     }
 
@@ -181,32 +183,43 @@ const MediaBrowser = () => {
         })
     }
 
-    const useBlur = settingsOpen || selectedDoc !== undefined
+    const slingPageShown = selectedDoc !== undefined && showSlidingPage
 
-    const inputRef: MutableRefObject<HTMLInputElement | null> = useRef<HTMLInputElement | null>(null);
+    const useBlur = settingsOpen || slingPageShown
+
+    const inputRef: MutableRefObject<HTMLInputElement | null> = useRef<HTMLInputElement | null>(null)
 
     useEffect(() => {
         // Keep the input focused after results come in
         if (inputRef.current) {
             inputRef.current.focus()
         }
-    }, [docs]);  // Depend on docs or the state that triggers search result changes
+    }, [docs])  // Depend on docs or the state that triggers search result changes
 
-    return (
+    const updateDoc = (d: QueryResult) => {
+        setDoc(d)
+        setShowSlidingPage(true)
+    }
+
+    return (//the popupsettings becomes the sliding page
         <div className='main'>
             { settingsOpen &&
                 <PopUpContainer>
                     <MetaSettings onClose={() => setSettingsOpen(false)}/>
                 </PopUpContainer>
             }
-            {selectedDoc && 
-                <PopUpContainer><MetaInfoByUrl updateMediasFn={updateMediasFn} doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} onClose={() => setDoc(undefined)}/></PopUpContainer>
-            }
+            <SlidingPageContainer isOpen={showSlidingPage}>
+                {
+                    selectedDoc ? 
+                        <MetaInfoByUrl setDoc={updateDoc} updateMediasFn={updateMediasFn} doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} onClose={() => setShowSlidingPage(false)}/>
+                    : <></>
+                }
+            </SlidingPageContainer>
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
             <div className='mediaBrowserContainer' style={useBlur ? blurByAmount(2) : blurByAmount(0)}>
                 <SearchInput reference={inputRef} isLoading={searchLoading} setTitles={setTitles}/>
                 <SearchOptions currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} sortOptions={sortOptions} setSortType={setSort} usedSort={sort} setSortDirection={setSortDirection} setTags={setTags} selectedTags={tags} tagOptions={tagOptions}/>
-                <Documents sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
+                <Documents sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={updateDoc} initialResultsFetched={initialResultsFetched} />
                 <div className='scanner'>
                     <button disabled={updateLoading} onClick={() =>
                         updateMediasFn()
@@ -220,5 +233,5 @@ const MediaBrowser = () => {
     )
 }
 
-export default MediaBrowser;
+export default MediaBrowser
 

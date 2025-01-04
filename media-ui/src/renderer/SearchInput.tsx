@@ -1,6 +1,4 @@
 import { MutableRefObject } from "react"
-import { TypeOption } from "./MediaBrowser"
-import { SortDirection, SortType } from "./MediaClient"
 
 import './SearchInput.css'
 import LoadingIndicator from "./common/LoadingIndicator"

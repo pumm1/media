@@ -116,3 +116,12 @@ def rescan_media():
 
     return jsonify(rescan_media_by_uuid(uuid))
 
+@app.route('/suggestions', methods = [get])
+def suggestions():
+    titles = request.args.getlist('title')
+    tags = request.args.getlist('tag')
+    types = request.args.getlist('type')
+
+    query = QueryReq(titles, tags, types, None, None)
+
+    return jsonify(search_collections(query, random_suggestions=True))

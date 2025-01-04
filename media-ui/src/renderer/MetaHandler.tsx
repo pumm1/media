@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { QueryResult, Season, Episode, rescanMedia, preview } from "./MediaClient";
+import { QueryResult, Season, Episode, rescanMedia, preview, suggestMedias, QueryReq } from "./MediaClient";
 import LoadingIndicator from "./common/LoadingIndicator";
 import './MetaHandler.css'
 import {PlayButton, FolderButton, RefreshButton} from "./common/CommonButtons";
 import Hideable from "./common/Hideable";
 import MediaIcon from "./common/MovieIcon";
+import Suggestion from "./Suggestion";
+import { Tags } from "./Documents";
 
 interface PossibleError {
     error?: string
@@ -15,14 +17,6 @@ export interface MetaInfo extends PossibleError {
     info?: string
     description?: string
     image?: string
-}
-
-interface MetaInfoProps extends MetaInfo {
-    playMedia: (path: string) => void
-    onOpenFolder: () => void
-    doc: QueryResult
-    onClose: () => void
-    updateMediasFn: () => void
 }
 
 interface SeasonInfoProps {
@@ -62,10 +56,33 @@ const SeasonInfo = ({seasons, playMedia}: SeasonInfoProps) =>
         </Hideable>
     </div>
 
-const imgScaler = 200
+export const imgScaler = 200
 
-const MetaInfoModal = ({updateMediasFn, title, description, info, image, playMedia, doc, onOpenFolder, onClose}: MetaInfoProps) => {
+interface MetaInfoProps extends MetaInfo {
+    playMedia: (path: string) => void
+    onOpenFolder: () => void
+    doc: QueryResult
+    onClose: () => void
+    updateMediasFn: () => void
+    setDoc: (d: QueryResult) => void
+}
+
+const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image, playMedia, doc, onOpenFolder, onClose }: MetaInfoProps) => {
     const componentRef = useRef<HTMLDivElement | null>(null)
+
+    const [suggestions, setSuggestions] = useState<QueryResult[] | undefined>(undefined)
+
+    useEffect(() => {
+        setSuggestions(undefined) // Clear old suggestions immediately
+        const suggestionQ: QueryReq = {
+            tags: doc.tags,
+            titles: [doc.title],
+            types: [doc.type],
+            sort: 'title',
+            sortDirection: 'default',
+        }
+        suggestMedias(suggestionQ).then(setSuggestions);
+    }, [doc.tags, doc.type, doc.title])
 
     const handleClickOutside = useCallback((event: MouseEvent) => {
         if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
@@ -91,7 +108,7 @@ const MetaInfoModal = ({updateMediasFn, title, description, info, image, playMed
       }, [])
 
     return(
-        <div tabIndex={0} className="metaContainer" ref={componentRef} onKeyDown={e => {
+        <div tabIndex={0} className="infoContainer" ref={componentRef} onKeyDown={e => {
             if (e.key === 'Escape') {
                 onClose()
             }
@@ -99,6 +116,7 @@ const MetaInfoModal = ({updateMediasFn, title, description, info, image, playMed
             <a href={doc.imdb} target="_blank" rel="noopener noreferrer"><h2>{title}</h2></a>
             <p>{info !== undefined ? info : '[Info not available]'}</p>
             <MediaIcon type={doc.type}/>
+            <Tags doc={doc} />
             <div className="buttons">
                 {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
                 <FolderButton onClick={onOpenFolder}/>
@@ -109,7 +127,15 @@ const MetaInfoModal = ({updateMediasFn, title, description, info, image, playMed
                 {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
                 <img src={image} alt="Not found" width={0.675*imgScaler} height={1*imgScaler}></img>
                 {/**we recommend a vertical alignment (i.e. portrait orientation) with an aspect ratio of 1:0.675 */}
-            </div>  
+            </div>
+            {suggestions && suggestions.length > 0 && 
+                <div className="suggestionsContainer">
+                    <h3>Similar titles</h3>
+                    <div className="suggestions">
+                        {suggestions.map(s => <Suggestion setDoc={setDoc} doc={s}/>)}
+                    </div>
+                </div>
+                }
         </div>
     )
 }
@@ -121,9 +147,10 @@ export interface MetaInfoByUrlProps {
     onOpenFolder: () => void
     onClose: () => void
     updateMediasFn: () => void
+    setDoc: (d: QueryResult) => void
 }
 
-const MetaInfoByUrl = ({metaInfo, updateMediasFn, doc, playMedia, onOpenFolder, onClose}: MetaInfoByUrlProps) => {
+const MetaInfoByUrl = ({ setDoc, metaInfo, updateMediasFn, doc, playMedia, onOpenFolder, onClose }: MetaInfoByUrlProps) => {
     const [currentMetaInfo, setMetaInfo] = useState<MetaInfo | undefined>(metaInfo)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -135,12 +162,14 @@ const MetaInfoByUrl = ({metaInfo, updateMediasFn, doc, playMedia, onOpenFolder, 
                 setMetaInfo(info)
             })
         }
-    }, [doc])
-    //metaInfo ? <MetaInfo onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+    }, [doc.imdb])
 
     return (
         isLoading ? <LoadingIndicator /> :
-        currentMetaInfo ? <MetaInfoModal updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={currentMetaInfo.title} info={currentMetaInfo.info} description={currentMetaInfo.description} image={currentMetaInfo.image}/> :  <></>
+        currentMetaInfo ? 
+            <MetaInfoModal setDoc={setDoc} updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={currentMetaInfo.title} info={currentMetaInfo.info} description={currentMetaInfo.description} image={currentMetaInfo.image}/>
+        :  
+            <></>
     )
 }
 

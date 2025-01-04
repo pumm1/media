@@ -182,3 +182,9 @@ export const rescanMedia = (uuid: string) =>
 
 export const resetMedias = () => 
     putDataAs<boolean>('/reset-medias', {})
+
+export const suggestMedias = (r: QueryReq) => {
+    const params = createSearchParams(r)
+
+    return fetchDataAs<QueryResult[]>(`/suggestions${params}`)
+}

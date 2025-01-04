@@ -24,6 +24,22 @@ const isNew = (date: ISODateString, sinceWeeksAgo: number): boolean => {
     return Date.parse(date) > oneWeekInPast
 }
 
+interface TagsProps {
+    doc: QueryResult
+}
+
+export const Tags = ({ doc }: TagsProps) => 
+    <div className='tagContainer'>
+        {
+            doc.tags.map(t =>
+                <span key={doc.title + t} className='tag'>
+                    {t.toUpperCase()}
+                </span>
+            )
+        }
+    </div>
+
+
 interface DocProps {
     idx: number
     d: QueryResult
@@ -68,14 +84,7 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
                             <Pill variant='Static' keyProp={d.title}>New!</Pill>
                         </FadingCompoennt>
                     </div>
-                    <div className='tagContainer'>
-                        {
-                            d.tags.map(t =>
-                                <span key={d.title + t} className='tag'>
-                                    {t.toUpperCase()}
-                                </span>)
-                        }
-                    </div>
+                    <Tags doc={d} />
                 </span>
             </div>
         </div>

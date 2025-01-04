@@ -1,11 +1,10 @@
-import _, { sortBy } from 'lodash'
+import _ from 'lodash'
 import Hideable from './common/Hideable'
 import Selection from './common/Selection'
 import { SortDirection, SortType } from './MediaClient'
 import { TypeOption } from './MediaBrowser'
 
 import './SearchOptions.css'
-import SortOrderIcon from './common/SortOrderIcon'
 import SortOrderToggle from './SortOrderToggle'
 import {AlphabeticalSelection, CreatedSelection} from './common/SortSelections'
 

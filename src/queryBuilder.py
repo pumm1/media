@@ -5,6 +5,8 @@ and_f = '$and'
 regex_f = '$regex'
 all_f = '$all'
 in_f = '$in'
+not_equal_f = '$ne'
+not_in_f = '$nin'
 
 #field names
 uuid_f = 'uuid'
@@ -18,16 +20,25 @@ path_f = 'path'
 seasons_f = 'seasons'
 
 
-def m_json_from_req(req: QueryReq):
+def m_json_from_req(req: QueryReq, random_suggestions: bool = False):
     # Import inside the function to avoid circular imports
+    print(f'... random suggestions: {random_suggestions}')
 
-    title_jsons = list(
-        map(lambda term: {
-            title_f: {
-                regex_f: re.compile(term, re.IGNORECASE)
-            }
-        }, req.title_terms)  # Accessing title_terms as an attribute of QueryReq
-    )
+    title_jsons = []
+
+    if random_suggestions:
+        title_jsons = [
+            {title_f: {not_equal_f: term}}
+            for term in req.title_terms
+        ]
+    else:
+        title_jsons = list(
+            map(lambda term: {
+                title_f: {
+                    regex_f: re.compile(term, re.IGNORECASE)
+                }
+            }, req.title_terms)  # Accessing title_terms as an attribute of QueryReq
+        )
 
     tag_jsons = [{
         tags_f: {

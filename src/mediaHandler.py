@@ -12,6 +12,7 @@ from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f, path_
     seasons_f, uuid_f
 from mediaObjects import Movie, Series, Season, Episode
 import uuid
+import random
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 #medias_dir = os.path.join(current_dir, 'medias')
@@ -130,12 +131,25 @@ def file_has_been_added(file_name: str):
     return (added_opt, data)
 
 
-def search_collections(q: QueryReq):
-    m_json = m_json_from_req(q)
+max_suggestions = 3
+
+def search_collections(q: QueryReq, random_suggestions: bool = False):
+    m_json = m_json_from_req(q, random_suggestions=random_suggestions)
 
     res = query_collections(m_json, q.sort, q.sort_direction)
 
-    print(f'.... RES: \n{res}')
+    if random_suggestions:
+        retries = 0
+        if len(res) > 0:
+            suggestions = []
+            while retries < max_suggestions and len(suggestions) < max_suggestions:
+               rand_suggestion = random.choice(res)
+               if not suggestions.__contains__(rand_suggestion):
+                   suggestions.append(rand_suggestion)
+               else:
+                   retries = retries + 1
+
+            res = suggestions
 
     json_str = dumps(res, default=str)
     json_res = loads(json_str)

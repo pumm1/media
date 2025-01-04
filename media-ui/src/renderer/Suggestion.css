@@ -1,0 +1,5 @@
+.suggestion {}
+
+.suggestion:hover {
+    transform: scale(1.03);
+}

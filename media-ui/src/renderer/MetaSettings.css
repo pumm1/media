@@ -14,8 +14,6 @@
     text-transform: uppercase;
     padding: 8px;
     margin: 8px 0px;
-    border: 2px solid var(--main-white);
-    border-radius: var(--main-radius);
 }
 
 .metaField {
