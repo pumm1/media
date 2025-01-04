@@ -27,7 +27,7 @@
     grid-template-columns: repeat(3, minmax(150px, 1fr));
     gap: 8px; /* Space between items */
     align-items: start; /* Align items to the top of their cells */
-    overflow-y: auto; /* Prevent vertical scrolling */
+    overflow-y: hidden; /* Prevent vertical scrolling */
     overflow-x: hidden;
     width: 100%; /* Full width of parent container */
     max-height: 100%; /* Prevent overflow */
