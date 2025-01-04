@@ -9,7 +9,7 @@
     border-top: var(--main-white) 2px solid;
     border-radius: var(--main-radius);
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     grid-gap: 16px 8px; /* Adjust the gap between grid items */
     max-width: 100%;
     overflow-x: hidden;

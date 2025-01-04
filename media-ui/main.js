@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, screen } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -11,9 +11,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function createWindow() {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.size; // Full screen resolution
+
   const mainWindow = new BrowserWindow({
-    width: 2000,
-    height: 1800,
+    width,
+    height,
     fullscreen: true,  // This makes the app open in full-screen mode
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

@@ -26,7 +26,7 @@ interface SeachOptionsProps {
 
 const SearchOptions = ({selectedTags, tagOptions, setTags, sortOptions, setSortDirection, usedSort, currentSortDirection, setSortType, handleTypesChange, typeOptions, setNewSinceWeeksAgo, sinceWeeksAgo}: SeachOptionsProps) => {
     return (
-        <Hideable contentName='options'>
+        <Hideable contentName='filters'>
             <div className='optionsContainer'>
                 <div className='tags'>
                     {tagOptions.map(t => (
