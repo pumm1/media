@@ -1,12 +1,16 @@
 .suggestion {
-    height: 100%; /* Ensure consistent height */
+    display: flex;
+    justify-content: center; /* Center the content horizontally */
+    align-items: center; /* Center the content vertically */
+    overflow: hidden; /* Prevent content overflow */
+    height: 400px; /* Fixed height for each suggestion item */
 }
 
 .suggestion img {
-    max-height: 100%; /* Ensure image scales within grid cell */
-    max-width: 100%; /* Maintain aspect ratio */
+    height: 100%; /* Scale image to the height of the suggestion */
+    width: auto; /* Maintain the aspect ratio */
+    object-fit: contain; /* Ensure the image fits within the box without being cropped */
 }
-
 .suggestion:hover {
     transform: scale(1.03);
 }
