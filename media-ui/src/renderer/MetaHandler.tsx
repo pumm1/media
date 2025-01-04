@@ -56,7 +56,7 @@ const SeasonInfo = ({seasons, playMedia}: SeasonInfoProps) =>
         </Hideable>
     </div>
 
-export const imgScaler = 200
+const imgScaler = 200
 
 interface MetaInfoProps extends MetaInfo {
     playMedia: (path: string) => void

@@ -22,11 +22,14 @@
 }
 
 .suggestions {
-    padding-top: var(--big-padding);
     display: grid;
-    grid-template-columns: repeat(3, auto);
-    grid-gap: 8px 16px;
-    justify-content: center;
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+    gap: 8px; /* Space between items */
+    justify-items: center; /* Center images within grid cells */
+    align-items: start; /* Align items to the top of their cells */
+    overflow-y: auto; /* Prevent vertical scrolling */
+    width: 100%; /* Full width of parent container */
+    max-height: 100%; /* Prevent overflow */
 }
 
 .buttons {
