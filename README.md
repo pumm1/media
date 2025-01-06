@@ -3,6 +3,10 @@
 This software is for managing media files (movies and series). 
 Anyone using this should themselves own the media by legal means (e.g. buy a DVD or Blu-Ray and rip it for their own personal usage and easier storage)
 
+<img width="1750" alt="Näyttökuva 2025-01-06 kello 13 30 04" src="https://github.com/user-attachments/assets/469a7610-0d87-41f8-9ab5-51b5a5dbea56" />
+<img width="1766" alt="Näyttökuva 2025-01-06 kello 13 29 51" src="https://github.com/user-attachments/assets/b291deef-b998-4c4d-b7b0-12f72158b06f" />
+
+## Setup
 
 In `/src`, include `sources.json` with each source directory in the `directories` array:
 ```
