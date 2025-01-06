@@ -74,3 +74,13 @@ button:hover {
   background-color: black;
   color: white;
 }
+
+button:disabled {
+  background-color: grey;
+}
+
+button:disabled:hover {
+  cursor:default;
+  background-color: grey;
+  color: black; /* Text color */
+}

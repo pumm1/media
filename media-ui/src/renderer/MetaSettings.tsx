@@ -1,8 +1,10 @@
 import './MetaSettings.css'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, resetMedias, updateMetaFile} from './MediaClient'
+import {getTags, listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, resetMedias, updateMetaFile} from './MediaClient'
 import LoadingIndicator from './common/LoadingIndicator'
 import MediaIcon from './common/MovieIcon'
+
+const imdbRegex = new RegExp('^https:\/\/www.imdb\.com\/title\/([a-zA-Z0-9]+)+\/$')
 
 interface MetaInfoProps {
     metaInfo: MetaFileInfo
@@ -14,9 +16,17 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
     const [tags, setTags] = useState(metaInfo.tags)
     const [imdb, setImdb] = useState(metaInfo.imdb)
     const [title, setTitle] = useState(metaInfo.title)
+
+    const [tagOptions, setTagOptions] = useState<string[]>([])
+
+    useEffect(() => {
+        getTags().then(setTagOptions)
+    }, [])
+
+    const nonEmptyTags = (t: string[]) => t.filter(t => t !== '')
     
     const req: MetaUpdateReq = {
-        tags,
+        tags: nonEmptyTags(tags),
         imdb,
         added: metaInfo.added,
         title,
@@ -39,6 +49,11 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
 
     const updateTags = (tagsStr: string) => setTags(tagsStr.split(',').map(tag => tag.trim()))
 
+    const selectTag = (tagsStr: string) => setTags(nonEmptyTags([...tags, tagsStr]).sort())
+
+    const isReadyToScan: boolean = nonEmptyTags(tags).length > 0 && imdb.length > 0 && imdbRegex.test(imdb)
+
+    const infoHasNotChanged = metaInfo.tags.join(',') === tags.join(',') && metaInfo.imdb === imdb && metaInfo.title === title
 
     return (
         <div className='metaInfoContainer'>
@@ -50,6 +65,16 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
                 Tags
                 <div className='metaField'>
                     <input type='text' value={tags.join(',')} onChange={e => updateTags(e.target.value)}/>
+                    <select value='' onChange={(e: React.ChangeEvent<HTMLSelectElement>) => selectTag(e.target.value)}>
+                        <option value="" disabled>
+                            -- SELECT --
+                        </option>
+                        {tagOptions.filter((t) => !tags.includes(t)).map((tagOpt, idx) => (
+                            <option key={tagOpt + idx} value={tagOpt}>
+                                {tagOpt.toUpperCase()}
+                            </option>
+                        ))}
+                    </select>
                 </div>
                 IMDB
                 <div className='metaField'>
@@ -62,8 +87,8 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
                     <b>{metaInfo.added ? 'Added' : 'Pending'}</b>
                 </div>
                 <div className='metaField'>
-                    <button onClick={() => updateFn()}>Update</button>
-                    {metaInfo.isPending && <button onClick={() => readyToScanFn()}>Ready to scan</button>}
+                    <button disabled={infoHasNotChanged} onClick={() => updateFn()}>Update</button>
+                    {metaInfo.isPending && <button disabled={!isReadyToScan} onClick={() => readyToScanFn()}>Ready to scan</button>}
                 </div>
                 {updateLoading && <LoadingIndicator />}
             </div>
