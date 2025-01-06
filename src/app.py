@@ -9,8 +9,12 @@ from flask_caching import Cache
 
 app = Flask(__name__)
 CORS(app)
-app.config['CACHE_TYPE'] = 'SimpleCache'  # For development; use 'RedisCache' in production
+
+# Configure Redis for caching
+app.config['CACHE_TYPE'] = 'RedisCache'
+app.config['CACHE_REDIS_URL'] = 'redis://localhost:6379/0'  # Connect to Redis server
 app.config['CACHE_DEFAULT_TIMEOUT'] = 60 * 60 * 24  # Cache timeout in seconds
+
 cache = Cache(app)
 
 post = 'POST'
