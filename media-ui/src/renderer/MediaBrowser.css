@@ -1,6 +1,7 @@
 .main {
     position: relative;
     color: white;
+    padding: var(--main-padding)
 }
 
 .mediaBrowserContainer {

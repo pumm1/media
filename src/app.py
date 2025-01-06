@@ -1,12 +1,21 @@
+from bs4 import BeautifulSoup
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from queryReq import QueryReq
 from mediaHandler import search_collections, go_through_medias, get_existing_tags, reset_media, list_meta_files, \
-    update_meta_file, mark_temp_meta_file_ready_for_scanning
+    update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_uuid
 import requests
+from flask_caching import Cache
 
 app = Flask(__name__)
 CORS(app)
+
+# Configure Redis for caching
+app.config['CACHE_TYPE'] = 'RedisCache'
+app.config['CACHE_REDIS_URL'] = 'redis://localhost:6379/0'  # Connect to Redis server
+app.config['CACHE_DEFAULT_TIMEOUT'] = 60 * 60 * 24  # Cache timeout in seconds
+
+cache = Cache(app)
 
 post = 'POST'
 get = 'GET'
@@ -56,7 +65,7 @@ def meta_file_ready_to_scan():
 def reset_medias():
     reset_media()
 
-    return True
+    return jsonify(True)
 
 @app.route('/preview', methods=[post])
 def preview():
@@ -65,6 +74,11 @@ def preview():
     if not url:
         return jsonify({'error': 'URL parameter is missing'}), 400
 
+    cached_response = cache.get(url)
+    if cached_response:
+        print(f"Cache hit for URL: {url}")
+        return cached_response
+
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:127.0) Gecko/20100101 Firefox/127.0'
@@ -72,14 +86,46 @@ def preview():
         response = requests.get(url, headers=headers)
         response.raise_for_status()
 
+        # Parse HTML with BeautifulSoup
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Extract metadata
+        metadata = {
+            'title': soup.find('meta', property='og:title') and soup.find('meta', property='og:title')['content']
+                     or soup.find('title').text if soup.find('title') else None,
+            'info': soup.find('meta', property='og:description') and
+                           soup.find('meta', property='og:description')['content'],
+            'description': soup.find('meta', attrs={'name': 'description'}) and
+                           soup.find('meta', attrs={'name': 'description'})['content'],
+            'image': soup.find('meta', property='og:image') and soup.find('meta', property='og:image')['content'],
+        }
+
         # Optionally, you can parse the HTML here and extract only the relevant parts (e.g., Open Graph metadata)
-        return response.text, response.status_code, {'Content-Type': response.headers['Content-Type']}
+        cache.set(url, metadata)
+
+        return jsonify(metadata)
 
     except requests.exceptions.RequestException as e:
         print(f'Error fetching preview for url: {url}')
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/update-medias', methods = [post])
+@app.route('/update-medias', methods=[post])
 def update_media():
     return(jsonify(go_through_medias()))
+
+@app.route('/rescan-media', methods=[put])
+def rescan_media():
+    uuid = request.get_json()
+
+    return jsonify(rescan_media_by_uuid(uuid))
+
+@app.route('/suggestions', methods = [get])
+def suggestions():
+    titles = request.args.getlist('title')
+    tags = request.args.getlist('tag')
+    types = request.args.getlist('type')
+
+    query = QueryReq(titles, tags, types, None, None)
+
+    return jsonify(search_collections(query, random_suggestions=True))

@@ -5,31 +5,60 @@
 .docContainer {
     min-height: 100px;
     overflow-y: auto;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
     border-bottom: var(--main-white) 2px solid;
     border-top: var(--main-white) 2px solid;
     border-radius: var(--main-radius);
     display: grid;
-    grid-template-columns: repeat(auto-fill, 420px);
+    grid-template-columns: repeat(5, 1fr);
+    grid-gap: 16px 8px; /* Adjust the gap between grid items */
+    max-width: 100%;
+    overflow-x: hidden;
+    padding: var(--small-padding);
+}
+
+.documentContainer {
+    position: relative;
+    aspect-ratio: 675 / 1000;
+    outline: none; /* Remove default blue outline */
+}
+.documentContainer:focus {
+    transform: scale(1.02); /* Slight zoom effect */
+}
+
+.documentContainer:hover {
+    transform: scale(1.02); /* Slight zoom effect */
+}
+
+.documentImage {
+    position: absolute; 
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--main-radius);
+    background-size: cover;
+    mask-image: linear-gradient(to bottom, transparent, var(--main-dark) 100%, var(--main-dark) 100%, transparent);
+}
+
+.documentImage:hover {
+    mask-image: none;
 }
 
 .document {
+    z-index: 1;
     cursor: pointer;
     border-radius: var(--big-radius);
-    padding: var(--main-padding);
-    max-height: 200px;
-}
-
-.document:hover {
-    background: #424242;
-    background-color: var(--secondary-dark);
+    padding: var(--big-padding);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
 }
 
 .mediaInfo {
     display: inline-flex;
     gap: 8px;
     margin: auto;
+    padding-right: 8px;
 }
 
 
@@ -60,5 +89,5 @@
     padding: 4px 8px;
     margin-right: 4px;
     background-color: var(--main-red);
+    user-select: none;
 } 
-

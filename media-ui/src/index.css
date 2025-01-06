@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Bebas Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--main-dark);
@@ -73,4 +73,14 @@ button {
 button:hover {
   background-color: black;
   color: white;
+}
+
+button:disabled {
+  background-color: grey;
+}
+
+button:disabled:hover {
+  cursor:default;
+  background-color: grey;
+  color: black; /* Text color */
 }

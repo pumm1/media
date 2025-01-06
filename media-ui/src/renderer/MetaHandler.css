@@ -4,12 +4,34 @@
     height: 100%;
 }
 
+.infoContainer {
+    padding: 12px;
+    height: 100%;
+    outline: none;
+}
+
 .metaContainer {
     background-color: var(--very-dark);
     padding: 12px;
     overflow-y: auto;
     border-radius: var(--main-radius);
     border: solid 2px var(--main-white);
+}
+
+.suggestionsContainer {
+    padding: var(--main-padding);
+}
+
+.suggestions {
+    padding: 8px 0px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+    gap: 8px; /* Space between items */
+    align-items: start; /* Align items to the top of their cells */
+    overflow-y: hidden; /* Prevent vertical scrolling */
+    overflow-x: hidden;
+    width: 100%; /* Full width of parent container */
+    max-height: 100%; /* Prevent overflow */
 }
 
 .buttons {
@@ -32,6 +54,7 @@
 
 .episodEcontainer {
     display: grid;
+    grid-template-columns: repeat(4, auto);
 }
 
 .episode {

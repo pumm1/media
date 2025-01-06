@@ -81,6 +81,7 @@ When media folder isn't found anymore in the file structure on scan, it's remove
 ## Setup
 
 - Install MongoDB
+- Install Redis (Backend fetches info from IMDB and caches it to redis)
 - Install Python3 (> 3.10)
   - Install dependencies mentioned in `/src/requirements.txt`
 - Install Yarn & NPM
@@ -88,7 +89,7 @@ When media folder isn't found anymore in the file structure on scan, it's remove
 ### MongoDB
 - Create collection for media in the MongoDB shell:
 ```
-db.createCollection("media", {"validator": {"$jsonSchema": {"bsonType": "object", "required": ["created", "title", "imdb", "type", "tags", "folderPath"], "properties": {"created": {"bsonType": "date"}, "title": {"bsonType": "string", "description": "must be a string and is required"}, "imdb": {"bsonType": "string", "description": "must be a string and is required"}, "type": {"bsonType": "string", "description": "must be a string and is required"}, "folderPath": {"bsonType": "string", "description": "must be a string and is required"}, "path": {"bsonType": "string", "description": "must be a string"}, "tags": {"bsonType": "array", "items": { "bsonType": "string" }, "description": "must be an array of strings"}, "seasons":  {"bsonType":  "array", "items":  {"bsonType": "object", "properties": {"season": {"bsonType": "object", "properties": {"name": {"bsonType": "string"}, "episodes": {"bsonType": "array", "items": {"bsonType": "object", "properties": {"name": {"bsonType": "string"}, "path": {"bsonType": "string"}}}, "description": "must be an array of objects with name and path"}}}}}, "properties":  {}}}}}})
+db.createCollection("media", {"validator": {"$jsonSchema": {"bsonType": "object", "required": ["uuid", "created", "title", "imdb", "type", "tags", "folderPath"], "properties": {"uuid": {"bsonType": "string", "description": "must be a string and is required"}, "created": {"bsonType": "date"}, "title": {"bsonType": "string", "description": "must be a string and is required"}, "imdb": {"bsonType": "string", "description": "must be a string and is required"}, "type": {"bsonType": "string", "description": "must be a string and is required"}, "folderPath": {"bsonType": "string", "description": "must be a string and is required"}, "path": {"bsonType": "string", "description": "must be a string"}, "tags": {"bsonType": "array", "items": { "bsonType": "string" }, "description": "must be an array of strings"}, "seasons":  {"bsonType":  "array", "items":  {"bsonType": "object", "properties": {"season": {"bsonType": "object", "properties": {"name": {"bsonType": "string"}, "episodes": {"bsonType": "array", "items": {"bsonType": "object", "properties": {"name": {"bsonType": "string"}, "path": {"bsonType": "string"}}}, "description": "must be an array of objects with name and path"}}}}}, "properties":  {}}}}}})
 ```
 
 ### Backend

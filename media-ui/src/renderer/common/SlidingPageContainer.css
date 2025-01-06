@@ -1,0 +1,14 @@
+.slidingPageContainer {
+    top: 0;
+    position: fixed;
+    right: -66%; /* Default state: hidden */
+    width: 66%; /* One-third of the screen */
+    height: 100%;
+    background-color: var(--very-dark); /* Optional */
+    z-index: 999;
+    transition: right 1s ease; /* Smooth sliding effect */
+}
+
+.slidingPageContainer.open {
+    right: 0; /* When open, slide into view */
+}

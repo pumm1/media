@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, screen } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -11,21 +11,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function createWindow() {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.size; // Full screen resolution
+
   const mainWindow = new BrowserWindow({
-    width: 2000,
-    height: 1800,
+    width,
+    height,
     fullscreen: true,  // This makes the app open in full-screen mode
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,   // Recommended for security
       enableRemoteModule: false, // Security measure
       nodeIntegration: false,    // Disable nodeIntegration in renderer
-      zoomFactor: 1.5,
     },
-  });
-
-  mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.setZoomFactor(1.5);  // Set zoom to 150%
   });
 
   // Load the React app in dev or production mode

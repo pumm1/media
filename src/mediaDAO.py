@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-from queryBuilder import in_f
+from queryBuilder import in_f, title_f
 from bson import ObjectId
 from mediaObjects import Series
 
@@ -83,12 +83,14 @@ season {
 
 collection_name = 'media'
 
+
 def with_mongo_client(collection_fn):
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
         collection = db.get_collection(collection_name)
         collection_fn(collection)
         client.close()
+
 
 #collection_name = 'myCollection' #TODO: change after figuring out some collection structure
 
@@ -103,9 +105,9 @@ schema = {
                     'description': "must be a string and is required"
                 },
                 'imdb': {
-                        'bsonType': "string",
-                        'description': "must be a string and is required"
-                    },
+                    'bsonType': "string",
+                    'description': "must be a string and is required"
+                },
                 'type': {
                     'bsonType': "string",
                     'description': "must be a string and is required"
@@ -141,8 +143,10 @@ def create_media_collection():
     else:
         print(f'Collection {collection_name} already exists')
 
+
 def collection_not_found_warn():
     print(f'Collection {collection_name} not found')
+
 
 def add_media_to_collection(m_json):
     with MongoClient('localhost', 27017) as client:
@@ -171,6 +175,7 @@ def query_collections(m_json, sort, sort_direction):
                     m_json,
                     {
                         '_id': 0,
+                        'uuid': 1,
                         'title': 1,
                         'imdb': 1,
                         'tags': 1,
@@ -185,6 +190,7 @@ def query_collections(m_json, sort, sort_direction):
         else:
             collection_not_found_warn()
             return []
+
 
 def existing_movies():
     with MongoClient('localhost', 27017) as client:
@@ -216,7 +222,7 @@ def existing_series():
                     'type': 'series'
                 },
                     {
-                        '_id': 1,
+                        'uuid': 1,
                         'title': 1,
                         'imdb': 1,
                         'folderPath': 1,
@@ -229,7 +235,6 @@ def existing_series():
             return []
 
 
-
 def existing_tags():
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
@@ -237,9 +242,37 @@ def existing_tags():
         if collection is not None:
             return list(
                 collection.find({},
+                                {
+                                    '_id': 0,
+                                    'tags': 1
+                                }
+                                )
+            )
+        else:
+            collection_not_found_warn()
+            return []
+
+
+def media_by_uuid(uuid: str):
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return list(
+                collection.find({
+                    'uuid': uuid
+                },
                     {
                         '_id': 0,
-                        'tags': 1
+                        'uuid': 1,
+                        'title': 1,
+                        'imdb': 1,
+                        'tags': 1,
+                        'type': 1,
+                        'path': 1,
+                        'seasons': 1,
+                        'folderPath': 1,
+                        'created': 1
                     }
                 )
             )
@@ -248,14 +281,14 @@ def existing_tags():
             return []
 
 
-def update_series_seasons(id: ObjectId, s: Series):
+def update_series_seasons(uuid: str, s: Series):
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
         collection = db.get_collection(collection_name)
         print(f"... update {id} with value: {s.asJson()['seasons']}")
         if collection is not None:
             collection.update_one({
-                '_id': id
+                'uuid': uuid
             }, {
                 '$set': {'seasons': s.asJson()['seasons']}
             }, True)
@@ -279,6 +312,7 @@ def delete_media_by_ids(ids):
             collection_not_found_warn()
             return 0
 
+
 def delete_all_medias():
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
@@ -296,6 +330,18 @@ def remove_media_by_files(medias_to_delete_json):
         collection = db.get_collection(collection_name)
         if collection is not None:
             return collection.delete_many(medias_to_delete_json).deleted_count
+        else:
+            collection_not_found_warn()
+            return 0
+
+def remove_media_by_title(title: str):
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return collection.delete_many({
+                title_f: title
+            }).deleted_count
         else:
             collection_not_found_warn()
             return 0

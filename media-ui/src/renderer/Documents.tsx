@@ -1,27 +1,20 @@
-import { ISODateString, QueryResult, Season } from "./MediaClient"
-import { FolderButton, PlayButton } from "./common/CommonButtons"
+import { ISODateString, MetaResponse, QueryResult, Season, preview } from "./MediaClient"
 import errorGif1 from './angry-panda.gif';
 import errorGif2 from './monke-pc.gif'
 import errorGif3 from './throw-pc.gif'
 import errorGif4 from './pc-trash.gif'
 import MediaIcon from "./common/MovieIcon"
+import Hideable from "./common/Hideable"
+import { useEffect, useRef, useState } from "react"
+import { Pill } from "./common/Selection"
+import FadingCompoennt from "./common/FadingComponent"
 
 import './Documents.css'
-import Hideable from "./common/Hideable";
-import { useEffect, useState } from "react";
-import { Pill } from "./common/Selection";
-import FadingCompoennt from "./common/FadingComponent";
 
 const seasonStr = (seasons: Season[]) => {
     const str = seasons.length > 1 ? 'Seasons' : 'Season'
 
     return `${seasons.length} ${str}`
-}
-
-interface DocProps {
-    d: QueryResult
-    setDoc: (d: QueryResult) => void
-    sinceWeeksAgo: number
 }
 
 const isNew = (date: ISODateString, sinceWeeksAgo: number): boolean => {
@@ -31,25 +24,72 @@ const isNew = (date: ISODateString, sinceWeeksAgo: number): boolean => {
     return Date.parse(date) > oneWeekInPast
 }
 
-const DocRow = ({ d, setDoc, sinceWeeksAgo }: DocProps) =>
-    <div className='document' onClick={() => setDoc(d)}>
-        <h2>{d.title}</h2>
-        <div className='mediaInfo'>
-            <MediaIcon type={d.type}/> 
-            {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
-            <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
-                <Pill variant='Static' keyProp={d.title}>New!</Pill>
-            </FadingCompoennt>
-        </div>
-        <div className='tagContainer'>
-            {
-                d.tags.map(t =>
-                    <span key={d.title + t} className='tag'>
-                        {t.toUpperCase()}
-                    </span>)
-            }
-        </div>
+interface TagsProps {
+    doc: QueryResult
+}
+
+export const Tags = ({ doc }: TagsProps) => 
+    <div className='tagContainer'>
+        {
+            doc.tags.map(t =>
+                <span key={doc.title + t} className='tag'>
+                    {t.toUpperCase()}
+                </span>
+            )
+        }
     </div>
+
+
+interface DocProps {
+    idx: number
+    d: QueryResult
+    setDoc: (d: QueryResult) => void
+    sinceWeeksAgo: number
+}
+
+const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
+    const [metaInfo, setMetaInfo] = useState<MetaResponse | undefined>(undefined)
+
+    const containerRef = useRef<HTMLDivElement | null>(null)
+
+    const handleHover = () => {
+        if (containerRef.current) {
+            containerRef.current.focus()  // Focus the element on hover
+        }
+    };
+
+    const img = metaInfo?.image
+
+    useEffect(() => {
+        preview(d.imdb).then(setMetaInfo)
+    }, [d.imdb])
+    //{img && <img className='image' src={img} width={0.675*smallImgScaler} height={1*smallImgScaler}></img>}
+
+    return (
+        <div onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setDoc(d)}} ref={containerRef} className="documentContainer" tabIndex={1} data-index={idx}>
+            {
+                img ? 
+                <div className='documentImage' style={{'backgroundImage': `url(${img})`}}/> 
+                : <h2 style={{textAlign: 'center'}}>{d.title}</h2>
+            }
+            <div className='document'>
+                <span className="infoContainer">
+                    <div className='mediaInfo'>
+                        <MediaIcon type={d.type}/> 
+                        {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
+                        <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
+                            <Pill variant='Static' keyProp={d.title}>New!</Pill>
+                        </FadingCompoennt>
+                    </div>
+                    <Tags doc={d} />
+                </span>
+            </div>
+        </div>
+    )
+}
 
 interface DocsProps {
     docs: QueryResult[]
@@ -95,7 +135,7 @@ const NoResuls = ({numOfDocs}: NoResultsProps) => {
                 <ul>
                     {NoResultsTips.map((tip, idx) => <li key={tip + idx}>{tip}</li>)}
                 </ul>
-                <img src={ErrorGifs[randGif]} />
+                <img src={ErrorGifs[randGif]} alt="Not found" />
                 </>
             </Hideable>
         </div>
@@ -105,8 +145,8 @@ const NoResuls = ({numOfDocs}: NoResultsProps) => {
 const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => {
     return (
         <>
-            {docs.length > 0 ? docs.map(doc => (
-                <DocRow sinceWeeksAgo={sinceWeeksAgo} key={doc.title + doc.path} setDoc={setDoc} d={doc}/>
+            {docs.length > 0 ? docs.map((doc, idx) => (
+                <DocRow idx={idx} sinceWeeksAgo={sinceWeeksAgo} key={doc.title + doc.path} setDoc={setDoc} d={doc}/>
             )) :
                 !initialResultsFetched ? <></> : <NoResuls numOfDocs={docs.length}/>
             }
@@ -114,9 +154,14 @@ const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps)
     )
 }
 
-const Documents = ({docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => 
-    <div className='docContainer'>
-        <Docs sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
-    </div>
+const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => {
+    const containerRef = useRef<HTMLDivElement | null>(null)
+
+    return(
+        <div className='docContainer' ref={containerRef}>
+            <Docs sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
+        </div>
+    )
+}
 
 export default Documents

@@ -1,17 +1,18 @@
 import json
 from mediaDAO import add_media_to_collection, query_collections, existing_movies, remove_media_by_files, existing_tags, \
-    existing_series, update_series_seasons, delete_media_by_ids, delete_all_medias
+    existing_series, update_series_seasons, delete_media_by_ids, delete_all_medias, media_by_uuid, \
+    remove_media_by_title
 import os
 from bson import ObjectId
 from bson.json_util import dumps, loads
 from pandas.core.common import flatten
 from datetime import datetime
-
 from queryReq import QueryReq
 from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f, path_f, medias_to_remove_json, folder_path_f, \
-    seasons_f, id_f
-
+    seasons_f, uuid_f
 from mediaObjects import Movie, Series, Season, Episode
+import uuid
+import random
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 #medias_dir = os.path.join(current_dir, 'medias')
@@ -85,9 +86,13 @@ def arr_lowercase(arr: list[str]):  #list(map(lambda s: s.asJson(), s.seasons)),
 
     return res
 
+def new_uuid() -> str:
+    return str(uuid.uuid4())
+
 
 def save_media_info_for_movie(data, m: Movie):
     m_json = {
+        "uuid": new_uuid(),
         "title": data[title_f],
         "type": data[type_f],
         "tags": arr_lowercase(data[tags_f]),
@@ -102,6 +107,7 @@ def save_media_info_for_movie(data, m: Movie):
 
 def save_media_info_for_series(data, s: Series):
     m_json = {
+        "uuid": new_uuid(),
         "title": data[title_f],
         "type": data[type_f],
         "tags": arr_lowercase(data[tags_f]),
@@ -125,12 +131,27 @@ def file_has_been_added(file_name: str):
     return (added_opt, data)
 
 
-def search_collections(q: QueryReq):
-    m_json = m_json_from_req(q)
+max_suggestions = 3
+
+def search_collections(q: QueryReq, random_suggestions: bool = False):
+    m_json = m_json_from_req(q, random_suggestions=random_suggestions)
 
     res = query_collections(m_json, q.sort, q.sort_direction)
 
-    json_str = dumps(res)
+    if random_suggestions:
+        retries = 0
+        if len(res) > 0:
+            suggestions = []
+            while retries < max_suggestions and len(suggestions) < max_suggestions:
+               rand_suggestion = random.choice(res)
+               if not suggestions.__contains__(rand_suggestion):
+                   suggestions.append(rand_suggestion)
+               else:
+                   retries = retries + 1
+
+            res = suggestions
+
+    json_str = dumps(res, default=str)
     json_res = loads(json_str)
 
     return json_res
@@ -162,8 +183,7 @@ def get_existing_series():
     all_existing_series = json.loads(dumps(res))
     existing: list[Series] = []
     for series in all_existing_series:
-        id = series[id_f]
-        s = Series(id, series[title_f], series[folder_path_f], series[seasons_f])
+        s = Series(series[uuid_f], series[title_f], series[folder_path_f], series[seasons_f])
         existing.append(s)
 
     return existing
@@ -213,36 +233,49 @@ def go_through_movies(movies_dir_path: str) -> (int, list[str], int):
         if is_not_hidden_file(movie_folder):
             movie_folder_path = os.path.join(movies_dir_path, movie_folder)
             print(f'Movie folder: {movie_folder}')
-            files = os.listdir(movie_folder_path)
-            meta_data = None
-            media_file_path = None
-            has_been_added = False
-            # media_has_been_removed = False #TODO: use this?
-            for file in files:
-                print(f'[{movie_folder}] File: {file}')
-                if is_meta(file):
-                    meta_file_path = os.path.join(movie_folder_path, file)
-                    print(f'meta_path: {meta_file_path}')
-                    (has_been_added, meta_data) = file_has_been_added(meta_file_path)
-                elif is_media_file(file):
-                    if media_file_path is None:
-                        media_file_path = os.path.join(movie_folder_path, file)
-                    else:
-                        print(f'Extra media file found in {movie_folder_path}!')
-            movie = Movie(None, movie_folder, movie_folder_path, media_file_path)
+            (movie, new_added, new_metas) = handle_movie_folder(movie_folder_path, movie_folder)
             found_movies.append(movie)
-            if (not has_been_added) and media_file_path is not None and meta_data is not None:
-                save_media_info_for_movie(meta_data, movie)
-                update_meta_added(meta_data, meta_file_path)  # TODO: use once fixed
-                added = added + 1
-            if meta_data is None:
-                add_new_meta_file(movie_folder, movie_folder_path, 'movie')
-                new_meta_files = new_meta_files + 1
+            added = added + new_added
+            new_meta_files = new_meta_files + new_metas
 
     found_files = list(map(lambda m: m.path, found_movies))
 
     print(f'Found movie files: {found_files}')
     return added, found_files, new_meta_files
+
+
+def handle_movie_folder(movie_folder_path: str, movie_folder: str | None = None):
+    files = os.listdir(movie_folder_path)
+    meta_data = None
+    media_file_path = None
+    has_been_added = False
+    if movie_folder is None:
+        movie_folder = os.path.basename(movie_folder_path)
+    # media_has_been_removed = False #TODO: use this?
+    print(f'Handling path: {movie_folder_path}')
+    new_meta_files = 0
+    added = 0
+    for file in files:
+        print(f'File: {file}')
+        if is_meta(file):
+            meta_file_path = os.path.join(movie_folder_path, file)
+            print(f'meta_path: {meta_file_path}')
+            (has_been_added, meta_data) = file_has_been_added(meta_file_path)
+        elif is_media_file(file):
+            if media_file_path is None:
+                media_file_path = os.path.join(movie_folder_path, file)
+            else:
+                print(f'Extra media file found in {movie_folder_path}!')
+    movie = Movie(None, movie_folder, movie_folder_path, media_file_path)
+    if (not has_been_added) and media_file_path is not None and meta_data is not None:
+        save_media_info_for_movie(meta_data, movie)
+        update_meta_added(meta_data, meta_file_path)  # TODO: use once fixed
+        added = 1
+    if meta_data is None:
+        add_new_meta_file(movie_folder, movie_folder_path, 'movie')
+        new_meta_files = 1
+
+    return movie, added, new_meta_files
 
 
 def go_through_series(series_dir: str) -> (int, list[Series], int):
@@ -254,46 +287,58 @@ def go_through_series(series_dir: str) -> (int, list[Series], int):
         if is_not_hidden_file(series_name):
             series_path = os.path.join(series_dir, series_name)
             print(f'Series: {series_name}')
-            season_folders = os.listdir(series_path)
-            seasons = []
-            meta_data = None
-            has_been_added = False
-            meta_file_path = None
-            for season_dir in season_folders:
-                if is_meta(season_dir):
-                    meta_file_path = os.path.join(series_path, season_dir)
-                    (has_been_added, meta_data) = file_has_been_added(meta_file_path)
-            for season_dir in season_folders:
-                if not is_meta(season_dir) and not is_temp_meta(season_dir):
-                    print(f'[{series_name}]: SEASON - {season_dir}')
-                    season_path = os.path.join(series_path, season_dir)
-                    season_files = os.listdir(season_path)
-                    media_file_path = None
-                    season_episodes: list[Episode] = []
-                    for season_file in season_files:
-                        print(f'<{season_dir}> File: {season_file}')
-                        if is_media_file(season_file):
-                            media_file_path = os.path.join(season_path, season_file)
-                            episode = Episode(season_file, media_file_path)
-                            season_episodes.append(episode)
-                    season = Season(season_dir, season_episodes)
-                    seasons.append(season)
-
-            series = Series(None, series_name, series_path, seasons)
+            (series, new_added, new_metas) = handle_series_folder(series_path, series_name)
             found_series.append(series)
-            if (not has_been_added) and (not meta_data is None):
-                save_media_info_for_series(meta_data, series)
-                update_meta_added(meta_data, meta_file_path)  # TODO: use once fixed
-                added = added + 1
-            if meta_data is None:
-                add_new_meta_file(series_name, series_path, 'series')
-                new_temp_metas = new_temp_metas + 1
+            added = added + new_added
+            new_temp_metas = new_temp_metas + new_metas
 
     found_files = []
     seasons: list[Season] = flatten(list(map(lambda s: s.seasons, found_series)))
     found_files = flatten(list(map(lambda s: s.episodes, seasons)))
     print(f'Found series files: {found_files}')
     return added, found_series, new_temp_metas
+
+
+def handle_series_folder(series_path: str, series_name: str | None = None):
+    season_folders = os.listdir(series_path)
+    seasons = []
+    meta_data = None
+    has_been_added = False
+    meta_file_path = None
+    added = 0
+    new_temp_metas = 0
+    if series_name is None:
+        series_name = os.path.basename(series_path)
+    for season_dir in season_folders:
+        if is_meta(season_dir):
+            meta_file_path = os.path.join(series_path, season_dir)
+            (has_been_added, meta_data) = file_has_been_added(meta_file_path)
+    for season_dir in season_folders:
+        if not is_meta(season_dir) and not is_temp_meta(season_dir):
+            print(f'[{series_name}]: SEASON - {season_dir}')
+            season_path = os.path.join(series_path, season_dir)
+            season_files = os.listdir(season_path)
+            media_file_path = None
+            season_episodes: list[Episode] = []
+            for season_file in season_files:
+                print(f'<{season_dir}> File: {season_file}')
+                if is_media_file(season_file):
+                    media_file_path = os.path.join(season_path, season_file)
+                    episode = Episode(season_file, media_file_path)
+                    season_episodes.append(episode)
+            season = Season(season_dir, season_episodes)
+            seasons.append(season)
+
+    series = Series(None, series_name, series_path, seasons)
+    if (not has_been_added) and (not meta_data is None):
+        save_media_info_for_series(meta_data, series)
+        update_meta_added(meta_data, meta_file_path)  # TODO: use once fixed
+        added = 1
+    if meta_data is None:
+        add_new_meta_file(series_name, series_path, 'series')
+        new_temp_metas = 1
+
+    return series, added, new_temp_metas
 
 
 def remove_not_found_movies(found_movie_files: list[str]):
@@ -331,7 +376,7 @@ def update_existing_series_with_found(found_series: list[Series]):
             elif e.seasons != m_seasons:
                 print(f'{matching_series} difference in seasons with found - updating')
                 updated = updated + 1
-                update_series_seasons(ObjectId(e.id['$oid']), matching_series)
+                update_series_seasons(e.uuid, matching_series)
 
     series_ids_to_delete = list(map(lambda s: s.id, series_to_delete))
     deleted = delete_media_by_ids(series_ids_to_delete)
@@ -440,6 +485,39 @@ def go_through_medias():
         return {'added': added, 'updatedSeries': updated_series, 'removed': removed, 'pendingConfig': new_temp_metas}
 
 
+# ideally should use ID, but the mongodb has had some problems with the ID usage.
+# TODO: should refactor the logic later to use ID
+def rescan_media_by_uuid(uuid: str):
+    """
+    fetch media by folder path, delete the media from mongodb, handle by media type and add back to db
+    """
+    found_items = media_by_uuid(uuid)
+    if len(found_items) > 0:
+        media_json = json.loads(dumps(found_items[0]))
+
+        title = media_json['title']
+        media_type = media_json['type']
+        folder_path = media_json['folderPath']
+        meta_path = f'{folder_path}/{meta_file_name}'
+        reset_meta(meta_path, title)
+
+        remove_media_by_title(title)
+
+        if media_type == 'movie':
+            handle_movie_folder(folder_path)
+        elif media_type == 'series':
+            handle_series_folder(folder_path)
+        else:
+            print(f'INVALID MEDIA TYPE {media_type}')
+
+        return True
+    else:
+        print(f'No results found with id: {uuid}')
+
+        return False
+
+
+
 #media_res = go_through_medias()
 #print(f'..... RES: {media_res}')
 
@@ -476,3 +554,7 @@ def reset_media():
         delete_all_medias()
 
 #test_series()
+
+#rescan_media_by_path('/Users/sagu/media_project/media/src/medias/Series/salkkarit')
+
+#reset_media()

@@ -1,13 +1,13 @@
-import _, { sortBy } from 'lodash'
+import _ from 'lodash'
 import Hideable from './common/Hideable'
 import Selection from './common/Selection'
 import { SortDirection, SortType } from './MediaClient'
 import { TypeOption } from './MediaBrowser'
-
-import './SearchOptions.css'
-import SortOrderIcon from './common/SortOrderIcon'
 import SortOrderToggle from './SortOrderToggle'
 import {AlphabeticalSelection, CreatedSelection} from './common/SortSelections'
+import { useState } from 'react'
+
+import './SearchOptions.css'
 
 interface SeachOptionsProps {
     setTags: (tags: string[]) => void
@@ -17,22 +17,26 @@ interface SeachOptionsProps {
     typeOptions: TypeOption[]
     usedSort: SortType
     setSortType: (s: SortType) => void
-    sortOptions: SortType[]
     setSortDirection: (s: SortDirection) => void
     currentSortDirection: SortDirection
     sinceWeeksAgo: number
     setNewSinceWeeksAgo: (s: number) => void
 }
 
-const SearchOptions = ({selectedTags, tagOptions, setTags, sortOptions, setSortDirection, usedSort, currentSortDirection, setSortType, handleTypesChange, typeOptions, setNewSinceWeeksAgo, sinceWeeksAgo}: SeachOptionsProps) => {
+const crlIsPressed = (event: MouseEvent): boolean => event.ctrlKey || event.metaKey
+
+const SearchOptions = ({selectedTags, tagOptions, setTags, setSortDirection, usedSort, currentSortDirection, setSortType, handleTypesChange, typeOptions, setNewSinceWeeksAgo, sinceWeeksAgo}: SeachOptionsProps) => {
     return (
-        <Hideable contentName='options'>
+        <Hideable contentName='filters'>
             <div className='optionsContainer'>
                 <div className='tags'>
                     {tagOptions.map(t => (
                         <span key={t}>
-                            <Selection isChecked={selectedTags.includes(t)} option={t} onClick={() => {
-                                if (_.difference(tagOptions, selectedTags).length === 0) {
+                            <Selection isChecked={selectedTags.includes(t)} option={t} onClick={(option, event) => {
+                                event.preventDefault()
+                                const nativeEvent = event.nativeEvent as MouseEvent // Access the native event
+
+                                if (crlIsPressed(nativeEvent)) {
                                     setTags([t])
                                 } else {
                                     if (selectedTags.includes(t)) {

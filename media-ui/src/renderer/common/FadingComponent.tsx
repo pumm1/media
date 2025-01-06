@@ -26,7 +26,7 @@ const FadingCompoennt = ({ isVisible, duration = 700, children }: FadingCompoenn
         {children}
       </div>
     ) : null
-  );
-};
+  )
+}
 
 export default FadingCompoennt

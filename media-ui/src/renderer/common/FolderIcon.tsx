@@ -1,5 +1,5 @@
-import folderImage from './folder.png';
-import './FolderIcon.css';
+import folderImage from './folder.png'
+import './FolderIcon.css'
 
 const FolderIcon = () => {
   return (

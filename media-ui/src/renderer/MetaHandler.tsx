@@ -1,12 +1,13 @@
-import axios from "axios";
-import {load} from 'cheerio'
-import { useEffect, useRef, useState } from "react";
-import { QueryResult, Season, Episode, createUrl, preview } from "./MediaClient";
-import LoadingIndicator from "./common/LoadingIndicator";
+import { useCallback, useEffect, useRef, useState } from "react"
+import { QueryResult, Season, Episode, rescanMedia, preview, suggestMedias, QueryReq } from "./MediaClient"
+import LoadingIndicator from "./common/LoadingIndicator"
+import {PlayButton, FolderButton, RefreshButton} from "./common/CommonButtons"
+import Hideable from "./common/Hideable"
+import MediaIcon from "./common/MovieIcon"
+import Suggestion from "./Suggestion"
+import { Tags } from "./Documents"
+
 import './MetaHandler.css'
-import {PlayButton, FolderButton} from "./common/CommonButtons";
-import Hideable from "./common/Hideable";
-import MediaIcon from "./common/MovieIcon";
 
 interface PossibleError {
     error?: string
@@ -17,37 +18,6 @@ export interface MetaInfo extends PossibleError {
     info?: string
     description?: string
     image?: string
-}
-
-const resolveLinkMeta = async (url: string): Promise<MetaInfo| undefined> => {
-  try {
-    const { data } = await axios.post(createUrl('/preview'), {url})
-    const $ = load(data)
-
-    const title = $('meta[property="og:title"]').attr('content') || $('title').text()
-    const info = $('meta[property="og:description"]').attr('content')
-    const description = $('meta[name="description"]').attr('content')
-    const image = $('meta[property="og:image"]').attr('content')
-    //const link = $('meta[property="og:url"]').attr('content') || url;
-
-    return {
-        title,
-        info,
-        description,
-        image,
-        
-    }
-  } catch (error) {
-    console.error(error);
-    return undefined;
-  }
-}
-
-interface MetaInfoProps extends MetaInfo {
-    playMedia: (path: string) => void
-    onOpenFolder: () => void
-    doc: QueryResult
-    onClose: () => void
 }
 
 interface SeasonInfoProps {
@@ -87,16 +57,39 @@ const SeasonInfo = ({seasons, playMedia}: SeasonInfoProps) =>
         </Hideable>
     </div>
 
-const imgScaler = 500
+const imgScaler = 200
 
-const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder, onClose}: MetaInfoProps) => {
+interface MetaInfoProps extends MetaInfo {
+    playMedia: (path: string) => void
+    onOpenFolder: () => void
+    doc: QueryResult
+    onClose: () => void
+    updateMediasFn: () => void
+    setDoc: (d: QueryResult) => void
+}
+
+const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image, playMedia, doc, onOpenFolder, onClose }: MetaInfoProps) => {
     const componentRef = useRef<HTMLDivElement | null>(null)
 
-    const handleClickOutside = (event: MouseEvent) => {
+    const [suggestions, setSuggestions] = useState<QueryResult[] | undefined>(undefined)
+
+    useEffect(() => {
+        setSuggestions(undefined) // Clear old suggestions immediately
+        const suggestionQ: QueryReq = {
+            tags: doc.tags,
+            titles: [doc.title],
+            types: [doc.type],
+            sort: 'title',
+            sortDirection: 'default',
+        }
+        suggestMedias(suggestionQ).then(setSuggestions)
+    }, [doc.tags, doc.type, doc.title])
+
+    const handleClickOutside = useCallback((event: MouseEvent) => {
         if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
             onClose()
         }
-    }
+    }, [onClose]) // Dependencies for useCallback
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside)
@@ -104,54 +97,85 @@ const MetaInfo = ({title, description, info, image, playMedia, doc, onOpenFolder
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
         }
+    }, [handleClickOutside])
+
+    const rescanFn = () => rescanMedia(doc.uuid).then(() => updateMediasFn())
+
+    const onRescan = () => 
+        Promise.resolve(onClose()).then(() => rescanFn())
+
+      useEffect(() => {//should allow the escaping with keyboard in all situations
+        setTimeout(() => {
+            componentRef.current?.focus();
+        }, 0) // Delay ensures DOM is ready
     }, [])
 
     return(
-        <div className="metaContainer" ref={componentRef}>
-            <a href={doc.imdb} target="_blank"><h2>{title}</h2></a>
+        <div tabIndex={0} className="infoContainer" ref={componentRef} onKeyDown={e => {
+            if (e.key === 'Escape') {
+                onClose()
+            }
+        }}>
+            <a href={doc.imdb} target="_blank" rel="noopener noreferrer"><h2>{title}</h2></a>
             <p>{info !== undefined ? info : '[Info not available]'}</p>
             <MediaIcon type={doc.type}/>
+            <Tags doc={doc} />
             <div className="buttons">
                 {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
                 <FolderButton onClick={onOpenFolder}/>
+                <RefreshButton onClick={() => onRescan()} />
             </div>
             <p>{description ?? ''}</p>
             <div className="seasonsAndImg">
                 {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
-                <img src={image} width={0.675*imgScaler} height={1*imgScaler}></img>
+                <img src={image} alt="Not found" width={0.675*imgScaler} height={1*imgScaler}></img>
                 {/**we recommend a vertical alignment (i.e. portrait orientation) with an aspect ratio of 1:0.675 */}
-            </div>  
+            </div>
+            {suggestions && suggestions.length > 0 && 
+                <div className="suggestionsContainer">
+                    <h3>You Might Also Like...</h3>
+                    <div className="suggestions">
+                        {suggestions.map((s, idx) => <Suggestion key={s.uuid + idx} setDoc={setDoc} doc={s}/>)}
+                    </div>
+                </div>
+                }
         </div>
     )
 }
 
 export interface MetaInfoByUrlProps {
+    metaInfo?: MetaInfo
     doc: QueryResult
     playMedia: (path: string) => void
     onOpenFolder: () => void
     onClose: () => void
+    updateMediasFn: () => void
+    setDoc: (d: QueryResult) => void
 }
-const MetaInfoByUrl = ({doc, playMedia, onOpenFolder, onClose}: MetaInfoByUrlProps) => {
-    const [metaInfo, setMetaInfo] = useState<MetaInfo | undefined>(undefined)
+
+const MetaInfoByUrl = ({ setDoc, metaInfo, updateMediasFn, doc, playMedia, onOpenFolder, onClose }: MetaInfoByUrlProps) => {
+    const [currentMetaInfo, setMetaInfo] = useState<MetaInfo | undefined>(metaInfo)
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
         if (doc.imdb) {
             setIsLoading(true)
-            resolveLinkMeta(doc.imdb).then(info => {
+            preview(doc.imdb).then(info => {
                 setIsLoading(false)
                 setMetaInfo(info)
             })
         }
-    }, [doc])
-    //metaInfo ? <MetaInfo onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+    }, [doc.imdb])
 
     return (
         isLoading ? <LoadingIndicator /> :
-        metaInfo ? <MetaInfo onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={metaInfo.title} info={metaInfo.info} description={metaInfo.description} image={metaInfo.image}/> :  <></>
+        currentMetaInfo ? 
+            <MetaInfoModal setDoc={setDoc} updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={currentMetaInfo.title} info={currentMetaInfo.info} description={currentMetaInfo.description} image={currentMetaInfo.image}/>
+        :  
+            <></>
     )
 }
 
 // Example usage
-//fetchLinkPreview('https://example.com').then(preview => console.log(preview));
+//fetchLinkPreview('https://example.com').then(preview => console.log(preview))
 export default MetaInfoByUrl
