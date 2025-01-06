@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { QueryResult, Season, Episode, rescanMedia, preview, suggestMedias, QueryReq } from "./MediaClient";
-import LoadingIndicator from "./common/LoadingIndicator";
+import { useCallback, useEffect, useRef, useState } from "react"
+import { QueryResult, Season, Episode, rescanMedia, preview, suggestMedias, QueryReq } from "./MediaClient"
+import LoadingIndicator from "./common/LoadingIndicator"
+import {PlayButton, FolderButton, RefreshButton} from "./common/CommonButtons"
+import Hideable from "./common/Hideable"
+import MediaIcon from "./common/MovieIcon"
+import Suggestion from "./Suggestion"
+import { Tags } from "./Documents"
+
 import './MetaHandler.css'
-import {PlayButton, FolderButton, RefreshButton} from "./common/CommonButtons";
-import Hideable from "./common/Hideable";
-import MediaIcon from "./common/MovieIcon";
-import Suggestion from "./Suggestion";
-import { Tags } from "./Documents";
 
 interface PossibleError {
     error?: string
@@ -81,14 +82,14 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
             sort: 'title',
             sortDirection: 'default',
         }
-        suggestMedias(suggestionQ).then(setSuggestions);
+        suggestMedias(suggestionQ).then(setSuggestions)
     }, [doc.tags, doc.type, doc.title])
 
     const handleClickOutside = useCallback((event: MouseEvent) => {
         if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
-            onClose();
+            onClose()
         }
-    }, [onClose]); // Dependencies for useCallback
+    }, [onClose]) // Dependencies for useCallback
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside)
@@ -103,9 +104,11 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
     const onRescan = () => 
         Promise.resolve(onClose()).then(() => rescanFn())
 
-    useEffect(() => {
-        componentRef.current?.focus(); //requred for using escape to close modal
-      }, [])
+      useEffect(() => {//should allow the escaping with keyboard in all situations
+        setTimeout(() => {
+            componentRef.current?.focus();
+        }, 0) // Delay ensures DOM is ready
+    }, [])
 
     return(
         <div tabIndex={0} className="infoContainer" ref={componentRef} onKeyDown={e => {
@@ -132,7 +135,7 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
                 <div className="suggestionsContainer">
                     <h3>You Might Also Like...</h3>
                     <div className="suggestions">
-                        {suggestions.map(s => <Suggestion setDoc={setDoc} doc={s}/>)}
+                        {suggestions.map((s, idx) => <Suggestion key={s.uuid + idx} setDoc={setDoc} doc={s}/>)}
                     </div>
                 </div>
                 }
@@ -174,5 +177,5 @@ const MetaInfoByUrl = ({ setDoc, metaInfo, updateMediasFn, doc, playMedia, onOpe
 }
 
 // Example usage
-//fetchLinkPreview('https://example.com').then(preview => console.log(preview));
+//fetchLinkPreview('https://example.com').then(preview => console.log(preview))
 export default MetaInfoByUrl

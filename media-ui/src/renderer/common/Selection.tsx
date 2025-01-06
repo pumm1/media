@@ -1,11 +1,5 @@
 import './Selection.css'
 
-interface SelectionProps {
-    isChecked: boolean
-    option: string
-    onClick: (option: string) => void
-}
-
 type PillVariant = 'Static' | 'Dynamic'
 
 interface PillProps {
@@ -20,14 +14,20 @@ export const Pill = ({ keyProp, children, isChecked, variant }: PillProps) =>
     {children}
   </label>
 
-const Selection = ({isChecked, option, onClick, }: SelectionProps) => {
+interface SelectionProps {
+  isChecked: boolean
+  option: string
+  onClick: (option: string, event: React.ChangeEvent<HTMLInputElement>) => void
+}
+
+const Selection = ({ isChecked, option, onClick }: SelectionProps) => {
   return (
-      <Pill variant='Dynamic' keyProp={option} isChecked={isChecked}>
+      <Pill variant="Dynamic" keyProp={option} isChecked={isChecked}>
           <input
-            type="checkbox"
-            value={option}
-            checked={isChecked}
-            onChange={() => onClick(option)}
+              type="checkbox"
+              value={option}
+              checked={isChecked}
+              onChange={(event) => onClick(option, event)}
           />
           {option}
       </Pill>

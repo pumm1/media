@@ -7,6 +7,7 @@
 .infoContainer {
     padding: 12px;
     height: 100%;
+    outline: none;
 }
 
 .metaContainer {
