@@ -85,6 +85,7 @@ When media folder isn't found anymore in the file structure on scan, it's remove
 ## Setup
 
 - Install MongoDB
+- Install ffmpeg
 - Install Redis (Backend fetches info from IMDB and caches it to redis)
 - Install Python3 (> 3.10)
   - Install dependencies mentioned in `/src/requirements.txt`

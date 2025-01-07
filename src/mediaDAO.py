@@ -281,6 +281,31 @@ def media_by_uuid(uuid: str):
             return []
 
 
+def medias_by_uuids(uuids: list[str]):
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return list(
+                collection.find({
+                    'uuid': {
+                        in_f: uuids
+                        }
+                    },
+                    {
+                        '_id': 0,
+                        'uuid': 1,
+                        'title': 1,
+                        'type': 1,
+                        'path': 1,
+                    }
+                )
+            )
+        else:
+            collection_not_found_warn()
+            return []
+
+
 def update_series_seasons(uuid: str, s: Series):
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)

@@ -188,3 +188,9 @@ export const suggestMedias = (r: QueryReq) => {
 
     return fetchDataAs<QueryResult[]>(`/suggestions${params}`)
 }
+
+export type HDR = 'HDR'
+
+export const mediaHasHdrByUuid = (uuid: string) =>
+    fetchDataAs<HDR | null>(`/media-has-hdr-by-uuid?uuid=${uuid}`)
+

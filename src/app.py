@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from queryReq import QueryReq
 from mediaHandler import search_collections, go_through_medias, get_existing_tags, reset_media, list_meta_files, \
-    update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_uuid
+    update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_uuid, movie_media_is_hdr_by_uuid
 import requests
 from flask_caching import Cache
 
@@ -129,3 +129,20 @@ def suggestions():
     query = QueryReq(titles, tags, types, None, None)
 
     return jsonify(search_collections(query, random_suggestions=True))
+
+@app.route('/media-has-hdr-by-uuid', methods = [get])
+def media_has_hdr_by_uudid():
+    uuid = request.args.get('uuid')
+    res = cache.get(uuid)
+    if res:
+        print(f"Cache hit for UUID HDR info: {uuid}")
+    else:
+        res = movie_media_is_hdr_by_uuid(uuid)
+
+        cache.set(uuid, str(res))
+
+    if res == True:
+        return jsonify('HDR')
+    else:
+        return jsonify(None)
+

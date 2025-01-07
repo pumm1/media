@@ -1,7 +1,7 @@
 import json
 from mediaDAO import add_media_to_collection, query_collections, existing_movies, remove_media_by_files, existing_tags, \
     existing_series, update_series_seasons, delete_media_by_ids, delete_all_medias, media_by_uuid, \
-    remove_media_by_title
+    remove_media_by_title, medias_by_uuids
 import os
 from bson import ObjectId
 from bson.json_util import dumps, loads
@@ -13,6 +13,8 @@ from queryBuilder import m_json_from_req, title_f, type_f, tags_f, imdb_f, path_
 from mediaObjects import Movie, Series, Season, Episode
 import uuid
 import random
+import ffmpeg
+
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 #medias_dir = os.path.join(current_dir, 'medias')
@@ -157,8 +159,7 @@ def search_collections(q: QueryReq, random_suggestions: bool = False):
     return json_res
 
 
-valid_media_file_suffixes = ['.mp4', '.mkv', '.mov', 'avi']
-
+valid_media_file_suffixes = ['.mp4', '.mkv', '.mov', 'avi', '.ts']
 
 def is_media_file(file: str) -> bool:
     is_valid = False
@@ -166,6 +167,8 @@ def is_media_file(file: str) -> bool:
         if file.endswith(suffix):
             is_valid = True
             break
+
+    #print(f'debug is media file -  file: {file} .. is_vali: {is_valid}')
     return is_valid
 
 
@@ -300,7 +303,10 @@ def go_through_series(series_dir: str) -> (int, list[Series], int):
 
 
 def handle_series_folder(series_path: str, series_name: str | None = None):
-    season_folders = os.listdir(series_path)
+    season_folders = [
+        folder for folder in os.listdir(series_path)
+        if not folder.startswith('.')
+    ]
     seasons = []
     meta_data = None
     has_been_added = False
@@ -552,6 +558,69 @@ def reset_media():
                                 break
         print(f'All meta files reset, Deleting info from DB')
         delete_all_medias()
+
+
+color_primary_f = 'color_primaries'
+color_transfer_f = 'color_transfer'
+color_space_f = 'color_space'
+
+possible_color_primaries = ['bt2020']
+possible_color_transfers = ['smpte2084', 'arib-std-b67']
+possible_color_spces = ['bt2020nc', 'bt2020c']
+
+def media_has_hdr_by_path(path: str):
+    if not os.path.exists(path):
+        print(f"File does not exist: {path}")
+    else:
+        try:
+            probe = ffmpeg.probe(path)
+            video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
+            if not video_stream:
+                return None
+
+            file_color_primary = video_stream.get(color_primary_f)
+            file_color_transfer = video_stream.get(color_transfer_f)
+            file_color_space = video_stream.get(color_space_f)
+
+            color_primaries_is_hdr = file_color_primary is not None and possible_color_primaries.__contains__(
+                video_stream.get('color_primaries'))
+            color_transfer_is_hdr = file_color_transfer is not None and possible_color_transfers.__contains__(
+                file_color_transfer)
+            color_space_is_hdr = file_color_space is not None and possible_color_spces.__contains__(file_color_space)
+
+            is_most_likely_hdr = color_primaries_is_hdr and color_transfer_is_hdr and color_space_is_hdr
+
+            # print(f'File: {path}')
+            # print(f'Is most likely HDR: {is_most_likely_hdr}')
+
+            return is_most_likely_hdr
+        except:
+            print(f'Something went wrong with trying to fetch HDR info from {path}')
+            return False
+
+
+
+def media_is_movie(media: dict) -> bool:
+    return media.get(type_f) == 'movie'
+
+
+def movie_media_is_hdr_by_uuid(uuid: str):
+    medias = media_by_uuid(uuid)
+    movie_medias = list(filter(media_is_movie, medias))
+
+    media_has_hdr = False
+
+    #should be only one
+    if len(movie_medias) > 0:
+        media = movie_medias[0]
+        media_has_hdr = media_has_hdr_by_path(media[path_f])
+
+    return media_has_hdr
+
+#media_has_hdr_by_path('/Users/sagu/media_project/media/src/medias/Movies/Godzilla/godzilla.mp4')
+#media_has_hdr_by_path('/Users/sagu/media_project/media/src/medias/Movies/Synecdoche, New York/synecdoche.ts')
+
+#movie_media_is_hdr_by_uuid(['8a5afc53-4dad-429d-8e82-3c6a84c21a58', '4a683e0a-fdf8-4eea-8155-1f944aa8e2e5'])
 
 #test_series()
 

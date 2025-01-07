@@ -6,3 +6,4 @@ pandas
 Flask-Caching
 beautifulsoup4
 redis
+ffmpeg-python
