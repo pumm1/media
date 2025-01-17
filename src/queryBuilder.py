@@ -7,6 +7,8 @@ all_f = '$all'
 in_f = '$in'
 not_equal_f = '$ne'
 not_in_f = '$nin'
+skip_f = '$skip'
+limit_f = '$limit'
 
 #field names
 uuid_f = 'uuid'
@@ -56,7 +58,7 @@ def m_json_from_req(req: QueryReq, random_suggestions: bool = False):
     allParams: list = title_jsons + tag_jsons + type_jsons
 
     combined_query = {
-        and_f: allParams,
+        and_f: allParams
     }
 
     print(f'generated query: {combined_query}')

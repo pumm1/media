@@ -77,7 +77,9 @@ export interface QueryReq {
     types: MediaType[]
     tags: string[]
     sort: SortType
-    sortDirection: SortDirection 
+    sortDirection: SortDirection
+    page: number
+    pageSize: number
 }
 
 export interface Episode {
@@ -104,7 +106,7 @@ export interface QueryResult {
     seasons?: Season[]
 }
 
-const termsAsParam = (values: string[], field: string) => 
+const termsAsParam = (values: string[] | number[], field: string) => 
     values.map(v => `${field}=${v}`).join('&')
   
 
@@ -114,8 +116,10 @@ export const createSearchParams = (r: QueryReq): string => {
     const typeParams = termsAsParam(r.types, 'type')
     const sortParam = termsAsParam([r.sort], 'sort')
     const sortDirectionParam = termsAsParam([r.sortDirection], 'sortDirection')
+    const pageParams = termsAsParam([r.page], 'page')
+    const pageSizeParams = termsAsParam([r.pageSize], 'pageSize')
 
-    const params = [titleParams, tagParams, typeParams, sortParam, sortDirectionParam]
+    const params = [titleParams, tagParams, typeParams, sortParam, sortDirectionParam, pageParams, pageSizeParams]
 
     return params.length > 0 ? `?${params.join('&')}` : ''
 }

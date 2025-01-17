@@ -36,8 +36,10 @@ def search():
     types = request.args.getlist('type')
     sort = request.args.get('sort', type=str)
     sort_direction = request.args.get('sortDirection', type=str)
+    page = request.args.get('page', type=int, default=0)
+    page_size = request.args.get('pageSize', type=int, default=16)
 
-    query = QueryReq(titles, tags, types, sort, sort_direction)
+    query = QueryReq(titles, tags, types, sort, sort_direction, page=page, page_size=page_size)
 
     return jsonify(search_collections(query))
 
@@ -126,7 +128,7 @@ def suggestions():
     tags = request.args.getlist('tag')
     types = request.args.getlist('type')
 
-    query = QueryReq(titles, tags, types, None, None)
+    query = QueryReq(titles, tags, types, None, None, 0, 500)
 
     return jsonify(search_collections(query, random_suggestions=True))
 

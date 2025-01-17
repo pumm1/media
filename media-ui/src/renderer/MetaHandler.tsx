@@ -81,6 +81,8 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
             types: [doc.type],
             sort: 'title',
             sortDirection: 'default',
+            page: 0,
+            pageSize: 100
         }
         suggestMedias(suggestionQ).then(setSuggestions)
     }, [doc.tags, doc.type, doc.title])

@@ -138,7 +138,7 @@ max_suggestions = 3
 def search_collections(q: QueryReq, random_suggestions: bool = False):
     m_json = m_json_from_req(q, random_suggestions=random_suggestions)
 
-    res = query_collections(m_json, q.sort, q.sort_direction)
+    res = query_collections(m_json, q.sort, q.sort_direction, page=q.page, page_size=q.page_size)
 
     if random_suggestions:
         retries = 0
