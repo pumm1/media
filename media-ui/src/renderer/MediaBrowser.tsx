@@ -228,6 +228,16 @@ const MediaBrowser = () => {
         setPage(0)
     }
 
+    const updateSortType = (s: SortType) => {
+        setSort(s)
+        setPage(0)
+    }
+
+    const updateSortDirection = (s: SortDirection) => {
+        setSortDirection(s)
+        setPage(0)
+    }
+
     return (//the popupsettings becomes the sliding page
         <div className='main'>
             { settingsOpen &&
@@ -245,7 +255,7 @@ const MediaBrowser = () => {
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
             <div className='mediaBrowserContainer' style={useBlur ? blurByAmount(2) : blurByAmount(0)}>
                 <SearchInput reference={inputRef} isLoading={searchLoading} setTitles={updateTitles}/>
-                <SearchOptions setTags={updateTags}  currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} setSortType={setSort} usedSort={sort} setSortDirection={setSortDirection} selectedTags={tags} tagOptions={tagOptions}/>
+                <SearchOptions setTags={updateTags}  currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} setSortType={updateSortType} usedSort={sort} setSortDirection={updateSortDirection} selectedTags={tags} tagOptions={tagOptions}/>
                 <Documents sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={updateDoc} initialResultsFetched={initialResultsFetched} />
                 <div className='scanner'>
                     <button disabled={updateLoading} onClick={() =>
