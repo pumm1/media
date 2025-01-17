@@ -106,6 +106,11 @@ export interface QueryResult {
     seasons?: Season[]
 }
 
+export interface SearchQueryRes {
+    results: QueryResult[]
+    nextPage: number | null
+}
+
 const termsAsParam = (values: string[] | number[], field: string) => 
     values.map(v => `${field}=${v}`).join('&')
   
@@ -130,7 +135,7 @@ export const getTags = () =>
 export const searchMedia = (r: QueryReq) => {
     const params = createSearchParams(r)
 
-    return fetchDataAs<QueryResult[]>(`/search-media${params}`)
+    return fetchDataAs<SearchQueryRes>(`/search-media${params}`)
 }
 
 export interface UpdateRes {

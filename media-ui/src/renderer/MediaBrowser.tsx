@@ -84,7 +84,7 @@ const MediaBrowser = () => {
     const [settingsOpen, setSettingsOpen] = useState(false)
 
     const [page, setPage] = useState(0)
-    const pageSize = 10
+    const pageSize = 5
 
     const q: QueryReq = {
         titles,
@@ -123,12 +123,12 @@ const MediaBrowser = () => {
         }
     ]
 
-    const [prevQueryRes, setPreviousQueryRes] = useState<QueryResult[] | undefined>(undefined)
+    const [nextPage, setNextPage] = useState<number | null>(null)
 
     const tryToFetchMoreDataFn = () => {
-        //console.log(`maybe fetching more data`)
-        if ((prevQueryRes && prevQueryRes.length >= pageSize) || prevQueryRes === undefined) {
-            setPage(page + 1)
+        console.log(`maybe fetching more data`)
+        if (nextPage) {
+            setPage(nextPage)
         }
     }
 
@@ -137,11 +137,11 @@ const MediaBrowser = () => {
         setSearchLoading(true)
 
         return searchMedia(q).then(queryRes => {
-            setPreviousQueryRes(queryRes)
+            setNextPage(queryRes.nextPage)
             if (page == 0) {
-                setDocs(queryRes)
+                setDocs(queryRes.results)
             } else {
-                setDocs([...docs, ...queryRes])
+                setDocs([...docs, ...queryRes.results])
             }
             setSearchLoading(false)
         })
@@ -169,7 +169,7 @@ const MediaBrowser = () => {
     }
 
     useEffect(() => {
-        const delay = 400
+        const delay = 500
 
         const timeoutId = setTimeout(() => {
             updateMediaFn(q)
@@ -187,8 +187,6 @@ const MediaBrowser = () => {
         }).flat()
         setTypes(selectedValues)
     }
-
-    const sortOptions: SortType[] = ['title', 'created']
     
     const blurByAmount = (amount: number) =>{
             const filter = {

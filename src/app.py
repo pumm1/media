@@ -41,7 +41,18 @@ def search():
 
     query = QueryReq(titles, tags, types, sort, sort_direction, page=page, page_size=page_size)
 
-    return jsonify(search_collections(query))
+    search_res = search_collections(query)
+
+    next_page = None
+    if len(search_res) >= page_size:
+        next_page = page + 1
+
+    res = {
+        'results': search_res,
+        'nextPage': next_page
+    }
+
+    return jsonify(res)
 
 @app.route('/list-metas', methods=[get])
 def list_metas():

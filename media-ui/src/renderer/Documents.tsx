@@ -168,19 +168,21 @@ const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo, tryToFe
           const scrollHeight = container.scrollHeight // Total scrollable height
           const clientHeight = container.clientHeight // Visible height of the container
     
+          const threshold = 100
+
           // Check if the user is at the bottom
-          if (scrollHeight - scrollTop === clientHeight) {
+          if (scrollHeight - scrollTop - clientHeight <= threshold) {
             tryToFetchMoreDataFn() // Trigger data fetch
           }
-        };
+        }
     
         const currentContainer = containerRef.current;
         currentContainer?.addEventListener("scroll", handleScroll)
     
         return () => {
           currentContainer?.removeEventListener("scroll", handleScroll)
-        };
-      }, [tryToFetchMoreDataFn])
+        }
+      }, [tryToFetchMoreDataFn, containerRef])
 
     return(
         <div className='docContainer' ref={containerRef}>
