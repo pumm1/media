@@ -123,18 +123,25 @@ const MediaBrowser = () => {
         }
     ]
 
+    const [prevQueryRes, setPreviousQueryRes] = useState<QueryResult[] | undefined>(undefined)
+
+    const tryToFetchMoreDataFn = () => {
+        //console.log(`maybe fetching more data`)
+        if ((prevQueryRes && prevQueryRes.length >= pageSize) || prevQueryRes === undefined) {
+            setPage(page + 1)
+        }
+    }
+
 
     const updateMediaFn = (q: QueryReq) => {
         setSearchLoading(true)
 
         return searchMedia(q).then(queryRes => {
+            setPreviousQueryRes(queryRes)
             if (page == 0) {
                 setDocs(queryRes)
             } else {
                 setDocs([...docs, ...queryRes])
-            }
-            if (queryRes.length >= pageSize) {
-                setPage(page + 1)
             }
             setSearchLoading(false)
         })
@@ -256,7 +263,7 @@ const MediaBrowser = () => {
             <div className='mediaBrowserContainer' style={useBlur ? blurByAmount(2) : blurByAmount(0)}>
                 <SearchInput reference={inputRef} isLoading={searchLoading} setTitles={updateTitles}/>
                 <SearchOptions setTags={updateTags}  currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} setSortType={updateSortType} usedSort={sort} setSortDirection={updateSortDirection} selectedTags={tags} tagOptions={tagOptions}/>
-                <Documents sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={updateDoc} initialResultsFetched={initialResultsFetched} />
+                <Documents tryToFetchMoreDataFn={tryToFetchMoreDataFn} sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={updateDoc} initialResultsFetched={initialResultsFetched} />
                 <div className='scanner'>
                     <button disabled={updateLoading} onClick={() =>
                         updateMediasFn()

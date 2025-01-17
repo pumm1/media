@@ -89,11 +89,15 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
     )
 }
 
-interface DocsProps {
+interface DocsPropsMain {
     docs: QueryResult[]
     setDoc: (d: QueryResult) => void
     initialResultsFetched: boolean, 
     sinceWeeksAgo: number
+}
+
+interface DocsProps extends DocsPropsMain {
+    tryToFetchMoreDataFn: () => void
 }
 
 const NoResultsTips = [
@@ -140,7 +144,7 @@ const NoResuls = ({numOfDocs}: NoResultsProps) => {
     )
 }
 
-const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => {
+const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsPropsMain) => {
     return (
         <>
             {docs.length > 0 ? docs.map((doc, idx) => (
@@ -152,8 +156,31 @@ const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps)
     )
 }
 
-const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => {
+const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo, tryToFetchMoreDataFn }: DocsProps) => {
     const containerRef = useRef<HTMLDivElement | null>(null)
+
+    useEffect(() => {
+        const handleScroll = () => {
+          const container = containerRef.current
+          if (!container) return
+    
+          const scrollTop = container.scrollTop // Current scroll position from the top
+          const scrollHeight = container.scrollHeight // Total scrollable height
+          const clientHeight = container.clientHeight // Visible height of the container
+    
+          // Check if the user is at the bottom
+          if (scrollHeight - scrollTop === clientHeight) {
+            tryToFetchMoreDataFn() // Trigger data fetch
+          }
+        };
+    
+        const currentContainer = containerRef.current;
+        currentContainer?.addEventListener("scroll", handleScroll)
+    
+        return () => {
+          currentContainer?.removeEventListener("scroll", handleScroll)
+        };
+      }, [tryToFetchMoreDataFn])
 
     return(
         <div className='docContainer' ref={containerRef}>
