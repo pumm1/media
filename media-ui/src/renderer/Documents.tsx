@@ -168,7 +168,7 @@ const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo, tryToFe
           const scrollHeight = container.scrollHeight // Total scrollable height
           const clientHeight = container.clientHeight // Visible height of the container
     
-          const threshold = 400
+          const threshold = 800
 
           // Check if the user is at the bottom
           if (scrollHeight - scrollTop - clientHeight <= threshold) {
