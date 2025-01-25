@@ -84,7 +84,7 @@ const MediaBrowser = () => {
     const [settingsOpen, setSettingsOpen] = useState(false)
 
     const [page, setPage] = useState(0)
-    const pageSize = 20
+    const pageSize = 5
 
     const q: QueryReq = {
         titles,
@@ -159,9 +159,17 @@ const MediaBrowser = () => {
         initialResultsFn()
     }, [])
 
+    const restartSearch = () => {
+        if (page === 0) {
+            initialResultsFn()
+        } else {
+            setPage(0)
+        }
+    }
+
     const triggerToastAndUpdateMedias = () => {
         setShowToast(true)
-        updateMediaFn(q).then(() => setTimeout(() => {
+        Promise.resolve(setDocs([])).then(() => restartSearch()).then(() => setTimeout(() => {
             setShowToast(false)
             setUpdateLoading(false)
             setMediaUpdateInfo(undefined)
