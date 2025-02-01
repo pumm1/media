@@ -41,10 +41,10 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
 
     const readyToScanFn = () => {
         setUpdateLoading(true)
-        metaFileReadyForScanning({metaPath: metaInfo.metaPath}).then(() => {
+        Promise.resolve(updateFn()).then(() => metaFileReadyForScanning({metaPath: metaInfo.metaPath}).then(() => {
             setUpdateLoading(false)
             updateMetaInfos()
-        })
+        }))
     }
 
     const updateTags = (tagsStr: string) => setTags(tagsStr.split(',').map(tag => tag.trim()))
