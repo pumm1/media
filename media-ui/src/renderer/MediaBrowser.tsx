@@ -84,7 +84,7 @@ const MediaBrowser = () => {
     const [settingsOpen, setSettingsOpen] = useState(false)
 
     const [page, setPage] = useState(0)
-    const pageSize = 5
+    const pageSize = 15
 
     const q: QueryReq = {
         titles,

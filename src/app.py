@@ -146,13 +146,18 @@ def suggestions():
 @app.route('/media-has-hdr-by-uuid', methods = [get])
 def media_has_hdr_by_uudid():
     uuid = request.args.get('uuid')
-    res = cache.get(uuid)
-    if res:
-        print(f"Cache hit for UUID HDR info: {uuid}")
-    else:
-        res = movie_media_is_hdr_by_uuid(uuid)
+    """
+     res = cache.get(uuid)
+-    if res:
+-        print(f"Cache hit for UUID HDR info: {uuid}")
+-    else:
+-        res = movie_media_is_hdr_by_uuid(uuid)
 
-        cache.set(uuid, str(res))
+-        cache.set(uuid, str(res))
+    """
+    res = movie_media_is_hdr_by_uuid(uuid)
+
+    cache.set(uuid, str(res))
 
     if res == True:
         return jsonify('HDR')
