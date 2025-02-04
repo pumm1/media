@@ -64,7 +64,7 @@ const MediaBrowser = () => {
     const [titles, setTitles] = useState<string[]>([])
     const [tags, setTags] = useState<string[]>([])
     const [types, setTypes] = useState<MediaType[]>(allTypes)
-    const [sort, setSort] = useState<SortType>('title')
+    const [sort, setSort] = useState<SortType>('created')
     const [sortDirection, setSortDirection] = useState<SortDirection>('default')
     const [searchLoading, setSearchLoading] = useState(false)
 
@@ -194,6 +194,7 @@ const MediaBrowser = () => {
             return selectedOption ? selectedOption.values : []
         }).flat()
         setTypes(selectedValues)
+        setPage(0)
     }
     
     const blurByAmount = (amount: number) =>{
