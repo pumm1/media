@@ -68,8 +68,8 @@ const SearchOptions = ({selectedTags, tagOptions, setTags, setSortDirection, use
                             <option key={opt.label + idx} value={opt.values}>{opt.label}</option>)
                         }
                     </select>
-                    <AlphabeticalSelection isSelected={usedSort === 'title'} onClick={() => setSortType('title')}/>
                     <CreatedSelection isSelected={usedSort === 'created'} onClick={() => setSortType('created')}/>
+                    <AlphabeticalSelection isSelected={usedSort === 'title'} onClick={() => setSortType('title')}/>
                     <SortOrderToggle onClick={() => {
                         if (currentSortDirection === 'default') { 
                             setSortDirection('reverse') 

@@ -1,4 +1,4 @@
-import { ISODateString, MetaResponse, QueryResult, Season, preview } from "./MediaClient"
+import { HDR, ISODateString, MetaResponse, QueryResult, Season, mediaHasHdrByUuid, preview } from "./MediaClient"
 import errorGif1 from './angry-panda.gif';
 import errorGif2 from './monke-pc.gif'
 import errorGif3 from './throw-pc.gif'
@@ -49,19 +49,16 @@ interface DocProps {
 
 const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
     const [metaInfo, setMetaInfo] = useState<MetaResponse | undefined>(undefined)
+    const [hasHdr, setHasHdr] = useState<HDR | null>(null)
 
     const containerRef = useRef<HTMLDivElement | null>(null)
-
-    const handleHover = () => {
-        if (containerRef.current) {
-            containerRef.current.focus()  // Focus the element on hover
-        }
-    };
 
     const img = metaInfo?.image
 
     useEffect(() => {
-        preview(d.imdb).then(setMetaInfo)
+        preview(d.imdb).then(setMetaInfo).then(() => {
+            mediaHasHdrByUuid(d.uuid).then(setHasHdr)
+        })
     }, [d.imdb])
     //{img && <img className='image' src={img} width={0.675*smallImgScaler} height={1*smallImgScaler}></img>}
 
@@ -79,6 +76,7 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
                 <span className="infoContainer">
                     <div className='mediaInfo'>
                         <MediaIcon type={d.type}/> 
+                        {hasHdr && <Pill variant='Static' keyProp={d.title + 'hdr'}>HDR</Pill>}
                         {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
                         <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
                             <Pill variant='Static' keyProp={d.title}>New!</Pill>
@@ -91,11 +89,15 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
     )
 }
 
-interface DocsProps {
+interface DocsPropsMain {
     docs: QueryResult[]
     setDoc: (d: QueryResult) => void
     initialResultsFetched: boolean, 
     sinceWeeksAgo: number
+}
+
+interface DocsProps extends DocsPropsMain {
+    tryToFetchMoreDataFn: () => void
 }
 
 const NoResultsTips = [
@@ -142,7 +144,7 @@ const NoResuls = ({numOfDocs}: NoResultsProps) => {
     )
 }
 
-const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => {
+const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsPropsMain) => {
     return (
         <>
             {docs.length > 0 ? docs.map((doc, idx) => (
@@ -154,8 +156,33 @@ const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps)
     )
 }
 
-const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsProps) => {
+const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo, tryToFetchMoreDataFn }: DocsProps) => {
     const containerRef = useRef<HTMLDivElement | null>(null)
+
+    useEffect(() => {
+        const handleScroll = () => {
+          const container = containerRef.current
+          if (!container) return
+    
+          const scrollTop = container.scrollTop // Current scroll position from the top
+          const scrollHeight = container.scrollHeight // Total scrollable height
+          const clientHeight = container.clientHeight // Visible height of the container
+    
+          const threshold = 800
+
+          // Check if the user is at the bottom
+          if (scrollHeight - scrollTop - clientHeight <= threshold) {
+            tryToFetchMoreDataFn() // Trigger data fetch
+          }
+        }
+    
+        const currentContainer = containerRef.current;
+        currentContainer?.addEventListener("scroll", handleScroll)
+    
+        return () => {
+          currentContainer?.removeEventListener("scroll", handleScroll)
+        }
+      }, [tryToFetchMoreDataFn, containerRef])
 
     return(
         <div className='docContainer' ref={containerRef}>

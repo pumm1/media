@@ -41,10 +41,10 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
 
     const readyToScanFn = () => {
         setUpdateLoading(true)
-        metaFileReadyForScanning({metaPath: metaInfo.metaPath}).then(() => {
+        Promise.resolve(updateFn()).then(() => metaFileReadyForScanning({metaPath: metaInfo.metaPath}).then(() => {
             setUpdateLoading(false)
             updateMetaInfos()
-        })
+        }))
     }
 
     const updateTags = (tagsStr: string) => setTags(tagsStr.split(',').map(tag => tag.trim()))
@@ -150,9 +150,13 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
 
     const [showReset, setShowReset] = useState(false)
 
+    const [metaFilter, setMetaFilter] = useState('')
+    const shownMetaFiles: MetaFileInfo[] | undefined = usedMetaFiles ? metaFilter.length > 0 ? usedMetaFiles.filter(mf => mf.title.toLowerCase().includes(metaFilter.toLowerCase())) : usedMetaFiles : undefined
+
     return (
         <div className='metaContainer' ref={componentRef}>
             <h3>Meta data management</h3>
+            <input className='titleFilter' type='text' onChange={e => setMetaFilter(e.target.value)}/> Title filter
             <div className='scanAll'>
                 <button onClick={() => setShowReset(!showReset)}>{showReset ? 'Cancel' : 'Reset everything' }</button>
                 {showReset && <p>This action deletes everything from the DB (Doesn't delete any actual media from the hard drive)</p>}
@@ -160,10 +164,10 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
             </div>
             <div>
                 Show only pending: <input type='checkbox' checked={useOnlyPending} onChange={onToggle} />
-                {usedMetaFiles === undefined ? 
+                {shownMetaFiles === undefined ? 
                     <div className='loading'><LoadingIndicator /></div> :
                     <div className='metaInfos'>
-                        {usedMetaFiles.map(m => <MetaInfoRow key={m.title + m.imdb + m.metaPath} metaInfo={m} updateMetaInfos={updateMetaFiles}/>)}
+                        {shownMetaFiles.map(m => <MetaInfoRow key={m.title + m.imdb + m.metaPath} metaInfo={m} updateMetaInfos={updateMetaFiles}/>)}
                     </div>
                 }
             </div>

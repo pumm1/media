@@ -77,7 +77,9 @@ export interface QueryReq {
     types: MediaType[]
     tags: string[]
     sort: SortType
-    sortDirection: SortDirection 
+    sortDirection: SortDirection
+    page: number
+    pageSize: number
 }
 
 export interface Episode {
@@ -104,7 +106,12 @@ export interface QueryResult {
     seasons?: Season[]
 }
 
-const termsAsParam = (values: string[], field: string) => 
+export interface SearchQueryRes {
+    results: QueryResult[]
+    nextPage: number | null
+}
+
+const termsAsParam = (values: string[] | number[], field: string) => 
     values.map(v => `${field}=${v}`).join('&')
   
 
@@ -114,8 +121,10 @@ export const createSearchParams = (r: QueryReq): string => {
     const typeParams = termsAsParam(r.types, 'type')
     const sortParam = termsAsParam([r.sort], 'sort')
     const sortDirectionParam = termsAsParam([r.sortDirection], 'sortDirection')
+    const pageParams = termsAsParam([r.page], 'page')
+    const pageSizeParams = termsAsParam([r.pageSize], 'pageSize')
 
-    const params = [titleParams, tagParams, typeParams, sortParam, sortDirectionParam]
+    const params = [titleParams, tagParams, typeParams, sortParam, sortDirectionParam, pageParams, pageSizeParams]
 
     return params.length > 0 ? `?${params.join('&')}` : ''
 }
@@ -126,7 +135,7 @@ export const getTags = () =>
 export const searchMedia = (r: QueryReq) => {
     const params = createSearchParams(r)
 
-    return fetchDataAs<QueryResult[]>(`/search-media${params}`)
+    return fetchDataAs<SearchQueryRes>(`/search-media${params}`)
 }
 
 export interface UpdateRes {
@@ -188,3 +197,9 @@ export const suggestMedias = (r: QueryReq) => {
 
     return fetchDataAs<QueryResult[]>(`/suggestions${params}`)
 }
+
+export type HDR = 'HDR'
+
+export const mediaHasHdrByUuid = (uuid: string) =>
+    fetchDataAs<HDR | null>(`/media-has-hdr-by-uuid?uuid=${uuid}`)
+

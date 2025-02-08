@@ -13,7 +13,9 @@ class QueryReq:
         tags: list[str],
         types: list[str],
         sort,
-        sort_direction
+        sort_direction,
+        page: int,
+        page_size: int
     ):
         direction = 1
         if sort is not None:
@@ -24,8 +26,13 @@ class QueryReq:
                 direction = 1
             elif sort_direction == sort_reverse:
                 direction = -1
+
+            if sort == sort_added:
+                direction = direction * -1
         self.title_terms = title_terms
         self.tags = tags
         self.types = types
         self.sort = sort
         self.sort_direction = direction
+        self.page = page
+        self.page_size = page_size

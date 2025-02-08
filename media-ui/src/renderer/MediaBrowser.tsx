@@ -64,7 +64,7 @@ const MediaBrowser = () => {
     const [titles, setTitles] = useState<string[]>([])
     const [tags, setTags] = useState<string[]>([])
     const [types, setTypes] = useState<MediaType[]>(allTypes)
-    const [sort, setSort] = useState<SortType>('title')
+    const [sort, setSort] = useState<SortType>('created')
     const [sortDirection, setSortDirection] = useState<SortDirection>('default')
     const [searchLoading, setSearchLoading] = useState(false)
 
@@ -83,12 +83,17 @@ const MediaBrowser = () => {
 
     const [settingsOpen, setSettingsOpen] = useState(false)
 
+    const [page, setPage] = useState(0)
+    const pageSize = 15
+
     const q: QueryReq = {
         titles,
         tags,
         types,
         sort,
-        sortDirection
+        sortDirection,
+        page,
+        pageSize
     }
 
     const initialQ = (tags: string[]): QueryReq => {
@@ -97,7 +102,9 @@ const MediaBrowser = () => {
             tags,
             types: allTypes,
             sort: 'title',
-            sortDirection: 'default'
+            sortDirection: 'default',
+            page: 0,
+            pageSize
         }
     }
         
@@ -116,11 +123,28 @@ const MediaBrowser = () => {
         }
     ]
 
+    const [nextPage, setNextPage] = useState<number | null>(null)
+
+    const tryToFetchMoreDataFn = () => {
+        console.log(`maybe fetching more data`)
+        if (nextPage) {
+            setPage(nextPage)
+        }
+    }
+
 
     const updateMediaFn = (q: QueryReq) => {
         setSearchLoading(true)
 
-        return searchMedia(q).then(setDocs).then(() => setSearchLoading(false))
+        return searchMedia(q).then(queryRes => {
+            setNextPage(queryRes.nextPage)
+            if (page == 0) {
+                setDocs(queryRes.results)
+            } else {
+                setDocs([...docs, ...queryRes.results])
+            }
+            setSearchLoading(false)
+        })
     }
 
     const initialResultsFn = () => getTags().then(tagsRes => {
@@ -135,9 +159,17 @@ const MediaBrowser = () => {
         initialResultsFn()
     }, [])
 
+    const restartSearch = () => {
+        if (page === 0) {
+            initialResultsFn()
+        } else {
+            setPage(0)
+        }
+    }
+
     const triggerToastAndUpdateMedias = () => {
         setShowToast(true)
-        updateMediaFn(q).then(() => setTimeout(() => {
+        Promise.resolve(setDocs([])).then(() => restartSearch()).then(() => setTimeout(() => {
             setShowToast(false)
             setUpdateLoading(false)
             setMediaUpdateInfo(undefined)
@@ -145,7 +177,7 @@ const MediaBrowser = () => {
     }
 
     useEffect(() => {
-        const delay = 400
+        const delay = 500
 
         const timeoutId = setTimeout(() => {
             updateMediaFn(q)
@@ -162,9 +194,8 @@ const MediaBrowser = () => {
             return selectedOption ? selectedOption.values : []
         }).flat()
         setTypes(selectedValues)
+        setPage(0)
     }
-
-    const sortOptions: SortType[] = ['title', 'created']
     
     const blurByAmount = (amount: number) =>{
             const filter = {
@@ -201,6 +232,26 @@ const MediaBrowser = () => {
         setShowSlidingPage(true)
     }
 
+    const updateTitles = (t: string[]) => {
+        setTitles(t)
+        setPage(0)
+    }
+
+    const updateTags = (t: string[]) => {
+        setTags(t)
+        setPage(0)
+    }
+
+    const updateSortType = (s: SortType) => {
+        setSort(s)
+        setPage(0)
+    }
+
+    const updateSortDirection = (s: SortDirection) => {
+        setSortDirection(s)
+        setPage(0)
+    }
+
     return (//the popupsettings becomes the sliding page
         <div className='main'>
             { settingsOpen &&
@@ -217,9 +268,9 @@ const MediaBrowser = () => {
             </SlidingPageContainer>
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
             <div className='mediaBrowserContainer' style={useBlur ? blurByAmount(2) : blurByAmount(0)}>
-                <SearchInput reference={inputRef} isLoading={searchLoading} setTitles={setTitles}/>
-                <SearchOptions currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} setSortType={setSort} usedSort={sort} setSortDirection={setSortDirection} setTags={setTags} selectedTags={tags} tagOptions={tagOptions}/>
-                <Documents sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={updateDoc} initialResultsFetched={initialResultsFetched} />
+                <SearchInput reference={inputRef} isLoading={searchLoading} setTitles={updateTitles}/>
+                <SearchOptions setTags={updateTags}  currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} setSortType={updateSortType} usedSort={sort} setSortDirection={updateSortDirection} selectedTags={tags} tagOptions={tagOptions}/>
+                <Documents tryToFetchMoreDataFn={tryToFetchMoreDataFn} sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={updateDoc} initialResultsFetched={initialResultsFetched} />
                 <div className='scanner'>
                     <button disabled={updateLoading} onClick={() =>
                         updateMediasFn()

@@ -159,7 +159,7 @@ def add_media_to_collection(m_json):
             collection_not_found_warn()
 
 
-def query_collections(m_json, sort, sort_direction):
+def query_collections(m_json, sort, sort_direction, page: int | None, page_size: int | None):
     sort_by = 'title'
     direction = 1
     if sort_direction is not None:
@@ -169,6 +169,10 @@ def query_collections(m_json, sort, sort_direction):
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
         collection = db.get_collection(collection_name)
+        if page is None:
+            page = 0
+        if page_size is None:
+            page_size = 99999
         if collection is not None:
             return list(
                 collection.find(
@@ -185,7 +189,7 @@ def query_collections(m_json, sort, sort_direction):
                         'folderPath': 1,
                         'created': 1
                     }
-                ).sort(sort_by, direction)
+                ).sort(sort_by, direction).skip(page * page_size).limit(page_size)
             )
         else:
             collection_not_found_warn()
@@ -273,6 +277,31 @@ def media_by_uuid(uuid: str):
                         'seasons': 1,
                         'folderPath': 1,
                         'created': 1
+                    }
+                )
+            )
+        else:
+            collection_not_found_warn()
+            return []
+
+
+def medias_by_uuids(uuids: list[str]):
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return list(
+                collection.find({
+                    'uuid': {
+                        in_f: uuids
+                        }
+                    },
+                    {
+                        '_id': 0,
+                        'uuid': 1,
+                        'title': 1,
+                        'type': 1,
+                        'path': 1,
                     }
                 )
             )

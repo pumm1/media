@@ -22,7 +22,8 @@ const SearchInput = ({ reference, isLoading, setTitles }: SearchInoutProps) => {
                 onChange={e => {
                     e.preventDefault()
                     e.stopPropagation()
-                    setTitles(parseTitlesFromStr(e.target.value))}
+                    setTitles(parseTitlesFromStr(e.target.value))
+                }
                     
                 }
                 autoFocus
