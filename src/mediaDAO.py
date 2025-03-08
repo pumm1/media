@@ -1,12 +1,20 @@
 from pymongo import MongoClient
-
+import json
 from queryBuilder import in_f, title_f
 from bson import ObjectId
 from mediaObjects import Series
 
 client = MongoClient('localhost', 27017)
 
-db_name = 'testDb'
+db_name = None
+
+with open('sources.json', 'r') as json_file:
+    data = json.load(json_file)
+    db = data.get('dbName')
+    if db is not None:
+        db_name = db
+    else:
+        print(f'!!! database name not found !!!')
 
 db = client.get_database(db_name)
 

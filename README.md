@@ -8,16 +8,21 @@ Anyone using this should themselves own the media by legal means (e.g. buy a DVD
 
 ## Setup
 
-In `/src`, include `sources.json` with each source directory in the `directories` array:
+In `/src`, include `sources.json` with the following:
+- `directories` (array of strings)
+- `dbName` (name of the mongodb database you've set up)
+
+`sources.json` should thus look something like this:
 ```
 {
-  directories: [
+  "directories": [
     "<absolute_path_to_dir1>",
     "<absolute_path_to_dir2>",
     ....
-  ]
+  ],
+  "dbName": "<name_of_db>"
 }
-``` 
+```
 
 Under each `<absolute_path_to_dir` have folders for `Movies` and `Series`. 
 So each directory looks like such:
@@ -80,7 +85,7 @@ So the series structure should be as follows:
 ```
 Series are added only once, but the system can recognize if new episodes or seasons have been added to the series, and it then updates the series seasons.
 
-When media folder isn't found anymore in the file structure on scan, it's removed from the MongoDB and it's not searchable anymore. 
+When media folder isn't found anymore in the file structure on scan, it's removed from the MongoDB, and it's not searchable anymore. 
 
 ## Setup
 
