@@ -95,18 +95,6 @@ const MediaBrowser = () => {
         page,
         pageSize
     }
-
-    const initialQ = (tags: string[]): QueryReq => {
-        return {
-            titles: [],
-            tags,
-            types: allTypes,
-            sort: 'title',
-            sortDirection: 'default',
-            page: 0,
-            pageSize
-        }
-    }
         
     const typeOptions: TypeOption[] = [
         {
@@ -149,7 +137,7 @@ const MediaBrowser = () => {
 
     const initialResultsFn = () => getTags().then(tagsRes => {
         setTagOptions(tagsRes)
-        updateMediaFn(initialQ(tagsRes)).then(() => { 
+        updateMediaFn(q).then(() => { 
             setInitialResultsFetched(true)
             setTags(tagsRes)
         })
