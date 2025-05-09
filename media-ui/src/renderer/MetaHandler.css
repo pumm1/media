@@ -6,8 +6,10 @@
 
 .infoContainer {
     padding: 12px;
-    height: 100%;
     outline: none;
+    position: relative;
+    overflow-x: hidden; 
+    height: 100%;
 }
 
 .metaContainer {
@@ -18,12 +20,36 @@
     border: solid 2px var(--main-white);
 }
 
+.metaParts {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.metaPartTop {
+    flex: 3;
+}
+
+.metaPartBottom {
+    flex: 2;
+}
+
+.metaBackgroundImg {
+    position: absolute;
+    z-index: -2;
+    width: 100%;
+    height: 100vh;
+    opacity: 40%;
+    mask-image: linear-gradient(to bottom, transparent 5%, var(--main-dark) 50%, transparent 70%);
+}
+
 .suggestionsContainer {
     padding: var(--main-padding);
 }
 
 .suggestions {
     padding: 8px 0px;
+    margin: 16px 0px;
     display: grid;
     grid-template-columns: repeat(3, minmax(150px, 1fr));
     gap: 8px; /* Space between items */
@@ -53,8 +79,10 @@
 }
 
 .episodEcontainer {
-    display: grid;
-    grid-template-columns: repeat(4, auto);
+    display: block;
+    max-height: 20vh;
+    overflow-y: scroll;
+    width: 66vh;
 }
 
 .episode {

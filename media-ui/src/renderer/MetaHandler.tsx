@@ -111,6 +111,11 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
             componentRef.current?.focus();
         }, 0) // Delay ensures DOM is ready
     }, [])
+    /*
+
+            <img src={image} alt="Not found" width={0.675*imgScaler} height={1*imgScaler}></img>
+            we recommend a vertical alignment (i.e. portrait orientation) with an aspect ratio of 1:0.675 
+     */
 
     return(
         <div tabIndex={0} className="infoContainer" ref={componentRef} onKeyDown={e => {
@@ -118,29 +123,34 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
                 onClose()
             }
         }}>
-            <a href={doc.imdb} target="_blank" rel="noopener noreferrer"><h2>{title}</h2></a>
-            <p>{info !== undefined ? info : '[Info not available]'}</p>
-            <MediaIcon type={doc.type}/>
-            <Tags doc={doc} />
-            <div className="buttons">
-                {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
-                <FolderButton onClick={onOpenFolder}/>
-                <RefreshButton onClick={() => onRescan()} />
-            </div>
-            <p>{description ?? ''}</p>
-            <div className="seasonsAndImg">
-                {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
-                <img src={image} alt="Not found" width={0.675*imgScaler} height={1*imgScaler}></img>
-                {/**we recommend a vertical alignment (i.e. portrait orientation) with an aspect ratio of 1:0.675 */}
-            </div>
-            {suggestions && suggestions.length > 0 && 
-                <div className="suggestionsContainer">
-                    <h3>You Might Also Like...</h3>
-                    <div className="suggestions">
-                        {suggestions.map((s, idx) => <Suggestion key={s.uuid + idx} setDoc={setDoc} doc={s}/>)}
+            {image && <div className='metaBackgroundImg' style={{'backgroundImage': `url(${image})`, 'backgroundPosition': 'center', 'backgroundSize': 'cover'}}/> }
+             <div className="metaParts">
+                <div className="metaPartTop">
+                    <a href={doc.imdb} target="_blank" rel="noopener noreferrer"><h2>{title}</h2></a>
+                    <p>{info !== undefined ? info : '[Info not available]'}</p>
+                    <MediaIcon type={doc.type}/>
+                    <Tags doc={doc} />
+                    <div className="buttons">
+                        {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
+                        <FolderButton onClick={onOpenFolder}/>
+                        <RefreshButton onClick={() => onRescan()} />
+                    </div>
+                    <p>{description ?? ''}</p>
+                    <div className="seasonsAndImg">
+                        {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
                     </div>
                 </div>
-                }
+                <div className="metaPartBottom">
+                    {suggestions && suggestions.length > 0 && 
+                    <div className="suggestionsContainer">
+                        <h3>You Might Also Like...</h3>
+                        <div className="suggestions">
+                            {suggestions.map((s, idx) => <Suggestion key={s.uuid + idx} setDoc={setDoc} doc={s}/>)}
+                        </div>
+                    </div>
+                    }
+                </div>
+             </div>
         </div>
     )
 }
