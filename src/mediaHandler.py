@@ -1,7 +1,7 @@
 import json
 from mediaDAO import add_media_to_collection, query_collections, existing_movies, remove_media_by_files, existing_tags, \
     existing_series, update_series_seasons, delete_media_by_ids, delete_all_medias, media_by_uuid, \
-    remove_media_by_title, medias_by_uuids
+    remove_media_by_title, medias_by_uuids, delete_media_by_series_uuids
 import os
 from bson import ObjectId
 from bson.json_util import dumps, loads
@@ -365,12 +365,15 @@ def update_existing_series_with_found(found_series: list[Series]):
     series_to_delete: list[Series] = []
     updated = 0
     for e in existing_series:
-        #print(f'Existing: ({e.id}) {e.title} ({e.folder_path})')
+        print(f'Existing: ({e.uuid}) {e.title} ({e.folder_path})')
         matching_series: Series | None = None
         for s in found_series:
             print(f'Found: {s.title} ({s.folder_path})')
             if s.__eq__(e):
                 matching_series = s
+                break
+            elif not found_series.__contains__(e):
+                series_to_delete.append(e)
                 break
 
         #print(f'matching series found: {matching_series is not None}')
@@ -384,8 +387,8 @@ def update_existing_series_with_found(found_series: list[Series]):
                 updated = updated + 1
                 update_series_seasons(e.uuid, matching_series)
 
-    series_ids_to_delete = list(map(lambda s: s.id, series_to_delete))
-    deleted = delete_media_by_ids(series_ids_to_delete)
+    series_uuids_to_delete = list(map(lambda s: s.uuid, series_to_delete))
+    deleted = delete_media_by_series_uuids(series_uuids_to_delete)
     return deleted, updated
 
 

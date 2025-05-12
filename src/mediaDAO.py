@@ -349,6 +349,20 @@ def delete_media_by_ids(ids):
             collection_not_found_warn()
             return 0
 
+def delete_media_by_series_uuids(uuids):
+    with MongoClient('localhost', 27017) as client:
+        db = client.get_database(db_name)
+        collection = db.get_collection(collection_name)
+        if collection is not None:
+            return collection.delete_many({
+                'uuid': {
+                    in_f: uuids
+                }
+            }).deleted_count
+        else:
+            collection_not_found_warn()
+            return 0
+
 
 def delete_all_medias():
     with MongoClient('localhost', 27017) as client:

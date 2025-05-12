@@ -45,6 +45,9 @@ class Series:
     def __eq__(self, other):
         return self.uuid == other.uuid or self.folder_path == other.folder_path
 
+    def __contains__(self, item):
+        return self.uuid == item.uuid
+
     def asJson(self):
         return {
             "title": self.title,
