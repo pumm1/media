@@ -118,16 +118,17 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
      */
 
     return(
+        <>
+        {image && <div className='metaBackgroundImg' style={{'backgroundImage': `url(${image})`, 'backgroundPosition': 'center', 'backgroundSize': 'cover'}}/> }
         <div tabIndex={0} className="infoContainer" ref={componentRef} onKeyDown={e => {
             if (e.key === 'Escape') {
                 onClose()
             }
         }}>
-            {image && <div className='metaBackgroundImg' style={{'backgroundImage': `url(${image})`, 'backgroundPosition': 'center', 'backgroundSize': 'cover'}}/> }
              <div className="metaParts">
                 <div className="metaPartTop">
                     <a href={doc.imdb} target="_blank" rel="noopener noreferrer"><h2>{title}</h2></a>
-                    <p>{info !== undefined ? info : '[Info not available]'}</p>
+                    <div className="info">{info !== undefined ? info : '[Info not available]'}</div>
                     <MediaIcon type={doc.type}/>
                     <Tags doc={doc} />
                     <div className="buttons">
@@ -135,7 +136,7 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
                         <FolderButton onClick={onOpenFolder}/>
                         <RefreshButton onClick={() => onRescan()} />
                     </div>
-                    <p>{description ?? ''}</p>
+                    <div className="info">{description ?? ''}</div>
                     <div className="seasonsAndImg">
                         {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
                     </div>
@@ -152,6 +153,7 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
                 </div>
              </div>
         </div>
+        </>
     )
 }
 

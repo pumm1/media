@@ -43,6 +43,12 @@
     mask-image: linear-gradient(to bottom, transparent 5%, var(--main-dark) 50%, transparent 70%);
 }
 
+.info {
+    padding: 12px 0px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
 .suggestionsContainer {
     padding: var(--main-padding);
 }
