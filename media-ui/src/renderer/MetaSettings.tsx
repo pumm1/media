@@ -1,6 +1,6 @@
 import './MetaSettings.css'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {getTags, listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, resetMedias, updateMetaFile} from './MediaClient'
+import {getTags, listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, resetMedias, systemInfo, SystemInfo, updateMetaFile} from './MediaClient'
 import LoadingIndicator from './common/LoadingIndicator'
 import MediaIcon from './common/MovieIcon'
 
@@ -100,6 +100,9 @@ interface MetaSettingsProps {
     onClose: () => void
 }
 
+const storageInfoMaxW = 200
+const storageInfoMaxH = 16
+
 const MetaSettings = ({onClose}: MetaSettingsProps) => {
     const [allMetaFiles, setAllMetaFiles] = useState<MetaFileInfo[]>([])
     const [useOnlyPending, setUseOnlyPending] = useState(true)
@@ -133,6 +136,12 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
         })
     }, [useOnlyPending]) // Dependencies for useCallback
 
+    const [systemInfos, setSystemInfos] = useState<SystemInfo[]>([])
+
+    useEffect (() => {
+        systemInfo().then(setSystemInfos)
+    }, [])
+
     useEffect(() => {
         // Fetch all meta files when the component mounts
         updateMetaFiles()
@@ -156,10 +165,26 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
     return (
         <div className='metaContainer' ref={componentRef}>
             <h3>Meta data management</h3>
+            {
+                systemInfos.length === 0 ?
+                    <LoadingIndicator />
+                : systemInfos.map(info => 
+                    <div>
+                        Partition {info.id}: ({info.free} / {info.total} GB)
+                        <span className='diskInfo'>
+                            <div style={{zIndex: 1, position: 'absolute', display:'inline-block', width: storageInfoMaxW, height: storageInfoMaxH, background: 'red' }}></div>
+                            <div style={{zIndex: 10, position: 'absolute', display:'inline-block', width: storageInfoMaxW * (info.free / info.total), height: storageInfoMaxH, background: 'green' }}></div>
+                        </span>
+                    </div>
+                )
+            }
             <input className='titleFilter' type='text' onChange={e => setMetaFilter(e.target.value)}/> Title filter
             <div className='scanAll'>
                 <button onClick={() => setShowReset(!showReset)}>{showReset ? 'Cancel' : 'Reset everything' }</button>
-                {showReset && <p>This action deletes everything from the DB (Doesn't delete any actual media from the hard drive)</p>}
+                {showReset && <>
+                    <h3>Are you sure?</h3>
+                    <p>This action deletes everything from the DB (Doesn't delete any actual media from the hard drive)</p>
+                </>}
                 {showReset && <button onClick={() => resetMedias()}>Confirm reset</button>}
             </div>
             <div>

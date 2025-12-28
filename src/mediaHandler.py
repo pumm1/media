@@ -3,7 +3,6 @@ from mediaDAO import add_media_to_collection, query_collections, existing_movies
     existing_series, update_series_seasons, delete_media_by_ids, delete_all_medias, media_by_uuid, \
     remove_media_by_title, medias_by_uuids, delete_media_by_series_uuids
 import os
-from bson import ObjectId
 from bson.json_util import dumps, loads
 from pandas.core.common import flatten
 from datetime import datetime
@@ -14,10 +13,7 @@ from mediaObjects import Movie, Series, Season, Episode
 import uuid
 import random
 import ffmpeg
-
-
-current_dir = os.path.dirname(os.path.realpath(__file__))
-#medias_dir = os.path.join(current_dir, 'medias')
+import shutil
 
 temp_meta_file_name = 'n_meta.json'
 meta_file_name = 'meta.json'
@@ -43,6 +39,21 @@ TODO:
 - allow updating tags
 """
 
+space_format_gb = 1024 ** 3
+def fetch_system_info():
+    infos = []
+    i = 1
+    for directory in source_dirs:
+        space = shutil.disk_usage(directory)
+        info = {
+            'id': i,
+            'total': round((space.total / space_format_gb), 1),
+            'free': round((space.free / space_format_gb), 1)
+        }
+        infos.append(info)
+        i += 1
+
+    return infos
 
 def is_meta(file_name: str) -> bool:
     return file_name == meta_file_name

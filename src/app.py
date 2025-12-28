@@ -3,7 +3,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from queryReq import QueryReq
 from mediaHandler import search_collections, go_through_medias, get_existing_tags, reset_media, list_meta_files, \
-    update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_uuid, movie_media_is_hdr_by_uuid
+    update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_uuid, movie_media_is_hdr_by_uuid, \
+    fetch_system_info
 import requests
 from flask_caching import Cache
 
@@ -53,6 +54,10 @@ def search():
     }
 
     return jsonify(res)
+
+@app.route('/system-info', methods=[get])
+def system_info():
+    return jsonify(fetch_system_info())
 
 @app.route('/list-metas', methods=[get])
 def list_metas():

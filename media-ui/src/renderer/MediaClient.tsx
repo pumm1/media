@@ -82,6 +82,15 @@ export interface QueryReq {
     pageSize: number
 }
 
+export interface SystemInfo {
+    id: number
+    total: number
+    free: number
+}
+
+export const systemInfo = () => 
+    fetchDataAs<SystemInfo[]>('/system-info')
+
 export interface Episode {
     name: string,
     path: string
