@@ -209,6 +209,11 @@ export const suggestMedias = (r: QueryReq) => {
 
 export type HDR = 'HDR'
 
-export const mediaHasHdrByUuid = (uuid: string) =>
-    fetchDataAs<HDR | null>(`/media-has-hdr-by-uuid?uuid=${uuid}`)
+export interface MediaExtras {
+    hdr: boolean
+    extraDirectories: string[]
+}
+
+export const mediaExtrasByUUID = (uuid: string) =>
+    fetchDataAs<MediaExtras>(`/media-extras?uuid=${uuid}`)
 

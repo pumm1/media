@@ -536,15 +536,6 @@ def rescan_media_by_uuid(uuid: str):
 
         return False
 
-
-
-#media_res = go_through_medias()
-#print(f'..... RES: {media_res}')
-
-#search_collections()
-
-#temp_test_query_making()
-
 def test_series():
     (added, series, new_temp_metas) = go_through_series('/Users/sagu/media_project/media/src/medias/Series')
 
@@ -582,6 +573,20 @@ possible_color_primaries = ['bt2020']
 possible_color_transfers = ['smpte2084', 'arib-std-b67']
 possible_color_spces = ['bt2020nc', 'bt2020c']
 
+def media_extra_directories(file_path: str):
+    extra_directories = []
+    if not os.path.exists(file_path):
+        print(f"File does not exist: {file_path}")
+    else:
+        dir = os.path.dirname(file_path)
+        dir_contents = os.listdir(dir)
+        for dir_content in dir_contents:
+            content_path = os.path.join(dir, dir_content)
+            if os.path.isdir(content_path):
+                extra_directories.append(dir_content)
+
+    return extra_directories
+
 def media_has_hdr_by_path(path: str):
     if not os.path.exists(path):
         print(f"File does not exist: {path}")
@@ -618,26 +623,22 @@ def media_is_movie(media: dict) -> bool:
     return media.get(type_f) == 'movie'
 
 
-def movie_media_is_hdr_by_uuid(uuid: str):
+def media_extras_by_uuid(uuid: str):
     medias = media_by_uuid(uuid)
     movie_medias = list(filter(media_is_movie, medias))
 
     media_has_hdr = False
+    extra_directories = []
 
     #should be only one
     if len(movie_medias) > 0:
         media = movie_medias[0]
-        media_has_hdr = media_has_hdr_by_path(media[path_f])
+        media_path = media[path_f]
+        media_has_hdr = media_has_hdr_by_path(media_path)
+        extra_directories = media_extra_directories(media_path)
 
-    return media_has_hdr
-
-#media_has_hdr_by_path('/Users/sagu/media_project/media/src/medias/Movies/Godzilla/godzilla.mp4')
-#media_has_hdr_by_path('/Users/sagu/media_project/media/src/medias/Movies/Synecdoche, New York/synecdoche.ts')
-
-#movie_media_is_hdr_by_uuid(['8a5afc53-4dad-429d-8e82-3c6a84c21a58', '4a683e0a-fdf8-4eea-8155-1f944aa8e2e5'])
-
-#test_series()
-
-#rescan_media_by_path('/Users/sagu/media_project/media/src/medias/Series/salkkarit')
-
-#reset_media()
+    result = {
+        'hdr': media_has_hdr,
+        'extraDirectories': extra_directories
+    }
+    return result
