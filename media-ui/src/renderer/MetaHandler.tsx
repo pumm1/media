@@ -168,7 +168,10 @@ export interface MetaInfoByUrlProps {
 }
 
 const MetaInfoByUrl = ({ setDoc, metaInfo, updateMediasFn, doc, playMedia, onOpenFolder, onClose }: MetaInfoByUrlProps) => {
-    const [currentMetaInfo, setMetaInfo] = useState<MetaInfo | undefined>(metaInfo)
+    const placeHolderInfo: MetaInfo = {
+        title: doc.title
+    }
+    const [currentMetaInfo, setMetaInfo] = useState<MetaInfo | undefined>(metaInfo || placeHolderInfo)
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
@@ -184,7 +187,7 @@ const MetaInfoByUrl = ({ setDoc, metaInfo, updateMediasFn, doc, playMedia, onOpe
     return (
         isLoading ? <LoadingIndicator /> :
         currentMetaInfo ? 
-            <MetaInfoModal setDoc={setDoc} updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={currentMetaInfo.title} info={currentMetaInfo.info} description={currentMetaInfo.description} image={currentMetaInfo.image}/>
+            <MetaInfoModal setDoc={setDoc} updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={currentMetaInfo.title || placeHolderInfo.title} info={currentMetaInfo.info} description={currentMetaInfo.description} image={currentMetaInfo.image}/>
         :  
             <></>
     )

@@ -18,76 +18,22 @@ with open('sources.json', 'r') as json_file:
 
 db = client.get_database(db_name)
 
-print(db.name)
+collections = db.list_collection_names()
+print(f"DB: ", db.name)
+print(f"Collections: ", collections)
 
-#TODO: test how saving series with seasons works with the new schema
-"""
-create collection
- db.createCollection("media", { validator: { $jsonSchema: { bsonType: "object", required: ["title", "imdb", "type", "tags", "folderPath"], properties: { title: { bsonType: "string", description: "must be a string and is required" }, imdb: { bsonType: "string", description: "must be a string and is required" }, type: { bsonType: "string", description: "must be a string and is required" }, folderPath: { bsonType: "string", description: "must be a string and is required" }, path: { bsonType: "string", description: "must be a string" }, tags: { bsonType: "array", items: { bsonType: "string" }, description: "must be an array of strings" } } } } })
- 
- //new version to test with seasons
-  
- db.createCollection("media", { validator: { $jsonSchema: { bsonType: "object", required: ["title", "imdb", "type", "tags", "folderPath"], properties: { title: { bsonType: "string", description: "must be a string and is required" }, imdb: { bsonType: "string", description: "must be a string and is required" }, type: { bsonType: "string", description: "must be a string and is required" }, folderPath: { bsonType: "string", description: "must be a string and is required" }, path: { bsonType: "string", description: "must be a string" }, tags: { bsonType: "array", items: { bsonType: "string" }, description: "must be an array of strings" }, season: { bsonType: "object", properties: { name: { bsonType: "string" }, episodes: { bsonType: "array", items: {bsonType: "string"}, description: "must be an array of strings for paths"}}} } } } })
-"""
-"""
-{ validator: 
-    { $jsonSchema:
-        { bsonType: "object", 
-          required: ["title", "imdb", "type", "tags", "folderPath"], 
-          properties: { 
-              title: { 
-                  bsonType: "string", description: "must be a string and is required" 
-              }, 
-              imdb: { 
-                  bsonType: "string", description: "must be a string and is required" 
-              }, 
-              type: { 
-                bsonType: "string", description: "must be a string and is required" 
-              }, 
-              folderPath: { 
-                bsonType: "string", description: "must be a string and is required" 
-              }, 
-              path: { 
-                bsonType: "string", description: "must be a string" 
-              }, 
-              tags: { 
-                bsonType: "array", items: { bsonType: "string" }, description: "must be an array of strings" 
-              },
-              season: {
-                 bsonType: "object", 
-                 properties: {
-                    name: {
-                        bsonType: "string"
-                    },
-                    episodes: {
-                        bsonType: "array", items: { 
-                            bsonType: "object", properties: {
-                                name: { bsonType: "string" }, path: { bsonType: "string" }
-                            } 
-                        }, 
-                        description: "must be an array of objects with name and path"
-                    }
-                 }
-            }
-          } 
-      } 
-    } 
-}
+collection_name = "media"
 
-//optional fields:
-season {
-     bsonType: "object", 
-     properties: {
-        name: {
-            bsonType: "string"
-        },
-        episodes: {
-            bsonType: "array", items: { bsonType: "string" }, description: "must be array of strings of paths"
-        }
-     }
-    
-}
-"""
+if not (collections.__contains__(collection_name)):
+    print(f"Creating missing collection: {collection_name}")
+    validator = json.load(open("validator.json"))
+    print(f'.... config: {validator}')
+
+    db.create_collection(collection_name, validator=validator)
+    print(f'Created collection {collection_name}')
+else:
+    print(f'Collection {collection_name} exists')
+
 
 collection_name = 'media'
 
