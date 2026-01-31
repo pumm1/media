@@ -1,7 +1,6 @@
 from pymongo import MongoClient
 import json
 from queryBuilder import in_f, title_f
-from bson import ObjectId
 from mediaObjects import Series
 
 client = MongoClient('localhost', 27017)
@@ -20,19 +19,16 @@ db = client.get_database(db_name)
 
 collections = db.list_collection_names()
 print(f"DB: ", db.name)
-print(f"Collections: ", collections)
+print(f"Existing collections: ", collections)
 
 collection_name = "media"
 
 if not (collections.__contains__(collection_name)):
     print(f"Creating missing collection: {collection_name}")
     validator = json.load(open("validator.json"))
-    print(f'.... config: {validator}')
 
     db.create_collection(collection_name, validator=validator)
     print(f'Created collection {collection_name}')
-else:
-    print(f'Collection {collection_name} exists')
 
 
 collection_name = 'media'
@@ -45,57 +41,8 @@ def with_mongo_client(collection_fn):
         collection_fn(collection)
         client.close()
 
-
-#collection_name = 'myCollection' #TODO: change after figuring out some collection structure
-
-schema = {
-    'validator': {
-        '$jsonSchema': {
-            'bsonType': 'object',
-            'required': ['title', 'imdb', 'type', 'tags', 'path'],
-            'properties': {
-                'title': {
-                    'bsonType': "string",
-                    'description': "must be a string and is required"
-                },
-                'imdb': {
-                    'bsonType': "string",
-                    'description': "must be a string and is required"
-                },
-                'type': {
-                    'bsonType': "string",
-                    'description': "must be a string and is required"
-                },
-                'path': {
-                    'bsonType': "string",
-                    'description': "must be a string and is required"
-                },
-                'tags': {
-                    'bsonType': "array",
-                    'items': {
-                        'bsonType': "string"
-                    },
-                    'description': "must be an array of strings"
-                }
-            }
-        }
-    }
-}
-
-
 def collection_exists() -> bool:
     return db.list_collection_names().__contains__(collection_name)
-
-
-#should be used only once
-#creation isn't working now, has to be done manually with the schema directly to mongoDb
-def create_media_collection():
-    if not collection_exists():
-        print(f'Creating collection {collection_name}')
-        db.create_collection(collection_name, codec_options=schema, check_exists=True)
-        print(f'Collection created')
-    else:
-        print(f'Collection {collection_name} already exists')
 
 
 def collection_not_found_warn():

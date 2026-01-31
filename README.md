@@ -97,6 +97,8 @@ When media folder isn't found anymore in the file structure on scan, it's remove
 - Install Yarn & NPM
 
 ### MongoDB
+
+#### Optional manual collection creation(restarting does this by itself if there's no collection)
 - Create collection for media in the MongoDB shell:
 ```
 db.createCollection("media", {"validator": {"$jsonSchema": {"bsonType": "object", "required": ["uuid", "created", "title", "imdb", "type", "tags", "folderPath"], "properties": {"uuid": {"bsonType": "string", "description": "must be a string and is required"}, "created": {"bsonType": "date"}, "title": {"bsonType": "string", "description": "must be a string and is required"}, "imdb": {"bsonType": "string", "description": "must be a string and is required"}, "type": {"bsonType": "string", "description": "must be a string and is required"}, "folderPath": {"bsonType": "string", "description": "must be a string and is required"}, "path": {"bsonType": "string", "description": "must be a string"}, "tags": {"bsonType": "array", "items": { "bsonType": "string" }, "description": "must be an array of strings"}, "seasons":  {"bsonType":  "array", "items":  {"bsonType": "object", "properties": {"season": {"bsonType": "object", "properties": {"name": {"bsonType": "string"}, "episodes": {"bsonType": "array", "items": {"bsonType": "object", "properties": {"name": {"bsonType": "string"}, "path": {"bsonType": "string"}}}, "description": "must be an array of objects with name and path"}}}}}, "properties":  {}}}}}})
