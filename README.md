@@ -98,7 +98,6 @@ When media folder isn't found anymore in the file structure on scan, it's remove
 
 ### MongoDB
 - Install MongoDB
-- 
 #### Optional manual collection creation:
 - Create collection for media in the MongoDB shell:
 ```
