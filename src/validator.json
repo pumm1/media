@@ -1,0 +1,35 @@
+{
+  "$jsonSchema": {
+      "bsonType": "object",
+      "required": ["title", "imdb", "type", "tags", "folderPath"],
+      "properties": {
+        "title": {
+          "bsonType": "string",
+          "description": "must be a string and is required"
+        },
+        "imdb": {
+          "bsonType": "string",
+          "description": "must be a string and is required"
+        },
+        "type": {
+          "bsonType": "string",
+          "description": "must be a string and is required"
+        },
+        "folderPath": {
+          "bsonType": "string",
+          "description": "must be a string and is required"
+        },
+        "path": {
+          "bsonType": "string",
+          "description": "must be a string"
+        },
+        "tags": {
+          "bsonType": "array",
+          "items": {
+            "bsonType": "string"
+          },
+          "description": "must be an array of strings"
+        }
+      }
+    }
+}
