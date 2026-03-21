@@ -1,11 +1,17 @@
 from pymongo import MongoClient
 import json
 from queryBuilder import in_f, title_f
+import sqlite3
 from mediaObjects import Series
 
 client = MongoClient('localhost', 27017)
 
 db_name = None
+
+"""
+### mongoDb for storing file paths, tags etc and faster media searching
+### sqlite DB for storing metadata; fetch only once as it's quite slow if not in redis cache
+"""
 
 with open('sources.json', 'r') as json_file:
     data = json.load(json_file)
@@ -31,9 +37,59 @@ if not (collections.__contains__(collection_name)):
     print(f'Created collection {collection_name}')
 
 
+meta_db = f"{db_name}.db"
+meta_db_conn = sqlite3.connect(meta_db)
+meta_table = 'metadata'
+
+class MetaDB:
+    def __init__(self, path: str):
+        self.conn = sqlite3.connect(path)
+
+    def init_db(self):
+        cur = self.conn.execute(
+            f"""
+                SELECT name FROM sqlite_master WHERE type='table' AND name='{meta_table}';
+            """
+        )
+
+        row = cur.fetchone()
+        if row:
+            print(f"{meta_table} exists")
+        else:
+            print(f'Creating {meta_table}')
+            self.conn.execute("""
+                        CREATE TABLE IF NOT EXISTS metadata (
+                            url TEXT PRIMARY KEY,
+                            data TEXT
+                        )
+                    """)
+            self.conn.commit()
+
+    def set(self, url, value: dict):
+
+        params = [url, json.dumps(value)]
+
+        self.conn.execute(
+            "INSERT INTO metadata VALUES", params
+        )
+        self.conn.commit()
+
+    def get(self, url):
+        print(f'DEBUG url: .... {url}')
+        cur = self.conn.execute(
+            "SELECT data FROM metadata WHERE url=?",
+            [url]
+        )
+        row = cur.fetchone()
+        return json.loads(row[0]) if row else None
+
+metaDB = MetaDB(meta_db)
+
+metaDB.init_db()
+
 collection_name = 'media'
 
-
+# ======= MONGO ======= #
 def with_mongo_client(collection_fn):
     with MongoClient('localhost', 27017) as client:
         db = client.get_database(db_name)
@@ -289,6 +345,19 @@ def remove_media_by_title(title: str):
         else:
             collection_not_found_warn()
             return 0
+
+# ======= SQLITE ======= #
+
+# TODO: insert data, fetch data, check type
+
+def get_metadata(url: str):
+    db = MetaDB(meta_db)
+
+    return db.get(url)
+
+def store_metadata(url: str, data: dict):
+    metaDB.set(url, data)
+
 
 # Select a collection (it will create one if it doesn't exist)
 #collection = db.get_collection(collection_name)

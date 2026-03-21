@@ -89,6 +89,7 @@ When media folder isn't found anymore in the file structure on scan, it's remove
 
 ## Setup
 
+- Install sqlite
 - Install MongoDB
 - Install ffmpeg
 - Install Redis (Backend fetches info from IMDB and caches it to redis)
@@ -107,7 +108,7 @@ db.createCollection("media", {"validator": {"$jsonSchema": {"bsonType": "object"
 
 ### Backend
 - In `/src` run `flask --app app run`
-- This creates collection automatically, if one doesn't exist
+- This creates collection and database for meta data (same name as what mongodb uses in `sources.json`) automatically, if one doesn't exist
 
 ### UI
 - in `/media-ui` run `yarn start` (for UI) and `yarn electron` (to be able to use Electron version of the app and actually access folders/files)

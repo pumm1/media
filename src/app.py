@@ -1,3 +1,5 @@
+import json
+
 from bs4 import BeautifulSoup
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -5,6 +7,7 @@ from queryReq import QueryReq
 from mediaHandler import search_collections, go_through_medias, get_existing_tags, reset_media, list_meta_files, \
     update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_uuid, movie_media_is_hdr_by_uuid
 import requests
+from mediaDAO import store_metadata, get_metadata
 from flask_caching import Cache
 from playwright.sync_api import sync_playwright
 
@@ -63,6 +66,37 @@ def fetch_metadata(url: str, debug: bool = False):
         browser.close()
 
         return metadata
+
+def cached_or_fetched_metadata(url):
+    cached_response = cache.get(url)
+    if cached_response:
+        print(f"Cache hit for URL: {url}")
+        return cached_response
+    else:
+        # No cache hit; fetch from meta_db
+        stored_response = get_metadata(url)
+
+        if stored_response is not None:
+            print(f'Stored data found for URL: {url}')
+
+            cache.set(url, stored_response)
+
+            return stored_response
+        else:
+            # not stored in meta_db, fetch from source
+            try:
+                print(f'Fetching data from source for URL: {url}')
+                # Extract metadata
+                metadata = fetch_metadata(url)
+
+                # Optionally, you can parse the HTML here and extract only the relevant parts (e.g., Open Graph metadata)
+                cache.set(url, metadata)
+                store_metadata(url, metadata)
+
+                return metadata
+            except requests.exceptions.RequestException as e:
+                print(f'Error fetching preview from source -  {url}')
+                return jsonify({'error': str(e)}), 500
 
 @app.route('/tags', methods = [get])
 def tags():
@@ -126,23 +160,7 @@ def preview():
     if not url:
         return jsonify({'error': 'URL parameter is missing'}), 400
 
-    cached_response = cache.get(url)
-    if cached_response:
-        print(f"Cache hit for URL: {url}")
-        return cached_response
-
-    try:
-        # Extract metadata
-        metadata = fetch_metadata(url)
-
-        # Optionally, you can parse the HTML here and extract only the relevant parts (e.g., Open Graph metadata)
-        cache.set(url, metadata)
-
-        return jsonify(metadata)
-
-    except requests.exceptions.RequestException as e:
-        print(f'Error fetching preview for url: {url}')
-        return jsonify({'error': str(e)}), 500
+    return cached_or_fetched_metadata(url)
 
 
 @app.route('/update-medias', methods=[post])
@@ -187,4 +205,4 @@ def media_has_hdr_by_uudid():
         return jsonify(None)
 
 
-#fetch_metadata()
+#cached_or_fetched_metadata("https://www.imdb.com/title/tt0135037/")
