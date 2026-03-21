@@ -24,7 +24,7 @@ seasons_f = 'seasons'
 
 def m_json_from_req(req: QueryReq, random_suggestions: bool = False):
     # Import inside the function to avoid circular imports
-    print(f'... random suggestions: {random_suggestions}')
+    #print(f'... random suggestions: {random_suggestions}')
 
     title_jsons = []
 

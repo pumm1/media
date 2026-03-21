@@ -6,6 +6,7 @@ from mediaHandler import search_collections, go_through_medias, get_existing_tag
     update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_uuid, movie_media_is_hdr_by_uuid
 import requests
 from flask_caching import Cache
+from playwright.sync_api import sync_playwright
 
 app = Flask(__name__)
 CORS(app)
@@ -24,6 +25,44 @@ delete = 'DELETE'
 
 def invalid_req():
     return "Invalid request", 400
+
+
+def fetch_metadata(url: str, debug: bool = False):
+    with sync_playwright() as p:
+
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 800},
+            locale="en-US"
+        )
+        page = context.new_page()
+
+        page.goto(url)
+        # Wait for JS to load content
+        page.wait_for_load_state("networkidle")
+        content = page.content()
+
+        if debug:
+            print(f'... response: {content}')
+
+        # Parse HTML with BeautifulSoup
+        soup = BeautifulSoup(content, 'html.parser')
+
+        # Extract metadata
+        metadata = {
+            'title': soup.find('meta', property='og:title') and soup.find('meta', property='og:title')['content']
+                     or soup.find('title').text if soup.find('title') else None,
+            'info': soup.find('meta', property='og:description') and
+                    soup.find('meta', property='og:description')['content'],
+            'description': soup.find('meta', attrs={'name': 'description'}) and
+                           soup.find('meta', attrs={'name': 'description'})['content'],
+            'image': soup.find('meta', property='og:image') and soup.find('meta', property='og:image')['content'],
+        }
+        browser.close()
+
+        return metadata
 
 @app.route('/tags', methods = [get])
 def tags():
@@ -93,25 +132,8 @@ def preview():
         return cached_response
 
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:127.0) Gecko/20100101 Firefox/127.0'
-        }
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-
-        # Parse HTML with BeautifulSoup
-        soup = BeautifulSoup(response.text, 'html.parser')
-
         # Extract metadata
-        metadata = {
-            'title': soup.find('meta', property='og:title') and soup.find('meta', property='og:title')['content']
-                     or soup.find('title').text if soup.find('title') else None,
-            'info': soup.find('meta', property='og:description') and
-                           soup.find('meta', property='og:description')['content'],
-            'description': soup.find('meta', attrs={'name': 'description'}) and
-                           soup.find('meta', attrs={'name': 'description'})['content'],
-            'image': soup.find('meta', property='og:image') and soup.find('meta', property='og:image')['content'],
-        }
+        metadata = fetch_metadata(url)
 
         # Optionally, you can parse the HTML here and extract only the relevant parts (e.g., Open Graph metadata)
         cache.set(url, metadata)
@@ -164,3 +186,5 @@ def media_has_hdr_by_uudid():
     else:
         return jsonify(None)
 
+
+#fetch_metadata()
