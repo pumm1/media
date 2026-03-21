@@ -41,7 +41,9 @@ meta_db = f"{db_name}.db"
 meta_db_conn = sqlite3.connect(meta_db)
 meta_table = 'metadata'
 
+
 class MetaDB:
+    # ===== sqlite ===== #
     def __init__(self, path: str):
         self.conn = sqlite3.connect(path)
 
@@ -66,16 +68,12 @@ class MetaDB:
             self.conn.commit()
 
     def set(self, url, value: dict):
-
-        params = [url, json.dumps(value)]
-
         self.conn.execute(
-            "INSERT INTO metadata VALUES", params
+            "INSERT INTO metadata VALUES", [url, json.dumps(value)]
         )
         self.conn.commit()
 
     def get(self, url):
-        print(f'DEBUG url: .... {url}')
         cur = self.conn.execute(
             "SELECT data FROM metadata WHERE url=?",
             [url]
@@ -346,8 +344,6 @@ def remove_media_by_title(title: str):
             collection_not_found_warn()
             return 0
 
-# ======= SQLITE ======= #
-
 # TODO: insert data, fetch data, check type
 
 def get_metadata(url: str):
@@ -356,7 +352,9 @@ def get_metadata(url: str):
     return db.get(url)
 
 def store_metadata(url: str, data: dict):
-    metaDB.set(url, data)
+    db = MetaDB(meta_db)
+
+    db.set(url, data)
 
 
 # Select a collection (it will create one if it doesn't exist)
