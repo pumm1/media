@@ -62,7 +62,24 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
     }, [d.imdb, d.uuid])
     //{img && <img className='image' src={img} width={0.675*smallImgScaler} height={1*smallImgScaler}></img>}
 
-    const [hideTitle, setHideTitle] = useState(!!img)
+    const [imgExists, setImgExists] = useState(img === undefined)
+
+    const checkImageExists = async (url: string): Promise<boolean> => {
+        try {
+          const res = await fetch(url, { method: "GET" })
+      
+          return (
+            res.status === 200
+          )
+        } catch {
+        console.log(`Can't access image for ${d.title}`)
+          return false
+        }
+      };
+
+    useEffect(() => {
+        img && checkImageExists(img).then(exists => setImgExists(exists))
+    }, [img])
 
     return (
         <div onClick={(e) => {
@@ -70,8 +87,8 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
             e.stopPropagation()
             setDoc(d)}} ref={containerRef} className="documentContainer" tabIndex={1} data-index={idx}>
             {
-                hideTitle ? 
-                <div className='documentImage' style={{'backgroundImage': `url(${img})`}} onError={() => setHideTitle(false)}/> 
+                imgExists ? 
+                <div className='documentImage' style={{'backgroundImage': `url(${img})`}}/> 
                 : <h2 style={{textAlign: 'center'}}>{d.title}</h2>
             }
             <div className='document'>

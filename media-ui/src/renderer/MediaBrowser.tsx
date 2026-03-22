@@ -114,7 +114,6 @@ const MediaBrowser = () => {
     const [nextPage, setNextPage] = useState<number | null>(null)
 
     const tryToFetchMoreDataFn = () => {
-        console.log(`maybe fetching more data`)
         if (nextPage) {
             setPage(nextPage)
         }
