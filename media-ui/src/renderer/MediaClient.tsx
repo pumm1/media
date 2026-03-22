@@ -148,11 +148,29 @@ export interface UpdateRes {
 export const updateMedias = () => 
     postDataAs<UpdateRes>(`/update-medias`, {})
 
+export interface Rating {
+    Source: string
+    Value: String
+}
+
 export interface MetaResponse {
-    title?: string
-    info?: string
-    description?: string
-    image?: string
+    Title?: string
+    Year?: string
+    Rated?: string
+    Released?: string
+    Runtime?: string
+    Genre?: string
+    Plot?: string
+    Director?: string
+    Writer?: string
+    Actors?: string
+    Language?: string
+    Country?: string
+    Awards?: string
+    Poster?: string
+    Ratings?: Rating[]
+    MetaScore?: string
+    imdbRating?: string
 }
 
 export const preview = (url: string) =>

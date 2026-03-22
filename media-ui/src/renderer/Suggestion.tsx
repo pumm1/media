@@ -19,7 +19,7 @@ const Suggestion = ({ doc, setDoc }: SuggestionProps) => {
 
     return(
         <div className="suggestion" onClick={() => setDoc(doc)}>
-            {info?.image && <img src={info.image} alt="Not found"></img>}
+            {info?.Poster && <img src={info.Poster} alt="Not found"></img>}
         </div>
     )
 }

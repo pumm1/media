@@ -40,13 +40,20 @@
     width: 100%;
     height: 100vh;
     opacity: 40%;
-    mask-image: linear-gradient(to bottom, transparent 5%, var(--main-dark) 50%, transparent 70%);
+    mask-image: linear-gradient(to bottom, transparent 5%, var(--main-dark) 40%, transparent 65%);
 }
 
 .info {
     padding: 12px 0px;
     font-size: 18px;
     font-weight: 600;
+}
+
+.minorInfo {
+    display: flex;
+    align-items: center;
+    padding: 0 8px 0 0;
+    font-size: 12px;
 }
 
 .suggestionsContainer {

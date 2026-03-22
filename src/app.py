@@ -10,6 +10,7 @@ import requests
 from mediaDAO import store_metadata, get_metadata
 from flask_caching import Cache
 from playwright.sync_api import sync_playwright
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -18,6 +19,14 @@ CORS(app)
 app.config['CACHE_TYPE'] = 'RedisCache'
 app.config['CACHE_REDIS_URL'] = 'redis://localhost:6379/0'  # Connect to Redis server
 app.config['CACHE_DEFAULT_TIMEOUT'] = 60 * 60 * 24 * 30  # Cache timeout in seconds
+
+key: str | None = None
+
+with open('sources.json', 'r') as json_file:
+    data = json.load(json_file)
+    key = data.get('omdbKey')
+    if key is None:
+        print(f'!!! OMDb key not found !!!')
 
 cache = Cache(app)
 
@@ -30,6 +39,7 @@ def invalid_req():
     return "Invalid request", 400
 
 
+# TODO: drop this?
 def fetch_metadata(url: str, debug: bool = False):
     with sync_playwright() as p:
 
@@ -67,6 +77,39 @@ def fetch_metadata(url: str, debug: bool = False):
 
         return metadata
 
+def parseIdFromUrl(url: str) -> str | None:
+    arr = list(filter(None, str.split(url, "/")))
+    items = len(arr)
+
+    return arr[items - 1]
+
+def fetchMetaDataFromAPI(url):
+    id = parseIdFromUrl(url)
+    if id is None:
+        print(f'No id found from {url}')
+    elif not id.startswith("tt"):
+        print(f'!! Invalid id parsed from url - url = {url}, id = {id}')
+    else:
+        omdb_url = f"http://www.omdbapi.com/?i={id}&apikey={key}"
+        print(f'Fetching metadata from {omdb_url}')
+        response = requests.get(omdb_url)
+        response.raise_for_status()
+
+        res = response.text
+
+        return res
+
+
+"""
+TODO:
+- call for metadata -> if not in cache/db, return 202 and UI calls again later
+- when BE gets call for non-existing metadata, put url in pending (new table..?)
+- once data has been fetched, update to meta
+
+need to use Celery..?
+
+- maybe no need to make more complicated logic with omdb
+"""
 def cached_or_fetched_metadata(url):
     cached_response = cache.get(url)
     if cached_response:
@@ -87,7 +130,7 @@ def cached_or_fetched_metadata(url):
             try:
                 print(f'Fetching data from source for URL: {url}')
                 # Extract metadata
-                metadata = fetch_metadata(url)
+                metadata = fetchMetaDataFromAPI(url)
 
                 # Optionally, you can parse the HTML here and extract only the relevant parts (e.g., Open Graph metadata)
                 cache.set(url, metadata)
@@ -95,7 +138,7 @@ def cached_or_fetched_metadata(url):
 
                 return metadata
             except requests.exceptions.RequestException as e:
-                print(f'Error fetching preview from source -  {url}')
+                print(f'Error fetching metadata from API for url = {url}')
                 return jsonify({'error': str(e)}), 500
 
 @app.route('/tags', methods = [get])
@@ -206,3 +249,4 @@ def media_has_hdr_by_uudid():
 
 
 #cached_or_fetched_metadata("https://www.imdb.com/title/tt0135037/")
+#fetchMetaDataFromAPI("https://www.imdb.com/title/tt0135037/")

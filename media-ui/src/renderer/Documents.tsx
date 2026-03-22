@@ -53,13 +53,13 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
 
     const containerRef = useRef<HTMLDivElement | null>(null)
 
-    const img = metaInfo?.image
+    const img = metaInfo?.Poster
 
     useEffect(() => {
         preview(d.imdb).then(setMetaInfo).then(() => {
             mediaHasHdrByUuid(d.uuid).then(setHasHdr)
         })
-    }, [d.imdb])
+    }, [d.imdb, d.uuid])
     //{img && <img className='image' src={img} width={0.675*smallImgScaler} height={1*smallImgScaler}></img>}
 
     return (

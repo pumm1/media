@@ -9,10 +9,11 @@ Anyone using this should themselves own the media by legal means (e.g. buy a DVD
 ## Setup
 
 In `/src`, include `sources.json` with the following:
-- `directories` (array of strings)
-- `dbName` (name of the mongodb database you've set up)
+- `directories` (array of strings, absolute paths to the media directories)
+- `dbName` (name of the mongodb and sqlite database you've set up)
+- `omdbKey` OMDb key for fetching media info
 
-`sources.json` should thus look something like this:
+so `sources.json` should thus look something like this:
 ```
 {
   "directories": [
@@ -20,7 +21,8 @@ In `/src`, include `sources.json` with the following:
     "<absolute_path_to_dir2>",
     ....
   ],
-  "dbName": "<name_of_db>"
+  "dbName": "<name_of_db>",
+  "omdbKey": "<key>"
 }
 ```
 

@@ -67,9 +67,12 @@ class MetaDB:
                     """)
             self.conn.commit()
 
-    def set(self, url, value: dict):
+    # value = json as string
+    def set(self, url, value: str):
         self.conn.execute(
-            "INSERT INTO metadata VALUES", [url, json.dumps(value)]
+            f"""
+                INSERT INTO metadata (url, data) VALUES (?, ?)
+                """, [url, value]
         )
         self.conn.commit()
 
@@ -351,10 +354,12 @@ def get_metadata(url: str):
 
     return db.get(url)
 
-def store_metadata(url: str, data: dict):
+def store_metadata(url: str, data: str):
     db = MetaDB(meta_db)
 
-    db.set(url, data)
+    existing = db.get(url)
+    if existing is None:
+        db.set(url, data)
 
 
 # Select a collection (it will create one if it doesn't exist)
