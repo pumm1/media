@@ -62,6 +62,8 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
     }, [d.imdb, d.uuid])
     //{img && <img className='image' src={img} width={0.675*smallImgScaler} height={1*smallImgScaler}></img>}
 
+    const showTitle = metaInfo === undefined || metaInfo.Poster === undefined
+
     return (
         <div onClick={(e) => {
             e.preventDefault()
@@ -76,6 +78,7 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
                 <span className="infoContainer">
                     <div className='mediaInfo'>
                         <MediaIcon type={d.type}/> 
+                        {showTitle &&<h4>{d.title}</h4>}
                         {hasHdr && <Pill variant='Static' keyProp={d.title + 'hdr'}>HDR</Pill>}
                         {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
                         <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
