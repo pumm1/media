@@ -62,7 +62,7 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
     }, [d.imdb, d.uuid])
     //{img && <img className='image' src={img} width={0.675*smallImgScaler} height={1*smallImgScaler}></img>}
 
-    const showTitle = metaInfo === undefined || metaInfo.Poster === undefined
+    const [hideTitle, setHideTitle] = useState(!!img)
 
     return (
         <div onClick={(e) => {
@@ -70,15 +70,14 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
             e.stopPropagation()
             setDoc(d)}} ref={containerRef} className="documentContainer" tabIndex={1} data-index={idx}>
             {
-                img ? 
-                <div className='documentImage' style={{'backgroundImage': `url(${img})`}}/> 
+                hideTitle ? 
+                <div className='documentImage' style={{'backgroundImage': `url(${img})`}} onError={() => setHideTitle(false)}/> 
                 : <h2 style={{textAlign: 'center'}}>{d.title}</h2>
             }
             <div className='document'>
                 <span className="infoContainer">
                     <div className='mediaInfo'>
                         <MediaIcon type={d.type}/> 
-                        {showTitle &&<h4>{d.title}</h4>}
                         {hasHdr && <Pill variant='Static' keyProp={d.title + 'hdr'}>HDR</Pill>}
                         {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
                         <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
