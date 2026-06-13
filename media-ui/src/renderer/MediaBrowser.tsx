@@ -6,13 +6,13 @@ import Toast from './common/Toast'
 import SearchInput from './SearchInput'
 import SearchOptions from './SearchOptions'
 import Documents from './Documents'
-import LoadingIndicator from './common/LoadingIndicator'
 
 import './MediaBrowser.css'
 import PopUpContainer from './common/PopUpContainer'
 import { SettingsButton } from './common/CommonButtons'
 import MetaSettings from './MetaSettings'
 import SlidingPageContainer from './common/SlidingPageContainer'
+import SearchIcon from './common/SearchIcon'
 
 const isElectron = () => {
     // Check if 'process.versions.electron' exists, which is only available in Electron
@@ -72,6 +72,7 @@ const MediaBrowser = () => {
 
     const [selectedDoc, setDoc] = useState<QueryResult | undefined>(undefined)
     const [showSlidingPage, setShowSlidingPage] = useState(false)
+    const [showSearch, setShowSearch] = useState(false)
 
     const [showToast, setShowToast] = useState(false)
 
@@ -183,15 +184,6 @@ const MediaBrowser = () => {
         setTypes(selectedValues)
         setPage(0)
     }
-    
-    const blurByAmount = (amount: number) =>{
-            const filter = {
-                filter: `blur(${amount}px)`, 
-                transition: 'filter 0.5s ease'
-            }
-
-            return filter
-        }
 
     const updateMediasFn = () => {
         setUpdateLoading(true)
@@ -203,7 +195,7 @@ const MediaBrowser = () => {
 
     const slingPageShown = selectedDoc !== undefined && showSlidingPage
 
-    const useBlur = settingsOpen || slingPageShown
+    const useBlur = settingsOpen || slingPageShown || showSearch
 
     const inputRef: MutableRefObject<HTMLInputElement | null> = useRef<HTMLInputElement | null>(null)
 
@@ -239,25 +231,33 @@ const MediaBrowser = () => {
         setPage(0)
     }
 
-    return (//the popupsettings becomes the sliding page
+    const onMetaDataClose = () => setShowSlidingPage(false)
+    const onSearhClose = () => setShowSearch(false)
+
+    return (
         <div className='main'>
             { settingsOpen &&
                 <PopUpContainer>
                     <MetaSettings onClose={() => setSettingsOpen(false)}/>
                 </PopUpContainer>
             }
-            <SlidingPageContainer isOpen={showSlidingPage}>
+            <SlidingPageContainer side='right' size='big' isOpen={showSlidingPage} onClose={onMetaDataClose}>
                 {
                     selectedDoc ? 
-                        <MetaInfoByUrl setDoc={updateDoc} updateMediasFn={updateMediasFn} doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} onClose={() => setShowSlidingPage(false)}/>
+                        <MetaInfoByUrl setDoc={updateDoc} updateMediasFn={updateMediasFn} doc={selectedDoc} playMedia={path => openVideo(path)} onOpenFolder={() => openFolder(selectedDoc.folderPath)} onClose={onMetaDataClose}/>
                     : <></>
                 }
             </SlidingPageContainer>
             {showToast && mediaUpdateInfo && <Toast message={updateInfo(mediaUpdateInfo)} durationMs={3000} onClose={() => setShowToast(false)} />}
-            <div className='mediaBrowserContainer' style={useBlur ? blurByAmount(2) : blurByAmount(0)}>
-                <SearchInput reference={inputRef} isLoading={searchLoading} setTitles={updateTitles}/>
-                <SearchOptions setTags={updateTags}  currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} setSortType={updateSortType} usedSort={sort} setSortDirection={updateSortDirection} selectedTags={tags} tagOptions={tagOptions}/>
-                <Documents tryToFetchMoreDataFn={tryToFetchMoreDataFn} sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={updateDoc} initialResultsFetched={initialResultsFetched} />
+            <div className='mediaBrowserContainer'>
+                <button className='filterButton' disabled={showSearch} onClick={() => setShowSearch(true)}>
+                    Show filters
+                </button>
+                <SlidingPageContainer side='right' size='small' isOpen={showSearch} onClose={onSearhClose}>
+                    <SearchInput reference={inputRef} isLoading={searchLoading} setTitles={updateTitles}/>
+                    <SearchOptions setTags={updateTags}  currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} setSortType={updateSortType} usedSort={sort} setSortDirection={updateSortDirection} selectedTags={tags} tagOptions={tagOptions}/>
+                </SlidingPageContainer>
+                <Documents useBlur={useBlur} tryToFetchMoreDataFn={tryToFetchMoreDataFn} sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={updateDoc} initialResultsFetched={initialResultsFetched} />
                 <div className='scanner'>
                     <button disabled={updateLoading} onClick={() =>
                         updateMediasFn()

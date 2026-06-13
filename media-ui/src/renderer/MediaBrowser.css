@@ -1,7 +1,6 @@
 .main {
     position: relative;
     color: white;
-    padding: var(--main-padding)
 }
 
 .mediaBrowserContainer {
@@ -9,7 +8,7 @@
     flex-direction: column;
     height: 90vh;
     position: relative;
-    margin: 16px;
+    margin: 0 8px;
 }
 
 .detailedMediaContainer {
@@ -22,6 +21,12 @@
     left: 50%;
     border-radius: 8px;
     transform: translate(-50%, -50%);
+}
+
+.filterButton {
+    max-width: 8rem;
+    max-height: 8rem;
+    margin: var(--small-padding);
 }
 
 .scanner {

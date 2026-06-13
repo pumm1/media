@@ -115,28 +115,6 @@ const MetaInfoModal = ({ infoLoading, setDoc, updateMediasFn, Title, playMedia, 
         suggestMedias(suggestionQ).then(setSuggestions)
     }, [doc.tags, doc.type, doc.title])
 
-    const handleClickOutside = useCallback((event: MouseEvent) => {
-        if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
-            onClose()
-        }
-    }, [onClose]) // Dependencies for useCallback
-
-    const handleEscape = useCallback((event: KeyboardEvent) => {
-        if (componentRef.current && !componentRef.current.contains(event.target as Node) && event.key === 'Escape') {
-            onClose()
-        }
-    }, [onClose]) // Dependencies for useCallback
-
-    useEffect(() => {
-        document.addEventListener('mousedown', handleClickOutside)
-        document.addEventListener('keydown', handleEscape)
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
-            document.removeEventListener('keydown', handleEscape)
-        }
-    }, [handleClickOutside])
-
     const rescanFn = () => rescanMedia(doc.uuid).then(() => updateMediasFn())
 
     const onRescan = () => 
@@ -223,9 +201,9 @@ export interface MetaInfoByUrlProps {
     doc: QueryResult
     playMedia: (path: string) => void
     onOpenFolder: () => void
-    onClose: () => void
     updateMediasFn: () => void
     setDoc: (d: QueryResult) => void
+    onClose: () => void
 }
 
 const MetaInfoByUrl = ({ setDoc, metaInfo, updateMediasFn, doc, playMedia, onOpenFolder, onClose }: MetaInfoByUrlProps) => {
@@ -247,7 +225,7 @@ const MetaInfoByUrl = ({ setDoc, metaInfo, updateMediasFn, doc, playMedia, onOpe
 
     return (
         currentMetaInfo ? 
-            <MetaInfoModal metaInfo={currentMetaInfo} infoLoading={isLoading} setDoc={setDoc} updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} Title={currentMetaInfo.Title || placeHolderInfo.Title}/>
+            <MetaInfoModal metaInfo={currentMetaInfo} infoLoading={isLoading} setDoc={setDoc} updateMediasFn={updateMediasFn} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} Title={currentMetaInfo.Title || placeHolderInfo.Title} onClose={onClose}/>
         :  
             <></>
     )

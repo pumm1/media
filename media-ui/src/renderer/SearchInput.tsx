@@ -26,7 +26,6 @@ const SearchInput = ({ reference, isLoading, setTitles }: SearchInoutProps) => {
                 }
                     
                 }
-                autoFocus
                 tabIndex={0}
                 ref={reference}
             />

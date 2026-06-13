@@ -117,6 +117,7 @@ interface DocsPropsMain {
 
 interface DocsProps extends DocsPropsMain {
     tryToFetchMoreDataFn: () => void
+    useBlur: boolean
 }
 
 const NoResultsTips = [
@@ -175,7 +176,7 @@ const Docs = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo }: DocsPropsM
     )
 }
 
-const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo, tryToFetchMoreDataFn }: DocsProps) => {
+const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo, tryToFetchMoreDataFn, useBlur }: DocsProps) => {
     const containerRef = useRef<HTMLDivElement | null>(null)
 
     useEffect(() => {
@@ -203,8 +204,18 @@ const Documents = ({ docs, setDoc, initialResultsFetched, sinceWeeksAgo, tryToFe
         }
       }, [tryToFetchMoreDataFn, containerRef])
 
+
+    const blurByAmount = (amount: number) =>{
+        const filter = {
+            filter: `blur(${amount}px)`, 
+            transition: 'filter 0.5s ease'
+        }
+
+        return filter
+    }
+
     return(
-        <div className='docContainer' ref={containerRef}>
+        <div className='docContainer' ref={containerRef} style={useBlur ? blurByAmount(2) : blurByAmount(0)}>
             <Docs sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={setDoc} initialResultsFetched={initialResultsFetched} />
         </div>
     )
