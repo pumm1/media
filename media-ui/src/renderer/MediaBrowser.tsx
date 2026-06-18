@@ -254,8 +254,10 @@ const MediaBrowser = () => {
                     Show filters
                 </button>
                 <SlidingPageContainer side='right' size='small' isOpen={showSearch} onClose={onSearhClose}>
-                    <SearchInput reference={inputRef} isLoading={searchLoading} setTitles={updateTitles}/>
-                    <SearchOptions setTags={updateTags}  currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} setSortType={updateSortType} usedSort={sort} setSortDirection={updateSortDirection} selectedTags={tags} tagOptions={tagOptions}/>
+                    <div className='optionsContainer'>
+                        <SearchInput reference={inputRef} isLoading={searchLoading} setTitles={updateTitles}/>
+                        <SearchOptions setTags={updateTags}  currentSortDirection={sortDirection} sinceWeeksAgo={sinceWeeksAgo} setNewSinceWeeksAgo={setSinceWeeksAgo} typeOptions={typeOptions} handleTypesChange={handleTypesChange} setSortType={updateSortType} usedSort={sort} setSortDirection={updateSortDirection} selectedTags={tags} tagOptions={tagOptions}/>
+                    </div>
                 </SlidingPageContainer>
                 <Documents useBlur={useBlur} tryToFetchMoreDataFn={tryToFetchMoreDataFn} sinceWeeksAgo={sinceWeeksAgo} docs={docs} setDoc={updateDoc} initialResultsFetched={initialResultsFetched} />
                 <div className='scanner'>

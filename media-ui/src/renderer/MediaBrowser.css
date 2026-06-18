@@ -33,3 +33,7 @@
     display: flex;
     margin: 8px 0px;
 }
+
+.optionsContainer {
+    margin: 4px 8px;
+}

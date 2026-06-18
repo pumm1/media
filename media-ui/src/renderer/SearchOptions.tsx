@@ -25,7 +25,7 @@ const crlIsPressed = (event: MouseEvent): boolean => event.ctrlKey || event.meta
 
 const SearchOptions = ({selectedTags, tagOptions, setTags, setSortDirection, usedSort, currentSortDirection, setSortType, handleTypesChange, typeOptions, setNewSinceWeeksAgo, sinceWeeksAgo}: SeachOptionsProps) => {
     return (
-        <div className='optionsContainer'>
+        <>
             <div className='tags'>
                 {tagOptions.map(t => (
                     <span key={t}>
@@ -81,7 +81,7 @@ const SearchOptions = ({selectedTags, tagOptions, setTags, setSortDirection, use
                 }}/>
                 {sinceWeeksAgo} Week(s) ago
             </div>
-        </div>
+        </>
     )
 }
 
