@@ -10,7 +10,7 @@ import requests
 from mediaDAO import store_metadata, get_metadata
 from flask_caching import Cache
 from playwright.sync_api import sync_playwright
-import re
+import shutil
 
 app = Flask(__name__)
 CORS(app)
@@ -21,12 +21,16 @@ app.config['CACHE_REDIS_URL'] = 'redis://localhost:6379/0'  # Connect to Redis s
 app.config['CACHE_DEFAULT_TIMEOUT'] = 60 * 60 * 24 * 30  # Cache timeout in seconds
 
 key: str | None = None
+directories: list[str] | None = None
 
 with open('sources.json', 'r') as json_file:
     data = json.load(json_file)
     key = data.get('omdbKey')
+    directories = data.get('directories')
     if key is None:
         print(f'!!! OMDb key not found !!!')
+    if directories is None or len(directories) <= 0:
+        print(f'!!! DIRECTORIES NOT FOUND !!!')
 
 cache = Cache(app)
 
@@ -246,6 +250,22 @@ def media_has_hdr_by_uudid():
         return jsonify('HDR')
     else:
         return jsonify(None)
+
+def data_gigs(total: int) -> int:
+    return total // (2 ** 30)
+
+@app.route('/sources-info', methods = [get])
+def sources_info(): #TODO
+    infos = []
+    idx = 0
+    if directories is not None:
+        for dir in directories:
+            total, used, free = shutil.disk_usage(dir)
+            info = { 'idx': idx, 'total': data_gigs(total), 'used': data_gigs(used), 'free': data_gigs(free) }
+            infos.append(info)
+            idx = idx + 1
+
+    return jsonify(infos)
 
 
 #cached_or_fetched_metadata("https://www.imdb.com/title/tt0135037/")

@@ -13,6 +13,7 @@
 }
 
 .metaContainer {
+    max-width: 40em;
     background-color: var(--very-dark);
     padding: 12px;
     overflow-y: auto;

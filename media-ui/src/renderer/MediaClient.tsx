@@ -221,3 +221,13 @@ export type HDR = 'HDR'
 export const mediaHasHdrByUuid = (uuid: string) =>
     fetchDataAs<HDR | null>(`/media-has-hdr-by-uuid?uuid=${uuid}`)
 
+
+export interface SourceInfo {
+    idx: number
+    total: number
+    used: number
+    free: number
+}
+
+export const getSourcesInfo = () => 
+    fetchDataAs<SourceInfo[]>('/sources-info')

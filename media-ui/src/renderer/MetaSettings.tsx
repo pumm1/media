@@ -1,8 +1,9 @@
 import './MetaSettings.css'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {getTags, listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, resetMedias, updateMetaFile} from './MediaClient'
+import {getSourcesInfo, getTags, listMetaFiles, MetaFileInfo, metaFileReadyForScanning, MetaUpdateReq, resetMedias, SourceInfo, updateMetaFile} from './MediaClient'
 import LoadingIndicator from './common/LoadingIndicator'
 import MediaIcon from './common/MovieIcon'
+import { Pill } from './common/Selection'
 
 const imdbRegex = new RegExp('^https:\/\/www.imdb\.com\/title\/([a-zA-Z0-9]+)+\/$')
 
@@ -96,6 +97,35 @@ const MetaInfoRow = ({metaInfo, updateMetaInfos}: MetaInfoProps) => {
     )
 }
 
+interface ShowSourceInfoProps {
+    info: SourceInfo
+}
+const ShowSourceInfo = ({ info }: ShowSourceInfoProps) => {
+    const used = info.used / info.total
+    const free = info.free / info.total
+
+    return (
+        <div className='spaceInfoWrapper'>
+            <span className='sourceInfo'>{info.idx}:</span>
+            <div style={{ backgroundColor: 'green', width: `${free * 50}%`}} />
+            <div style={{ backgroundColor: 'red', width: `${used * 50}%`}} />
+            <span className='sourceInfo'>{info.free} GB / {info.total} GB</span>
+        </div>
+    )
+}
+
+interface SourceInfosProps {
+    sourceInfos: SourceInfo[]
+}
+
+const SourceInfos = ({ sourceInfos }: SourceInfosProps) => {
+    return (
+        <div>
+            {sourceInfos.map(info => <ShowSourceInfo info={info}/>)}
+        </div>
+    )
+}
+
 interface MetaSettingsProps {
     onClose: () => void
 }
@@ -138,11 +168,16 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
         updateMetaFiles()
     }, [updateMetaFiles]) // Dependency array includes the memoized updateMetaFiles
 
+    const [sourceInfos, setSourceInfos] = useState<SourceInfo[]>([])
 
     useEffect(() => {
         // Update usedMetaFiles whenever allMetaFiles or useOnlyPending changes
         setUsedMetaFiles(metaFilesByPending(allMetaFiles, useOnlyPending))
     }, [allMetaFiles, useOnlyPending])
+
+    useEffect(() => {
+        getSourcesInfo().then(setSourceInfos)
+    }, [])
 
     const onToggle = () => {
         setUseOnlyPending(prev => !prev) // This will trigger the useEffect to recalculate usedMetaFiles
@@ -156,6 +191,7 @@ const MetaSettings = ({onClose}: MetaSettingsProps) => {
     return (
         <div className='metaContainer' ref={componentRef}>
             <h3>Meta data management</h3>
+            <SourceInfos sourceInfos={sourceInfos}/>
             <input className='titleFilter' type='text' onChange={e => setMetaFilter(e.target.value)}/> Title filter
             <div className='scanAll'>
                 <button onClick={() => setShowReset(!showReset)}>{showReset ? 'Cancel' : 'Reset everything' }</button>
