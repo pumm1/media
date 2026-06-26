@@ -1,3 +1,5 @@
+import json
+
 from bs4 import BeautifulSoup
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -5,7 +7,10 @@ from queryReq import QueryReq
 from mediaHandler import search_collections, go_through_medias, get_existing_tags, reset_media, list_meta_files, \
     update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_uuid, movie_media_is_hdr_by_uuid
 import requests
+from mediaDAO import store_metadata, get_metadata
 from flask_caching import Cache
+from playwright.sync_api import sync_playwright
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -14,6 +19,14 @@ CORS(app)
 app.config['CACHE_TYPE'] = 'RedisCache'
 app.config['CACHE_REDIS_URL'] = 'redis://localhost:6379/0'  # Connect to Redis server
 app.config['CACHE_DEFAULT_TIMEOUT'] = 60 * 60 * 24 * 30  # Cache timeout in seconds
+
+key: str | None = None
+
+with open('sources.json', 'r') as json_file:
+    data = json.load(json_file)
+    key = data.get('omdbKey')
+    if key is None:
+        print(f'!!! OMDb key not found !!!')
 
 cache = Cache(app)
 
@@ -24,6 +37,109 @@ delete = 'DELETE'
 
 def invalid_req():
     return "Invalid request", 400
+
+
+# TODO: drop this?
+def fetch_metadata(url: str, debug: bool = False):
+    with sync_playwright() as p:
+
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 800},
+            locale="en-US"
+        )
+        page = context.new_page()
+
+        page.goto(url)
+        # Wait for JS to load content
+        page.wait_for_load_state("networkidle")
+        content = page.content()
+
+        if debug:
+            print(f'... response: {content}')
+
+        # Parse HTML with BeautifulSoup
+        soup = BeautifulSoup(content, 'html.parser')
+
+        # Extract metadata
+        metadata = {
+            'title': soup.find('meta', property='og:title') and soup.find('meta', property='og:title')['content']
+                     or soup.find('title').text if soup.find('title') else None,
+            'info': soup.find('meta', property='og:description') and
+                    soup.find('meta', property='og:description')['content'],
+            'description': soup.find('meta', attrs={'name': 'description'}) and
+                           soup.find('meta', attrs={'name': 'description'})['content'],
+            'image': soup.find('meta', property='og:image') and soup.find('meta', property='og:image')['content'],
+        }
+        browser.close()
+
+        return metadata
+
+def parseIdFromUrl(url: str) -> str | None:
+    arr = list(filter(None, str.split(url, "/")))
+    items = len(arr)
+
+    return arr[items - 1]
+
+def fetchMetaDataFromAPI(url):
+    id = parseIdFromUrl(url)
+    if id is None:
+        print(f'No id found from {url}')
+    elif not id.startswith("tt"):
+        print(f'!! Invalid id parsed from url - url = {url}, id = {id}')
+    else:
+        omdb_url = f"http://www.omdbapi.com/?i={id}&apikey={key}"
+        print(f'Fetching metadata from {omdb_url}')
+        response = requests.get(omdb_url)
+        response.raise_for_status()
+
+        res = response.text
+
+        return res
+
+
+"""
+TODO:
+- call for metadata -> if not in cache/db, return 202 and UI calls again later
+- when BE gets call for non-existing metadata, put url in pending (new table..?)
+- once data has been fetched, update to meta
+
+need to use Celery..?
+
+- maybe no need to make more complicated logic with omdb
+"""
+def cached_or_fetched_metadata(url):
+    cached_response = cache.get(url)
+    if cached_response:
+        print(f"Cache hit for URL: {url}")
+        return cached_response
+    else:
+        # No cache hit; fetch from meta_db
+        stored_response = get_metadata(url)
+
+        if stored_response is not None:
+            print(f'Stored data found for URL: {url}')
+
+            cache.set(url, stored_response)
+
+            return stored_response
+        else:
+            # not stored in meta_db, fetch from source
+            try:
+                print(f'Fetching data from source for URL: {url}')
+                # Extract metadata
+                metadata = fetchMetaDataFromAPI(url)
+
+                # Optionally, you can parse the HTML here and extract only the relevant parts (e.g., Open Graph metadata)
+                cache.set(url, metadata)
+                store_metadata(url, metadata)
+
+                return metadata
+            except requests.exceptions.RequestException as e:
+                print(f'Error fetching metadata from API for url = {url}')
+                return jsonify({'error': str(e)}), 500
 
 @app.route('/tags', methods = [get])
 def tags():
@@ -87,40 +203,7 @@ def preview():
     if not url:
         return jsonify({'error': 'URL parameter is missing'}), 400
 
-    cached_response = cache.get(url)
-    if cached_response:
-        print(f"Cache hit for URL: {url}")
-        return cached_response
-
-    try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:127.0) Gecko/20100101 Firefox/127.0'
-        }
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-
-        # Parse HTML with BeautifulSoup
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Extract metadata
-        metadata = {
-            'title': soup.find('meta', property='og:title') and soup.find('meta', property='og:title')['content']
-                     or soup.find('title').text if soup.find('title') else None,
-            'info': soup.find('meta', property='og:description') and
-                           soup.find('meta', property='og:description')['content'],
-            'description': soup.find('meta', attrs={'name': 'description'}) and
-                           soup.find('meta', attrs={'name': 'description'})['content'],
-            'image': soup.find('meta', property='og:image') and soup.find('meta', property='og:image')['content'],
-        }
-
-        # Optionally, you can parse the HTML here and extract only the relevant parts (e.g., Open Graph metadata)
-        cache.set(url, metadata)
-
-        return jsonify(metadata)
-
-    except requests.exceptions.RequestException as e:
-        print(f'Error fetching preview for url: {url}')
-        return jsonify({'error': str(e)}), 500
+    return cached_or_fetched_metadata(url)
 
 
 @app.route('/update-medias', methods=[post])
@@ -164,3 +247,6 @@ def media_has_hdr_by_uudid():
     else:
         return jsonify(None)
 
+
+#cached_or_fetched_metadata("https://www.imdb.com/title/tt0135037/")
+#fetchMetaDataFromAPI("https://www.imdb.com/title/tt0135037/")

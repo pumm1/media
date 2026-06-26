@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { QueryResult, Season, Episode, rescanMedia, preview, suggestMedias, QueryReq } from "./MediaClient"
+import { QueryResult, Season, Episode, rescanMedia, preview, suggestMedias, QueryReq, MetaResponse, Rating } from "./MediaClient"
 import LoadingIndicator from "./common/LoadingIndicator"
 import {PlayButton, FolderButton, RefreshButton} from "./common/CommonButtons"
 import Hideable from "./common/Hideable"
@@ -8,16 +8,13 @@ import Suggestion from "./Suggestion"
 import { Tags } from "./Documents"
 
 import './MetaHandler.css'
+import { AwardIcon, ImdbIcon, MetaCiritcIcon, RottenTomatoesIcon }from "./common/CommonIcon"
 
 interface PossibleError {
     error?: string
 }
 
-export interface MetaInfo extends PossibleError {
-    title?: string
-    info?: string
-    description?: string
-    image?: string
+export interface MetaInfo extends MetaResponse, PossibleError {
 }
 
 interface SeasonInfoProps {
@@ -57,18 +54,49 @@ const SeasonInfo = ({seasons, playMedia}: SeasonInfoProps) =>
         </Hideable>
     </div>
 
-const imgScaler = 200
+// const imgScaler = 200
 
 interface MetaInfoProps extends MetaInfo {
+    infoLoading: boolean
     playMedia: (path: string) => void
     onOpenFolder: () => void
     doc: QueryResult
     onClose: () => void
     updateMediasFn: () => void
     setDoc: (d: QueryResult) => void
+    metaInfo?: MetaResponse
+}
+interface Source {
+    source: string,
+    icon: JSX.Element
+}
+const sourceImdb: Source = {
+    source: 'Internet Movie Database',
+    icon: <ImdbIcon />
+}
+const sourceRottenTomateos: Source =  {
+    source: 'Rotten Tomatoes',
+    icon: <RottenTomatoesIcon />
+}
+const sourceMetaCritic: Source = {
+    source: 'Metacritic',
+    icon: <MetaCiritcIcon />
 }
 
-const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image, playMedia, doc, onOpenFolder, onClose }: MetaInfoProps) => {
+const sources: Source[] = [sourceImdb, sourceRottenTomateos, sourceMetaCritic]
+
+const RatingInfo = ({rating}: {rating: Rating}) => {
+    const source = sources.find(s => s.source === rating.Source)
+
+    return source ? <span className="minorInfo">{source.icon} {rating.Value}</span> : <></>
+}
+
+const resolveRatings = (ratings: Rating[]) =>
+    <span className="minorInfo">
+        {ratings.map(r => <RatingInfo rating={r}/>)}
+    </span>
+
+const MetaInfoModal = ({ infoLoading, setDoc, updateMediasFn, Title, playMedia, doc, onOpenFolder, onClose, metaInfo }: MetaInfoProps) => {
     const componentRef = useRef<HTMLDivElement | null>(null)
 
     const [suggestions, setSuggestions] = useState<QueryResult[] | undefined>(undefined)
@@ -87,20 +115,6 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
         suggestMedias(suggestionQ).then(setSuggestions)
     }, [doc.tags, doc.type, doc.title])
 
-    const handleClickOutside = useCallback((event: MouseEvent) => {
-        if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
-            onClose()
-        }
-    }, [onClose]) // Dependencies for useCallback
-
-    useEffect(() => {
-        document.addEventListener('mousedown', handleClickOutside)
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
-        }
-    }, [handleClickOutside])
-
     const rescanFn = () => rescanMedia(doc.uuid).then(() => updateMediasFn())
 
     const onRescan = () => 
@@ -117,9 +131,49 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
             we recommend a vertical alignment (i.e. portrait orientation) with an aspect ratio of 1:0.675 
      */
 
+
+    const RunTimePart = ({}) =>
+        metaInfo?.Runtime ? <span className="minorInfo">{metaInfo.Runtime}</span> : <></>
+    const Ratings = ({}) => infoLoading ? <LoadingIndicator /> : 
+        metaInfo?.Ratings ? resolveRatings(metaInfo.Ratings): <></>
+    const Buttons = ({}) => 
+        <div className="buttons">
+            {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
+            <FolderButton onClick={onOpenFolder}/>
+            <RefreshButton onClick={() => onRescan()} />
+            <RunTimePart />
+            <Ratings />
+        </div>
+    const TitlePart = ({}) =>
+        <a href={doc.imdb} target="_blank" rel="noopener noreferrer"><h2>{Title}</h2></a>
+
+    const PlotPart = ({}) =>
+        <div className="info">{metaInfo?.Plot ?? ''}</div>
+    
+    const SeriesSeasonInfo = ({}) =>
+        <div className="seasonsAndImg">
+            {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
+        </div>
+
+    const Suggestions = ({}) =>
+        <div className="metaPartBottom">
+            {
+            suggestions && suggestions.length > 0 && 
+                <div className="suggestionsContainer">
+                    <h3>You Might Also Like...</h3>
+                    <div className="suggestions">
+                        {suggestions.map((s, idx) => <Suggestion key={s.uuid + idx} setDoc={setDoc} doc={s}/>)}
+                    </div>
+                </div>
+            }
+        </div>
+
+    const AwardsPart = ({}) =>
+        (metaInfo?.Awards && metaInfo.Awards !== 'N/A') ? <span className="minorInfo"> <AwardIcon />{metaInfo.Awards}</span> : <></>
+
     return(
         <>
-        {image && <div className='metaBackgroundImg' style={{'backgroundImage': `url(${image})`, 'backgroundPosition': 'center', 'backgroundSize': 'cover'}}/> }
+        {metaInfo?.Poster && <div className='metaBackgroundImg' style={{'backgroundImage': `url(${metaInfo.Poster})`, 'backgroundPosition': 'center', 'backgroundSize': 'contain', backgroundRepeat: 'no-repeat'}}/> }
         <div tabIndex={0} className="infoContainer" ref={componentRef} onKeyDown={e => {
             if (e.key === 'Escape') {
                 onClose()
@@ -127,30 +181,15 @@ const MetaInfoModal = ({ setDoc, updateMediasFn, title, description, info, image
         }}>
              <div className="metaParts">
                 <div className="metaPartTop">
-                    <a href={doc.imdb} target="_blank" rel="noopener noreferrer"><h2>{title}</h2></a>
-                    <div className="info">{info !== undefined ? info : '[Info not available]'}</div>
+                    <TitlePart />
                     <MediaIcon type={doc.type}/>
                     <Tags doc={doc} />
-                    <div className="buttons">
-                        {doc.path && <PlayButton onClick={() => doc.path && playMedia(doc.path)}/> }
-                        <FolderButton onClick={onOpenFolder}/>
-                        <RefreshButton onClick={() => onRescan()} />
-                    </div>
-                    <div className="info">{description ?? ''}</div>
-                    <div className="seasonsAndImg">
-                        {doc.seasons ? <SeasonInfo playMedia={playMedia} seasons={doc.seasons}/> : <div></div>}
-                    </div>
+                    <Buttons />
+                    <PlotPart />
+                    <AwardsPart />
+                    <SeriesSeasonInfo />
                 </div>
-                <div className="metaPartBottom">
-                    {suggestions && suggestions.length > 0 && 
-                    <div className="suggestionsContainer">
-                        <h3>You Might Also Like...</h3>
-                        <div className="suggestions">
-                            {suggestions.map((s, idx) => <Suggestion key={s.uuid + idx} setDoc={setDoc} doc={s}/>)}
-                        </div>
-                    </div>
-                    }
-                </div>
+                <Suggestions />
              </div>
         </div>
         </>
@@ -162,16 +201,16 @@ export interface MetaInfoByUrlProps {
     doc: QueryResult
     playMedia: (path: string) => void
     onOpenFolder: () => void
-    onClose: () => void
     updateMediasFn: () => void
     setDoc: (d: QueryResult) => void
+    onClose: () => void
 }
 
 const MetaInfoByUrl = ({ setDoc, metaInfo, updateMediasFn, doc, playMedia, onOpenFolder, onClose }: MetaInfoByUrlProps) => {
     const placeHolderInfo: MetaInfo = {
-        title: doc.title
+        Title: doc.title
     }
-    const [currentMetaInfo, setMetaInfo] = useState<MetaInfo | undefined>(metaInfo || placeHolderInfo)
+    const [currentMetaInfo, setMetaInfo] = useState<MetaInfo>(metaInfo || placeHolderInfo)
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
@@ -185,9 +224,8 @@ const MetaInfoByUrl = ({ setDoc, metaInfo, updateMediasFn, doc, playMedia, onOpe
     }, [doc.imdb])
 
     return (
-        isLoading ? <LoadingIndicator /> :
         currentMetaInfo ? 
-            <MetaInfoModal setDoc={setDoc} updateMediasFn={updateMediasFn} onClose={onClose} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} title={currentMetaInfo.title || placeHolderInfo.title} info={currentMetaInfo.info} description={currentMetaInfo.description} image={currentMetaInfo.image}/>
+            <MetaInfoModal metaInfo={currentMetaInfo} infoLoading={isLoading} setDoc={setDoc} updateMediasFn={updateMediasFn} doc={doc} onOpenFolder={onOpenFolder} playMedia={path => playMedia(path)} Title={currentMetaInfo.Title || placeHolderInfo.Title} onClose={onClose}/>
         :  
             <></>
     )

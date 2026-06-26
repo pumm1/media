@@ -9,10 +9,11 @@ Anyone using this should themselves own the media by legal means (e.g. buy a DVD
 ## Setup
 
 In `/src`, include `sources.json` with the following:
-- `directories` (array of strings)
-- `dbName` (name of the mongodb database you've set up)
+- `directories` (array of strings, absolute paths to the media directories)
+- `dbName` (name of the mongodb and sqlite database you've set up)
+- `omdbKey` OMDb key for fetching media info
 
-`sources.json` should thus look something like this:
+so `sources.json` should thus look something like this:
 ```
 {
   "directories": [
@@ -20,7 +21,8 @@ In `/src`, include `sources.json` with the following:
     "<absolute_path_to_dir2>",
     ....
   ],
-  "dbName": "<name_of_db>"
+  "dbName": "<name_of_db>",
+  "omdbKey": "<key>"
 }
 ```
 
@@ -89,11 +91,13 @@ When media folder isn't found anymore in the file structure on scan, it's remove
 
 ## Setup
 
+- Install sqlite
 - Install MongoDB
 - Install ffmpeg
 - Install Redis (Backend fetches info from IMDB and caches it to redis)
 - Install Python3 (> 3.10)
   - Install dependencies mentioned in `/src/requirements.txt`
+  - Install playwright
 - Install Yarn & NPM
 
 ### MongoDB
@@ -106,7 +110,7 @@ db.createCollection("media", {"validator": {"$jsonSchema": {"bsonType": "object"
 
 ### Backend
 - In `/src` run `flask --app app run`
-- This creates collection automatically, if one doesn't exist
+- This creates collection and database for meta data (same name as what mongodb uses in `sources.json`) automatically, if one doesn't exist
 
 ### UI
 - in `/media-ui` run `yarn start` (for UI) and `yarn electron` (to be able to use Electron version of the app and actually access folders/files)

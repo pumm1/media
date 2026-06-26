@@ -1,5 +1,6 @@
 src/medias/*
 src/sources.json
+*.db
 
 .idea
 # Byte-compiled / optimized / DLL files
