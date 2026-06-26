@@ -5,7 +5,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from queryReq import QueryReq
 from mediaHandler import search_collections, go_through_medias, get_existing_tags, reset_media, list_meta_files, \
-    update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_uuid, movie_media_is_hdr_by_uuid
+    update_meta_file, mark_temp_meta_file_ready_for_scanning, rescan_media_by_uuid, media_extras_by_uuid, \
+    fetch_system_info
 import requests
 from mediaDAO import store_metadata, get_metadata
 from flask_caching import Cache
@@ -170,6 +171,10 @@ def search():
 
     return jsonify(res)
 
+@app.route('/system-info', methods=[get])
+def system_info():
+    return jsonify(fetch_system_info())
+
 @app.route('/list-metas', methods=[get])
 def list_metas():
     return jsonify(list_meta_files())
@@ -226,26 +231,18 @@ def suggestions():
 
     return jsonify(search_collections(query, random_suggestions=True))
 
-@app.route('/media-has-hdr-by-uuid', methods = [get])
-def media_has_hdr_by_uudid():
+@app.route('/media-extras', methods = [get])
+def media_extras():
     uuid = request.args.get('uuid')
-    """
-     res = cache.get(uuid)
--    if res:
--        print(f"Cache hit for UUID HDR info: {uuid}")
--    else:
--        res = movie_media_is_hdr_by_uuid(uuid)
-
--        cache.set(uuid, str(res))
-    """
-    res = movie_media_is_hdr_by_uuid(uuid)
-
-    cache.set(uuid, str(res))
-
-    if res == True:
-        return jsonify('HDR')
+    cached_response = cache.get(uuid)
+    if cached_response:
+        print(f"Media extras cache hit for UUID: {uuid}")
+        return cached_response
     else:
-        return jsonify(None)
+        extras = media_extras_by_uuid(uuid)
+        cache.set(uuid, extras)
+
+        return extras
 
 
 #cached_or_fetched_metadata("https://www.imdb.com/title/tt0135037/")

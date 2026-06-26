@@ -1,4 +1,4 @@
-import { HDR, ISODateString, MetaResponse, QueryResult, Season, mediaHasHdrByUuid, preview } from "./MediaClient"
+import { ISODateString, MediaExtras, MetaResponse, QueryResult, Season, mediaExtrasByUUID, preview } from "./MediaClient"
 import errorGif1 from './angry-panda.gif';
 import errorGif2 from './monke-pc.gif'
 import errorGif3 from './throw-pc.gif'
@@ -49,7 +49,7 @@ interface DocProps {
 
 const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
     const [metaInfo, setMetaInfo] = useState<MetaResponse | undefined>(undefined)
-    const [hasHdr, setHasHdr] = useState<HDR | null>(null)
+    const [mediaExtras, setMediaExtras] = useState<MediaExtras | null>(null)
 
     const containerRef = useRef<HTMLDivElement | null>(null)
 
@@ -57,10 +57,11 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
 
     useEffect(() => {
         preview(d.imdb).then(setMetaInfo).then(() => {
-            mediaHasHdrByUuid(d.uuid).then(setHasHdr)
+            mediaExtrasByUUID(d.uuid).then(setMediaExtras)
         })
     }, [d.imdb, d.uuid])
     //{img && <img className='image' src={img} width={0.675*smallImgScaler} height={1*smallImgScaler}></img>}
+    const extraDirectories: boolean = mediaExtras?.extraDirectories ? mediaExtras.extraDirectories.length > 0 : false
 
     const [imgExists, setImgExists] = useState(img === undefined)
 
@@ -95,7 +96,8 @@ const DocRow = ({ d, idx,  setDoc, sinceWeeksAgo }: DocProps) => {
                 <span className="infoContainer">
                     <div className='mediaInfo'>
                         <MediaIcon type={d.type}/> 
-                        {hasHdr && <Pill variant='Static' keyProp={d.title + 'hdr'}>HDR</Pill>}
+                        {mediaExtras?.hdr && <Pill variant='Static' keyProp={d.title + 'hdr'}>HDR</Pill>}
+                        {extraDirectories && <Pill variant='Static' keyProp={d.title + 'directories'}>Extras</Pill>}
                         {d.seasons && <div className='seasonInfo'>{seasonStr(d.seasons)}</div>}
                         <FadingCompoennt isVisible={isNew(d.created, sinceWeeksAgo)}>
                             <Pill variant='Static' keyProp={d.title}>New!</Pill>

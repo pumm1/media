@@ -82,6 +82,15 @@ export interface QueryReq {
     pageSize: number
 }
 
+export interface SystemInfo {
+    id: number
+    total: number
+    free: number
+}
+
+export const systemInfo = () => 
+    fetchDataAs<SystemInfo[]>('/system-info')
+
 export interface Episode {
     name: string,
     path: string
@@ -218,6 +227,11 @@ export const suggestMedias = (r: QueryReq) => {
 
 export type HDR = 'HDR'
 
-export const mediaHasHdrByUuid = (uuid: string) =>
-    fetchDataAs<HDR | null>(`/media-has-hdr-by-uuid?uuid=${uuid}`)
+export interface MediaExtras {
+    hdr: boolean
+    extraDirectories: string[]
+}
+
+export const mediaExtrasByUUID = (uuid: string) =>
+    fetchDataAs<MediaExtras>(`/media-extras?uuid=${uuid}`)
 
