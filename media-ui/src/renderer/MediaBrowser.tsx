@@ -146,7 +146,7 @@ const MediaBrowser = () => {
     useEffect(() => {
         const t = setTimeout(() => {
             initialResultsFn()
-        }, 3000)
+        }, 1500)
         return () => clearTimeout(t)
     }, [])
 

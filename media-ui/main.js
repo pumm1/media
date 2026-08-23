@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, shell, screen } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+//app.disableHardwareAcceleration()   // must be called before app is ready / before any window is created
 
 // Dynamically import electron-is-dev (ESM syntax)
 const isDev = await import('electron-is-dev');
