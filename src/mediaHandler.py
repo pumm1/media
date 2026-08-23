@@ -436,7 +436,7 @@ def list_meta_files():
                                 with open(meta_path, mode_read) as json_file:
                                     data_dict = json.load(json_file)
                                     json_file.close()
-                                print(f'.... meta path: {meta_path}')
+                                # print(f'.... meta path: {meta_path}')
                                 meta_info = MetaFileInfo(is_temp_file, meta_path, data_dict).as_json()
                                 meta_file_infos.append(meta_info)
 

@@ -32,3 +32,18 @@
 .scanAll {
     padding: 0px 0px 8px 0px;
 }
+
+.spaceInfoWrapper {
+    max-height: 2em;
+    height: 100%;
+    width: 100%;
+    display: flex;
+}
+
+.spaceInfoRow {
+    display: flex;
+}
+
+.sourceInfo {
+    margin: auto 8px;
+}

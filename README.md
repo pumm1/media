@@ -89,7 +89,7 @@ Series are added only once, but the system can recognize if new episodes or seas
 
 When media folder isn't found anymore in the file structure on scan, it's removed from the MongoDB, and it's not searchable anymore. 
 
-## Setup
+# Setup
 
 - Install sqlite
 - Install MongoDB
@@ -100,18 +100,33 @@ When media folder isn't found anymore in the file structure on scan, it's remove
   - Install playwright
 - Install Yarn & NPM
 
-### MongoDB
+## MongoDB
 - Install MongoDB
-#### Optional manual collection creation:
+### Optional manual collection creation:
 - Create collection for media in the MongoDB shell:
 ```
 db.createCollection("media", {"validator": {"$jsonSchema": {"bsonType": "object", "required": ["uuid", "created", "title", "imdb", "type", "tags", "folderPath"], "properties": {"uuid": {"bsonType": "string", "description": "must be a string and is required"}, "created": {"bsonType": "date"}, "title": {"bsonType": "string", "description": "must be a string and is required"}, "imdb": {"bsonType": "string", "description": "must be a string and is required"}, "type": {"bsonType": "string", "description": "must be a string and is required"}, "folderPath": {"bsonType": "string", "description": "must be a string and is required"}, "path": {"bsonType": "string", "description": "must be a string"}, "tags": {"bsonType": "array", "items": { "bsonType": "string" }, "description": "must be an array of strings"}, "seasons":  {"bsonType":  "array", "items":  {"bsonType": "object", "properties": {"season": {"bsonType": "object", "properties": {"name": {"bsonType": "string"}, "episodes": {"bsonType": "array", "items": {"bsonType": "object", "properties": {"name": {"bsonType": "string"}, "path": {"bsonType": "string"}}}, "description": "must be an array of objects with name and path"}}}}}, "properties":  {}}}}}})
 ```
 
-### Backend
+## Backend
 - In `/src` run `flask --app app run`
 - This creates collection and database for meta data (same name as what mongodb uses in `sources.json`) automatically, if one doesn't exist
 
-### UI
+## UI
 - in `/media-ui` run `yarn start` (for UI) and `yarn electron` (to be able to use Electron version of the app and actually access folders/files)
-- Open UI and scan for updates
+- Open UI and browse your media or scan for updates
+
+### Updating UI dependencies
+
+### Bump up dependency versions
+- Check the new electron version's Node requirement (errors like `@electron/get` engine mismatches will tell you the minimum)
+  - `rm -rf node_modules yarn.lock && yarn install` after switching Node (native modules/tooling can cache against the old version)
+- Edit the version **directly in `package.json`** — don't rely on `yarn upgrade` alone, it respects existing `^` ranges and can silently do nothing
+- `yarn remove <pkg>` then `yarn add -D <pkg>@latest` (or a specific version)
+- **Verify it actually installed**: `cat node_modules/electron/package.json | grep '"version"'`
+  → `git diff` on `package.json` not changing is a red flag that the range blocked the update
+
+## Known gotchas hit before (context for future-me)
+- A `useEffect` with `[]` deps and a separate debounced `useEffect` on other state can **both** fire on mount — always fires once regardless of deps. Guard debounce-only effects with their own ref, checked *and* set in the same effect (don't share a flag across effects — ordering will bite you).
+- Electron's first `fetch()` in a **fresh renderer** can fail once even when everything is configured correctly — a retry-with-backoff around the shared fetch primitive (not per-call) is cheap, reliable insurance against this.
+- StrictMode dev double-invoke can mask *or* reproduce bugs inconsistently — test with it both on and off when something is timing-sensitive.
