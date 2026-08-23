@@ -10,10 +10,10 @@
     "@types/node": "^16.7.13",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "axios": "^1.7.7",
-    "cheerio": "^1.0.0",
+    "axios": "^1.19.0",
+    "cheerio": "^1.2.0",
     "electron-is-dev": "^3.0.1",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-player": "^2.16.0",
@@ -26,7 +26,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "electron": "ELECTRON_START_URL=http://localhost:3000 electron .",
+    "electron": "ELECTRON_START_URL=http://localhost:3000 electron . --no-proxy-server",
     "electron:build": "yarn build && electron-builder"
   },
   "eslintConfig": {
@@ -48,7 +48,7 @@
     ]
   },
   "devDependencies": {
-    "@types/lodash": "^4.17.7",
+    "@types/lodash": "^4.17.25",
     "electron": "^32.1.2",
     "electron-builder": "^25.0.5"
   }

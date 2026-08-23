@@ -144,7 +144,10 @@ const MediaBrowser = () => {
     })
 
     useEffect(() => {
-        initialResultsFn()
+        const t = setTimeout(() => {
+            initialResultsFn()
+        }, 3000)
+        return () => clearTimeout(t)
     }, [])
 
     const restartSearch = () => {
@@ -164,9 +167,15 @@ const MediaBrowser = () => {
         }, 3000))
     }
 
-    useEffect(() => {
-        const delay = 500
+    const isDebounceFirstRun = useRef(true)
 
+    useEffect(() => {
+        if (isDebounceFirstRun.current) {
+            isDebounceFirstRun.current = false
+            return
+        }
+
+        const delay = 500
         const timeoutId = setTimeout(() => {
             updateMediaFn(q)
         }, delay)

@@ -3,10 +3,16 @@ const pathBase = "http://127.0.0.1:5000"
 export const createUrl = (path: string): string => 
     `${pathBase}${path}`;
 
-    
-
-const fetchData = (path: string) => 
-    fetch(createUrl(path)).then(res => res.json());
+const fetchData = (path: string, retries = 3, delayMs = 400): Promise<any> =>
+    fetch(createUrl(path))
+        .then(res => res.json())
+        .catch(err => {
+            if (retries > 0) {
+                return new Promise(resolve => setTimeout(resolve, delayMs))
+                    .then(() => fetchData(path, retries - 1, delayMs * 2))
+            }
+            throw err
+        })
 
 
 const fetchDataAs = <T,>(path: string) =>
